@@ -1,8 +1,9 @@
-Django==2.1.7
+-i https://pypi.org/simple
 django-cors-middleware==1.2.0
-django-extensions==1.7.1
-djangorestframework==3.4.4
+django-cors==0.1
+django==2.1.7
+djangorestframework==3.9.2
 psycopg2-binary==2.7.7
-PyJWT==1.4.2
+pyjwt==1.4.2
 pytz==2018.9
 six==1.10.0
