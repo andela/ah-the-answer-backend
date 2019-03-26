@@ -1,0 +1,6 @@
+{
+    "python.pythonPath": "/Users/dariusnjihiakihuha/.local/share/virtualenvs/ah-the-answer-backend-nKYu5m3R/bin/python",
+    "python.linting.pylintEnabled": false,
+    "python.linting.pep8Enabled": true,
+    "python.linting.enabled": true
+}
