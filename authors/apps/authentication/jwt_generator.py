@@ -19,10 +19,11 @@ def jwt_encode(user_id=None):
 
 def jwt_decode(token=None):
     if token:
-        jwt.decode(
+        payload = jwt.decode(
             token,
             settings.SECRET_KEY,
-            algorithms=['HS256']
+            algorithms='HS256'
         )
+        return payload
     else:
         return None
