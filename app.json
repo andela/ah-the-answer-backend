@@ -1,0 +1,17 @@
+{
+    "addons": [
+  
+    ],
+    "buildpacks": [
+  
+    ],
+    "env": {
+    },
+    "formation": {
+    },
+    "name": "ah-the-answer-backend",
+    "scripts": {
+    },
+    "stack": "heroku-18"
+  }
+  
