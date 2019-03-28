@@ -29,7 +29,7 @@ class JWTAuthentication(authentication.BaseAuthentication):
             payload = jwt_decode(auth_token[1])
 
         except:
-            msg = 'Invalid token. Please login kimani'
+            msg = 'Invalid token. Please login'
             raise exceptions.AuthenticationFailed(msg)
 
         return self.authenticate_credentials(payload)
