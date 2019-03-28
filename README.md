@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.com/andela/ah-the-answer-backend.svg?branch=develop)](https://travis-ci.com/andela/ah-the-answer-backend)
+[![Coverage Status](https://coveralls.io/repos/github/andela/ah-the-answer-backend/badge.svg)](https://coveralls.io/github/andela/ah-the-answer-backend)
 
 Authors Haven - A Social platform for the creative at heart.
 =======
