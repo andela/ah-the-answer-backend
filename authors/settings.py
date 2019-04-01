@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
+import dj_database_url
 from decouple import config
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -81,7 +82,7 @@ WSGI_APPLICATION = 'authors.wsgi.application'
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
 DATABASES = {
-    'default': config('DATABASE_URL')
+    'default': dj_database_url.config(default=config('DATABASE_URL'))
 }
 
 # Password validation
