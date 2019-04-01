@@ -96,10 +96,6 @@ db.sqlite3
 
 #vscode 
 .vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
 
 #Pipfile
 
