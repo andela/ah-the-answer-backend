@@ -90,6 +90,15 @@ DATABASES = {
     }
 }
 
+# Use nose to run all tests
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+
+# Tell nose to measure coverage on the 'authentication' app
+NOSE_ARGS = [
+    '--with-coverage',
+    '--cover-package=authentication',
+]
+
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
 
