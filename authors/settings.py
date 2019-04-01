@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
+import dj_database_url
+from decouple import config
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -81,17 +83,7 @@ WSGI_APPLICATION = 'authors.wsgi.application'
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME', ''),
-        'USER': os.getenv('DB_USERNAME', ''),
-        'PASSWORD':os.getenv('PASSWORD', ''),
-        'PORT':os.getenv('PORT', ''),
-        'HOST':os.getenv('HOST', ''),
-        # "TEST":{
-        #       'NAME': os.getenv('DB_NAME_TEST', ''),
-        # }
-    }
+    'default': dj_database_url.config(default=config('DATABASE_URL'))
 }
 
 # Use nose to run all tests
