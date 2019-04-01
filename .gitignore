@@ -91,5 +91,3 @@ ENV/
 
 # SQLite3
 db.sqlite3
-# vscode
-.vscode/
