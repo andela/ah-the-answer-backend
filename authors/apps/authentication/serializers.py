@@ -1,6 +1,7 @@
 from django.contrib.auth import authenticate
 from rest_framework import serializers
 from django.core.validators import RegexValidator
+from rest_framework.validators import UniqueValidator
 from .models import User
 
 
@@ -35,7 +36,30 @@ class RegistrationSerializer(serializers.ModelSerializer):
         # List all of the fields that could possibly be included in a request
         # or response, including fields specified explicitly above.
         fields = ['email', 'username', 'password']
+        extra_kwargs = {
+            'email': {
+                'error_messages': {
+                    'required': 'Email is required',
+                    'blank': 'Email field cannot be empty',
+                    'invalid':'Please enter a valid email address'
+                },
+                'validators': [
+                    UniqueValidator(queryset=User.objects.all(),
+                    message='A user with this email already exists')
+                ]
+            },
 
+            'username': {
+                'error_messages': {
+                    'required': 'Username is required',
+                    'blank': 'Username field cannot be empty'
+                },
+                'validators': [
+                    UniqueValidator(queryset=User.objects.all(),
+                    message='A user with this username already exists')
+                ]
+            }
+        }
     def create(self, validated_data):
         # Use the `create_user` method we wrote earlier to create a new user.
         return User.objects.create_user(**validated_data)
