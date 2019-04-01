@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_nose',
 
     'corsheaders',
     'django_extensions',
@@ -87,6 +88,9 @@ DATABASES = {
         'PASSWORD':os.getenv('PASSWORD', ''),
         'PORT':os.getenv('PORT', ''),
         'HOST':os.getenv('HOST', ''),
+        # "TEST":{
+        #       'NAME': os.getenv('DB_NAME_TEST', ''),
+        # }
     }
 }
 
@@ -96,7 +100,7 @@ TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 # Tell nose to measure coverage on the 'authentication' app
 NOSE_ARGS = [
     '--with-coverage',
-    '--cover-package=authentication',
+    '--cover-package=authors',
 ]
 
 # Password validation
