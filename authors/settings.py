@@ -24,7 +24,9 @@ SECRET_KEY = '7pgozr2jn7zs_o%i8id6=rddie!*0f0qy3$oy$(8231i^4*@u3'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    '*'
+]
 
 # Application definition
 
@@ -48,8 +50,6 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -87,7 +87,6 @@ DATABASES = {
         'PASSWORD':os.getenv('PASSWORD', ''),
         'PORT':os.getenv('PORT', ''),
         'HOST':os.getenv('HOST', ''),
-        
     }
 }
 
@@ -132,8 +131,8 @@ STATICFILES_DIRS = [
 ]
 
 CORS_ORIGIN_WHITELIST = (
-    '0.0.0.0:4000',
-    'localhost:4000',
+    '0.0.0.0:8000',
+    'localhost:8000',
 )
 
 # Tell Django about the custom `User` model we created. The string

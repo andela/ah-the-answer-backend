@@ -90,6 +90,7 @@ ENV/
 .ropeproject
 
 # SQLite3
+
 db.sqlite3
 
 
@@ -104,4 +105,3 @@ db.sqlite3
 
 Pipfile
 Pipfile.lock
-
