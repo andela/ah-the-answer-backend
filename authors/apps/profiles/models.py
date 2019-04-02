@@ -2,6 +2,8 @@ from django.db import models
 from cloudinary.models import CloudinaryField
 from authors import settings
 
+cloud_default = 'https://res.cloudinary.com/apibucket/image/upload/v1554188102/sample.jpg'
+
 
 class Profile(models.Model):
     """This class represents the model for Author's Haven user profile
@@ -17,7 +19,8 @@ class Profile(models.Model):
     number_of_followers = models.IntegerField(default=0)
     number_of_followings = models.IntegerField(default=0)
     total_articles = models.IntegerField(default=0)
-    avatar = CloudinaryField('image', blank=True, null=True)
+    avatar = CloudinaryField('image', default=cloud_default,
+                             blank=True, null=True)
 
     def __str__(self):
         return "{}".format(self.user.username)

@@ -17,14 +17,12 @@ class ImageSerializer(ModelSerializer):
 
 class ProfileSerializer(ModelSerializer):
 
-    username = ReadOnlyField(source='get_username')
-    image_url = ReadOnlyField(source='cloudinary_image_url')
+    #username = ReadOnlyField(source='get_username')
+    #image_url = ReadOnlyField(source='cloudinary_image_url')
 
     class Meta:
         model = Profile
-        fields = ('username', 'user_bio',
-                  'name', 'email', 'total_articles',
-                  'number_of_following', 'number_of_followers', 'avatar')
+        fields = '__all__'
 
     def create(self, validated_data):
         return Profile.objects.create(**validated_data)
