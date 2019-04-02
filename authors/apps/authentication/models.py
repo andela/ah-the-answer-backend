@@ -1,4 +1,5 @@
 import jwt
+import os
 
 from datetime import datetime, timedelta
 
@@ -123,3 +124,51 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def get_token(self):
         return jwt_encode(self.pk)
+
+    @staticmethod
+    def dispatch_reset_token(serializer, request):
+        """
+        this method processes the reset token and sends it to the user's
+         email
+        """
+        message = "A link for reseting your password will be sent to the" \
+                " email provided"
+        subject = "Password Reset Email verification"
+
+        if serializer.is_valid(raise_exception=True):
+            try:
+                user = User.objects.get(email=request.data['email'])
+                previous_user_requests = ResetPassowordToken.generate_request_instances(user.id)
+                if previous_user_requests < 3:
+                    token = user.get_token(1)
+                    user.persist_reset_token(user, token)
+                    request_message = User.generate_reset_link(token)
+                    output = send_email(
+                        to_email=user.email,
+                        subject=subject,
+                        message=request_message
+                    )
+                    return message
+                else:
+                    return "You have exceeded the request limit for the past 24hours." \
+                        "wait for at least a day before resubmitting the request" 
+            except User.DoesNotExist:
+                raise exceptions.AuthenticationFailed(message)
+    @staticmethod
+    def generate_request_instances(token_variable):
+        """
+        uses the token to create a link to be sent to user's email
+        """
+        link = "{}api/users/reset_password/{}".format(os.environ['URL'], token)
+
+    def persist_reset_token(self, user_details, token_variable):
+        """
+        takes the token and saves it in the database with relation to user
+        """
+        reset_token = ResetPassowordToken.objects.create(
+                        user=user_details,
+                        token=token_variable
+                        )
+        reset_token.save()
+        
+                
