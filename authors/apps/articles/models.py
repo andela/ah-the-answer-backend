@@ -22,3 +22,4 @@ class Article(models.Model):
     def save(self, *args, **kwargs):
         self.slug = generate_slug(self.title)
         super(Article, self).save(*args, **kwargs)
+
