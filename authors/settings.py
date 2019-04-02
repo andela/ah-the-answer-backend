@@ -81,6 +81,7 @@ WSGI_APPLICATION = 'authors.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
+# DATABASE_URL format is:'postgres://db_role:db_role_password@127.0.0.1:5432/db_name'
 
 DATABASES = {
     'default': dj_database_url.config(default=config('DATABASE_URL'))
