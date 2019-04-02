@@ -5,6 +5,7 @@ from .models import Article
 class ArticleSerializer(serializers.ModelSerializer):
     """Serializer to map the Article Model instance into JSON format."""
 
+    author = serializers.ReadOnlyField(source='author.id')
     title = serializers.CharField(max_length=100)
     description = serializers.CharField(max_length=128)
     body = serializers.CharField()
@@ -17,7 +18,7 @@ class ArticleSerializer(serializers.ModelSerializer):
         instance.description = validated_data.get(
             'description', instance.description)
         instance.body = validated_data.get('body', instance.body)
-
+        validated_data.pop('slug', None)
         instance.save()
         return instance
 
@@ -25,4 +26,4 @@ class ArticleSerializer(serializers.ModelSerializer):
         model = Article
         fields = ('id', 'title', 'body', 'description', 'is_published',
                   'date_created', 'date_modified', 'slug', 'author')
-        read_only_fields = ('date_created', 'date_modified', 'slug')
+        read_only_fields = ('date_created', 'date_modified', 'slug', 'author')
