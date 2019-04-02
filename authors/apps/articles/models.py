@@ -23,3 +23,4 @@ class Article(models.Model):
         if not self.slug:
             self.slug = generate_slug(self.title)
         super(Article, self).save(*args, **kwargs)
+
