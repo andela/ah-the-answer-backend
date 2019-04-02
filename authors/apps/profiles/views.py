@@ -5,6 +5,7 @@ from ..authentication.models import User
 from .models import Profile
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import get_object_or_404
 
 
 class ListProfiles(APIView):
@@ -13,9 +14,12 @@ class ListProfiles(APIView):
     # queryset = Profile.objects.all()
     # serializer_class = ProfileSerializer
 
-    def get(self, request, pk):
-        """Returns a single user profile"""
-        profile = get_object_or_404(Profile.objects.all(), pk=pk)
+    def get(self, request, username):
+        """Returns a single user profile. Matches a profile
+        based on the username."""
+        user = User.objects.get(username=username)
+        uid = user.pk
+        profile = get_object_or_404(Profile.objects.all(), user_id=uid)
         serializer = ProfileSerializer(profile, many=False)
         return Response({"Profile": [serializer.data]})
 
