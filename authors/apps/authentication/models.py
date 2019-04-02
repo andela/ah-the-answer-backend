@@ -145,8 +145,8 @@ class User(AbstractBaseUser, PermissionsMixin):
         this method processes the reset token and sends it to the user's
          email
         """
-        message = "A link for reseting your password will be sent to the" \
-                " email provided"
+        message = "A link for reseting your password will be sent to the \
+             email provided"
         subject = "Password Reset Email verification"
 
         if serializer.is_valid(raise_exception=True):
@@ -154,7 +154,7 @@ class User(AbstractBaseUser, PermissionsMixin):
                 user = User.objects.get(email=request.data['email'])
                 previous_user_requests = ResetPassowordToken.generate_request_instances(user.id)
                 if previous_user_requests < 3:
-                    token = user.get_token(1)
+                    token = user.get_reset_token(1)
                     user.persist_reset_token(user, token)
                     request_message = User.generate_reset_link(token)
                     output = send_email(
@@ -207,8 +207,8 @@ class ResetPassowordToken(models.Model):
         """
         current_day = date.today()
         number_of_requests = ResetPassowordToken.objects.filter(
-                                user=user.id,
-                                created_on=current_day
-                            ).count()
+            user=user.id,
+            created_on=current_day
+        ).count()
         return number_of_requests
                 
