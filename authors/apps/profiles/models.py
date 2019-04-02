@@ -4,7 +4,8 @@ from authors import settings
 
 
 class Profile(models.Model):
-    """This class represents the model for Author's Haven user profiles."""
+    """This class represents the model for Author's Haven user profile
+    information."""
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE

@@ -13,9 +13,10 @@ class TestProfileModel(TestCase):
             password="123"
         )
 
-    def test_profile_user_relation(self):
-        u = self.user
-        profile = Profile(user=u, user_bio="Biography", name="Bobby Doe")
+    def test_relation_between_profile_and_user_models(self):
+        test_user = self.user
+        profile = Profile(user=test_user, user_bio="Biography", 
+                          name="Bobby Doe")
         profile.save()
         username = profile.user.username
         self.assertEqual(username, "Bob")
