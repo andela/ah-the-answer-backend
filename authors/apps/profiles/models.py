@@ -1,4 +1,5 @@
 from django.db import models
+from cloudinary.models import CloudinaryField
 from authors import settings
 
 
@@ -15,6 +16,7 @@ class Profile(models.Model):
     number_of_followers = models.IntegerField(default=0)
     number_of_followings = models.IntegerField(default=0)
     total_articles = models.IntegerField(default=0)
+    avatar = CloudinaryField('image', blank=True, null=True)
 
     def __str__(self):
         return "{}".format(self.user.username)
