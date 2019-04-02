@@ -6,8 +6,9 @@ from rest_framework.views import APIView
 
 from .renderers import UserJSONRenderer
 from .serializers import (
-    LoginSerializer, RegistrationSerializer, UserSerializer
+    LoginSerializer, RegistrationSerializer, UserSerializer, PasswordResetSerializer
 )
+from .models import User
 
 
 class RegistrationAPIView(APIView):
@@ -71,3 +72,14 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
         serializer.save()
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class PasswordResetAPIView(APIView):
+    """This view handles the request for the password reset  link to be sent to the email"""
+    permission_classes = (AllowAny,)
+    def post(self, request):
+        """POST request for the password reset functionality"""
+        serializer = PasswordResetSerializer(data=request.data)
+        sent_email = User.dispatch_reset_token(serializer, request)
+        return Response({
+            'message': sent_email
+        }, status=status.HTTP_202_ACCEPTED)
