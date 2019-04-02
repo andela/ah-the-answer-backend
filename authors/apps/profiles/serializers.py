@@ -2,19 +2,6 @@ from rest_framework.serializers import ModelSerializer, ReadOnlyField
 from .models import Profile
 
 
-class ImageSerializer(ModelSerializer):
-
-    class Meta:
-        model = Record
-        fields = ('avatar',)
-
-    def update(self, instance, validated_data):
-        instance.image = validated_data.get('avatar', instance.image)
-        instance.save()
-
-        return instance
-
-
 class ProfileSerializer(ModelSerializer):
 
     #username = ReadOnlyField(source='get_username')

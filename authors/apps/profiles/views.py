@@ -1,11 +1,15 @@
 from rest_framework.views import APIView
 from .serializers import ProfileSerializer
 from .models import Profile
+from ..authentication.models import User
+from .models import Profile
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 
 
 class ListProfiles(APIView):
     permission_classes = (IsAuthenticated,)
-    authentication_classes = (SessionAuthentication, JWTAuthentication, )
+    #authentication_classes = (SessionAuthentication, JWTAuthentication, )
     # queryset = Profile.objects.all()
     # serializer_class = ProfileSerializer
 
@@ -20,9 +24,9 @@ class ListProfiles(APIView):
         profile = request.data.get('profile')
         serializer = ProfileSerializer(data=profile)
         if serializer.is_valid(raise_exception=True):
-            profile_saved = serializer.save()
-            return Response({"success": "Profile '{}' created successfully".format(profile_saved.title)})
-        return Response("Invalid profile data")
+            profile_saved = serializer.save(user=self.request.user)
+            return Response({"success": "Profile '{}' created successfully".format(profile_saved.user)})
+        return Response("Failed")
 
     def put(self, request, pk):
         saved_profile = get_object_or_404(Profile.objects.all(), pk=pk)

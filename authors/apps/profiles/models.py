@@ -19,8 +19,8 @@ class Profile(models.Model):
     number_of_followers = models.IntegerField(default=0)
     number_of_followings = models.IntegerField(default=0)
     total_articles = models.IntegerField(default=0)
-    avatar = CloudinaryField('image', default=cloud_default,
-                             blank=True, null=True)
+    avatar = models.TextField(default=cloud_default,
+                              blank=True, null=True)
 
     def __str__(self):
         return "{}".format(self.user.username)
