@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_nose',
 
     'corsheaders',
     'django_extensions',
@@ -80,10 +81,20 @@ WSGI_APPLICATION = 'authors.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
+# DATABASE_URL format is:'postgres://db_role:db_role_password@127.0.0.1:5432/db_name'
 
 DATABASES = {
     'default': dj_database_url.config(default=config('DATABASE_URL'))
 }
+
+# Use nose to run all tests
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+
+# Tell nose to measure coverage on the 'authentication' app
+NOSE_ARGS = [
+    '--with-coverage',
+    '--cover-package=authors',
+]
 
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
