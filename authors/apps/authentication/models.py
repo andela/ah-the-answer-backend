@@ -122,8 +122,22 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.username
 
     @property
-    def get_token(self):
-        return jwt_encode(self.pk)
+    def get_reset_token(self, days=30):
+        """
+        this method ensures that the generation of tokens is kept private
+        """
+        return self._generate_jwt_token(days)
+
+    def _generate_jwt_token(self, days):
+        """
+        this method generates token with user id and expiry date
+        """
+        duration = datetime.now() + timedelta(days)
+        token = jwt.encode({
+            'id': self.pk,
+            'exp': int(duration.strftime('%s'))
+        }, settings.SECRET_KEY, algorithm='HS256')
+        return token.decode('utf-8')
 
     @staticmethod
     def dispatch_reset_token(serializer, request):
