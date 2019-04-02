@@ -20,5 +20,6 @@ class Article(models.Model):
         return self.title
 
     def save(self, *args, **kwargs):
-        self.slug = generate_slug(self.title)
+        if not self.slug:
+            self.slug = generate_slug(self.title)
         super(Article, self).save(*args, **kwargs)
