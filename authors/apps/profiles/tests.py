@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.test import Client
 
 from .models import Profile
-from authentication.models import User
+from ..authentication.models import User
 
 
 class TestProfileModel(TestCase):
