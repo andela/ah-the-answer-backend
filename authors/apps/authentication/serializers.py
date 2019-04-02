@@ -140,3 +140,15 @@ class UserSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
+
+class PasswordResetSerializer(serializers.ModelSerializer):
+    """serializer for the password reset functionaility view"""
+    email = serializers.EmailField(required=True)
+    class Meta:
+        model = User
+        fields = ('email',)
+        extra_kwargs = {
+            'email' {
+                'read_only': True
+            }
+        }
