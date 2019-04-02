@@ -1,7 +1,7 @@
 import jwt
 import os
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 from django.conf import settings
 from django.contrib.auth.models import (
@@ -170,5 +170,31 @@ class User(AbstractBaseUser, PermissionsMixin):
                         token=token_variable
                         )
         reset_token.save()
-        
+
+class ResetPassowordToken(models.Model):
+    """
+    this class creates a Model for the tokens generated during password reset request
+    """
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='password_reset_tokens'
+    )
+    token = models.CharField(max_length=256)
+    created_on = models.DateTimeField(auto_now=True,
+        verbose_name='when token was generated')
+    class Meta:
+        ordering = ('created_on',)
+    
+    @staticmethod
+    def generate_request_instances(user.id):
+        """
+        this method returns number of password reset requests a user has made
+        """
+        current_day = date.today()
+        number_of_requests = ResetPassowordToken.objects.filter(
+                                user=user.id,
+                                created_on=current_day
+                            ).count()
+        return number_of_requests
                 
