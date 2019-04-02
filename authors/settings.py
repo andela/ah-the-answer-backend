@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_extensions',
     'rest_framework',
+    'social_django',
 
     'authors.apps.authentication',
     'authors.apps.core',
@@ -54,6 +55,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'social_django.middleware.SocialAuthExceptionMiddleware'
 ]
 
 ROOT_URLCONF = 'authors.urls'
@@ -69,6 +71,9 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                # TODO remove if not needed
+                'social_django.context_processors.backends', # this
+                'social_django.context_processors.login_redirect' 
             ],
         },
     },
@@ -149,3 +154,24 @@ REST_FRAMEWORK = {
         'authors.apps.authentication.backends.JWTAuthentication',
     ),
 }
+
+# social_django app settings
+SOCIAL_AUTH_POSTGRES_JSONFIELD = True
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.google.GoogleOAuth2',
+    'social_core.backends.facebook.FacebookOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+)
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '499121628376-u6n459n2led52s0q41h8i751qs6967os.apps.googleusercontent.com'
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = "2f_zCZTI2hTffEWZXN8jDTVF"
+SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = ['email', ]
+LOGIN_REDIRECT_URL = '/'
+
+# FACEBOOK AUTHENTICATION
+SOCIAL_AUTH_FACEBOOK_KEY = '803640373323851'
+SOCIAL_AUTH_FACEBOOK_SECRET = '975e27dd58c9fee4bd294996697fc63d'
+
+# Twitter Authentication
+SOCIAL_AUTH_TWITTER_KEY = 'MveI1R9ZPhZdQgY2FdtiZihZH'
+SOCIAL_AUTH_TWITTER_SECRET = 'bK8dD0tQqT0tveJWi4jgnuOFAQyJmfq2AYFhlawEMnhMOKF8PE'
