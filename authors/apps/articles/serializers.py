@@ -8,7 +8,6 @@ class ArticleSerializer(serializers.ModelSerializer):
     title = serializers.CharField(max_length=100)
     description = serializers.CharField(max_length=128)
     body = serializers.CharField()
-    # author = serializers.IntegerField()
 
     def create(self, validated_data):
         return Article.objects.create(**validated_data)
@@ -18,7 +17,6 @@ class ArticleSerializer(serializers.ModelSerializer):
         instance.description = validated_data.get(
             'description', instance.description)
         instance.body = validated_data.get('body', instance.body)
-        # instance.author_id = validated_data.get('author_id', instance.author_id)
 
         instance.save()
         return instance
