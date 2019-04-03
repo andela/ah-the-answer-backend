@@ -148,7 +148,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         """
         message = "A link for reseting your password will be sent to the \
              email provided"
-        subject = "Password Reset"
+        subject = "Password Reset link for Author's Haven User Account"
 
         if serializer.is_valid(raise_exception=True):
             try:
@@ -159,14 +159,14 @@ class User(AbstractBaseUser, PermissionsMixin):
                     user.persist_reset_token(user, token)
                     request_message = User.generate_request_instances(token)
                     output = dispatch_email(
-                        to_email=user.email,
+                        user_email=user.email,
                         subject=subject,
                         message=request_message
                     )
                     return output
                 else:
-                    return "You have exceeded the request limit for the past 24hours." \
-                        "wait for at least a day before resubmitting the request" 
+                    return "You have exceeded the request limit for the past 24hours. \
+                         Wait for at least a day before resubmitting the request" 
             except User.DoesNotExist:
                 msg = "User with that email does not exist"
                 raise exceptions.AuthenticationFailed(msg)
