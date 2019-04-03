@@ -13,7 +13,7 @@ from .serializers import (
     LoginSerializer, RegistrationSerializer, UserSerializer
 )
 from authors.apps.core.utils import TokenHandler
-
+from .models import User
 
 class RegistrationAPIView(APIView):
     # Allow any user (authenticated or not) to hit this endpoint.
@@ -94,3 +94,42 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
         serializer.save()
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class EmailVerificationView(APIView):
+    """This view handles request for verifying email adresses"""
+    permission_classes = (AllowAny,)
+    renderer_classes = (UserJSONRenderer,)
+    serializer_class = UserSerializer
+
+    def get(self, request, token):
+        decoded_token = TokenHandler().validate_token(token)
+        email = decoded_token['email']
+        if not email:
+            return Response(
+                {'error': 'Invalid token'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        #check if a user exists and if they are verified
+        #if a user is not found we return an error
+        #if we find a verified user , we raise an error
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response(
+                {'email': 'No user with email has been registered'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        if user.is_verified is True:
+            return Response(
+                {'email': 'This email has already been verified'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user.is_verified = True
+        user.save()
+        return Response(
+            {'Success': 'Your email has been verified'}
+        )
