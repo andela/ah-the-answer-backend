@@ -1,7 +1,8 @@
 import sendgrid
+import re
 import os
 from sendgrid.helpers.mail import *
-from django.core.validators import RegexValidator
+from django.core.exceptions import ValidationError
 
 def dispatch_email(user_email, subject, message):
     """
@@ -22,11 +23,10 @@ def dispatch_email(user_email, subject, message):
     except Exception:
         return "Error while sending mail to provided account"
 
-def check_password():
+def check_password(password):
     """
     check passwords to ensure they contain letters and numbers only
     """
-    return RegexValidator(
-        r'^[a-zA-Z0-9]+$',
-        "password can only contain numbers and letters"
-    )
+    if not re.match('^[a-zA-Z0-9]+$', password):
+        raise ValidationError('The password has to contain letters and numbers')
+    
