@@ -6,9 +6,11 @@ from rest_framework.views import APIView
 
 from .renderers import UserJSONRenderer
 from .serializers import (
-    LoginSerializer, RegistrationSerializer, UserSerializer, PasswordResetSerializer
+    LoginSerializer, RegistrationSerializer, UserSerializer, 
+    PasswordResetSerializer, SetUpdatedPasswordSerializer
 )
 from .models import User
+from .backends import JWTAuthentication
 
 
 class RegistrationAPIView(APIView):
@@ -74,7 +76,9 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class PasswordResetAPIView(APIView):
-    """This view handles the request for the password reset  link to be sent to the email"""
+    """
+    This view handles the request for the password reset  link to be sent to the email
+    """
     permission_classes = (AllowAny,)
     def post(self, request):
         """POST request for the password reset functionality"""
@@ -83,3 +87,20 @@ class PasswordResetAPIView(APIView):
         return Response({
             'message': sent_email
         }, status=status.HTTP_202_ACCEPTED)
+
+class SetUpdatedPasswordAPIView(APIView):
+    """
+    this view handles PUT request for setting new login password
+    """
+    permission_classes = (AllowAny,)
+    def put(self, request, reset_token):
+        serializer = SetUpdatedPasswordSerializer(data=request.data)
+        if serializers.is_valid(raise_exception=True):
+            new password = request.data['password']
+            #payload = decode_token(reset_token)
+            user_details = JWTAuthentication().authenticate_credentials(payload)
+            message = User.persist_new_password(user_details, new_password)
+            return Response(
+                {'message': output},
+                status=status.HTTP_202_ACCEPTED
+            )
