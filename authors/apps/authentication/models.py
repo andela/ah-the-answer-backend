@@ -190,6 +190,18 @@ class User(AbstractBaseUser, PermissionsMixin):
             token=token_variable
         )
         reset_token.save()
+    
+    @staticmethod
+    def persist_new_password(user_details, password):
+        """
+        takes the password from PUT reset password view and saves it to the database
+        """
+        new_password = password
+        user = user_details[0]
+        user.set_password(new_password)
+        user.save()
+        return "Password reset successful. you may now log into your account with new \
+            credentials"
 
 class ResetPassowordToken(models.Model):
     """
