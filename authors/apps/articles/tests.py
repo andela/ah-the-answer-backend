@@ -29,22 +29,19 @@ class TestArticle(TestCase):
             },
             format="json"
         )
-        self.client.credentials(HTTP_AUTHORIZATION='Bearer' + self.user.token)
-        self.article = Article.objects.create(
-            title="Test title",
-            body="This is a very awesome article on testing tests",
-            description="Written by testing tester"
-        )
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.user.data['token'])
 
     # CREATE TESTS
 
     def test_article_create(self):
         response = self.client.post(
-            reverse('articles:create'),
+            reverse('articles:create-list'),
             data={
-                "title": "Test title",
-                "body": "This is a very awesome article on testing tests",
-                "description": "Written by testing tester",
+                "article": {
+                    "title": "Test title",
+                    "body": "This is a very awesome article on testing tests",
+                    "description": "Written by testing tester",
+                }
             },
             format="json"
         )
@@ -53,9 +50,11 @@ class TestArticle(TestCase):
 
     def test_create_missing_fields(self):
         response = self.client.post(
-            reverse('articles:create'),
+            reverse('articles:create-list'),
             data={
-                "title": "Test title",
+                "article": {
+                    "title": "Test title",
+                }
             },
             format="json"
         )
@@ -78,7 +77,7 @@ class TestArticle(TestCase):
     def test_get_all_article(self):
         response = self.client.get(
             reverse(
-                'articles:list',
+                'articles:create-list',
             ),
             format="json"
         )
@@ -86,17 +85,30 @@ class TestArticle(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_specific_article(self):
+        create_res = self.client.post(
+            reverse('articles:create-list'),
+            data={
+                "article": {
+                    "title": "Test title",
+                    "body": "This is a very awesome article on testing tests",
+                    "description": "Written by testing tester",
+                }
+            },
+            format="json"
+        )
         response = self.client.get(
             reverse(
                 'articles:details',
                 kwargs={
-                    "id": self.article.id
+                    "slug": Article.objects.get().slug
                 }
             ),
             format="json"
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        #test content as well as status code
 
     def test_get_specific_non_existent(self):
         pass
@@ -106,27 +118,36 @@ class TestArticle(TestCase):
     # UPDATE TESTS
 
     def test_update_article(self):
+        create_res = self.client.post(
+            reverse('articles:create-list'),
+            data={
+                "article": {
+                    "title": "Test title",
+                    "body": "This is a very awesome article on testing tests",
+                    "description": "Written by testing tester",
+                }
+            },
+            format="json"
+        )
         response = self.client.put(
             reverse(
                 'articles:details',
                 kwargs={
-                    "id": self.article.id
+                    "slug": Article.objects.get().slug
                 }
             ),
             data={
-                "title": "Test title updated",
-                "description": "Written by updater",
+                "article": {
+                    "title": "Test title updated",
+                    "description": "Written by updater",
+                }
             },
             format="json"
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        self.assertNotEqual(self.article.title, 'Test title')
-        self.assertNotEqual(
-            self.article.description,
-            'Written by testing tester'
-        )
+        # Test content as well as status code
 
     def test_update_non_existent(self):
         pass
@@ -141,17 +162,28 @@ class TestArticle(TestCase):
 
     # DELETE TESTS
     def test_delete_article(self):
+        create_res = self.client.post(
+            reverse('articles:create-list'),
+            data={
+                "article": {
+                    "title": "Test title",
+                    "body": "This is a very awesome article on testing tests",
+                    "description": "Written by testing tester",
+                }
+            },
+            format="json"
+        )
         response = self.client.delete(
             reverse(
                 'articles:details',
                 kwargs={
-                    "id": self.article.id
+                    "slug": Article.objects.get().slug
                 }
             ),
             format="json"
         )
 
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_delete_non_existent(self):
         pass
@@ -162,4 +194,4 @@ class TestArticle(TestCase):
     # END OF DELETE TESTS
 
     def tearDown(self):
-        Article.objects.get(id=self.article.id).delete()
+        Article.objects.all().delete()

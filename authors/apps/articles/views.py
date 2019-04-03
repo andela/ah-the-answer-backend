@@ -3,10 +3,11 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 
-from .models import Article
-from .serializers import ArticleSerializer
+from .models import Article, ArticleImage
+from .serializers import ArticleSerializer, ArticleImageSerializer
 from .permissions import ReadOnly
 from authors.apps.authentication.models import User
+import cloudinary
 
 
 class ArticleView(APIView):
@@ -24,7 +25,11 @@ class ArticleView(APIView):
         serializer = ArticleSerializer(data=article)
         if serializer.is_valid(raise_exception=True):
             article_saved = serializer.save(author=self.request.user)
-        return Response({"success": "Article '{}' created successfully".format(article_saved.title)}, status=201)
+
+        return Response(
+            {
+                "success": "Article '{}' created successfully".format(article_saved.title)
+            }, status=201)
 
 
 class RetrieveArticleView(APIView):
@@ -75,3 +80,34 @@ class RetrieveArticleView(APIView):
         response = {"message": "Only the owner can delete this article."}
         return Response(response, status=401)
 
+
+class ArticleImageView(APIView):
+    permission_classes = (IsAuthenticated | ReadOnly,)
+
+    def post(self, request, slug):
+
+        try:
+            article = Article.objects.get(slug=slug)
+        except Article.DoesNotExist:
+            return Response(
+                {"message": "The article requested does not exist"}, status=404)
+
+        if request.FILES:
+            response = cloudinary.uploader.upload(request.FILES['file'])
+            image_url = response.get('secure_url')
+
+            serializer = ArticleImageSerializer(data={"image": image_url})
+            if serializer.is_valid(raise_exception=True):
+                image_saved = serializer.save(article=article)
+
+            response = {"message": "Image uploaded Successfully"}
+            return Response(response, status=200)
+
+        else:
+            response = {"message": "Image uploaded failed."}
+            return Response(response, status=400)
+
+    def get(self, request, slug):
+        images = ArticleImage.objects.select_related('article').filter(article__slug=slug)
+        serializer = ArticleImageSerializer(images, many=True)
+        return Response({"images": serializer.data})

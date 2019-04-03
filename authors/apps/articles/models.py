@@ -1,4 +1,5 @@
 from django.db import models
+from cloudinary.models import CloudinaryField
 from ..authentication.models import User
 from django.utils.text import slugify
 from .utils import generate_slug
@@ -24,3 +25,17 @@ class Article(models.Model):
             self.slug = generate_slug(self.title)
         super(Article, self).save(*args, **kwargs)
 
+
+class ArticleImage(models.Model):
+    article = models.ForeignKey(
+        Article,
+        related_name='article_images',
+        on_delete=models.CASCADE)
+    image = models.TextField(
+        default="https://res.cloudinary.com/dv85uhrw5/image/upload/v1554278002/sample.jpg"
+    )
+    date_created = models.DateTimeField(
+        auto_now=True)
+
+    class Meta:
+        ordering = ('date_created',)

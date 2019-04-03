@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Article
+from .models import Article, ArticleImage
 
 
 class ArticleSerializer(serializers.ModelSerializer):
@@ -27,3 +27,16 @@ class ArticleSerializer(serializers.ModelSerializer):
         fields = ('id', 'title', 'body', 'description', 'is_published',
                   'date_created', 'date_modified', 'slug', 'author')
         read_only_fields = ('date_created', 'date_modified', 'slug', 'author')
+
+
+class ArticleImageSerializer(serializers.ModelSerializer):
+    article = serializers.ReadOnlyField(source='article.id')
+    image = serializers.CharField()
+
+    def create(self, validated_data):
+        return ArticleImage.objects.create(**validated_data)
+
+    class Meta:
+        model = ArticleImage
+        fields = "__all__"
+        read_only_fields = ["date_created"]
