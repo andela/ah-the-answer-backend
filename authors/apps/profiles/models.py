@@ -2,6 +2,8 @@ from django.db import models
 from cloudinary.models import CloudinaryField
 from authors import settings
 
+cloud_default = 'https://res.cloudinary.com/apibucket/image/upload/v1554188102/sample.jpg'
+
 
 class Profile(models.Model):
     """This class represents the model for Author's Haven user profile

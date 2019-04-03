@@ -1,5 +1,4 @@
 from django.urls import path
-
 from .views import (AvatarView, EditProfileView,
                     CreateProfileView, RetrieveProfileView)
 
