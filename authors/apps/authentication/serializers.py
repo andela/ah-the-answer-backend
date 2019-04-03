@@ -148,7 +148,7 @@ class PasswordResetSerializer(serializers.ModelSerializer):
         model = User
         fields = ('email',)
         extra_kwargs = {
-            'email' {
+            'email': {
                 'read_only': True
             }
         }
