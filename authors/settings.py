@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
+from decouple import config
+import cloudinary
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -83,14 +85,13 @@ WSGI_APPLICATION = 'authors.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME', ''),
-        'USER': os.getenv('DB_USERNAME', ''),
-        'PASSWORD':os.getenv('PASSWORD', ''),
-        'PORT':os.getenv('PORT', ''),
-        'HOST':os.getenv('HOST', ''),
+        'NAME': config('DB_NAME'),
+        'USER': config('DB_USERNAME'),
+        'HOST': config('HOST'),
+        'PASSWORD': config('PASSWORD'),
+        'PORT': config('PORT')
     }
 }
-
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
 
@@ -150,3 +151,9 @@ REST_FRAMEWORK = {
         'authors.apps.authentication.backends.JWTAuthentication',
     ),
 }
+
+cloudinary.config(
+  cloud_name="dae3oj71g",
+  api_key="654595511188975",
+  api_secret="8aP4sV1RmnFvba2TRgWo-1uGADs"
+)

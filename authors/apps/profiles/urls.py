@@ -1,11 +1,16 @@
 from django.urls import path
+from .views import (AvatarView, EditProfileView,
+                    CreateProfileView, RetrieveProfileView)
 
-
-from .views import ListProfiles
-app_name = "profiles"
-
+app_name = 'profiles'
 
 urlpatterns = [
-    path('v1/profiles/', ListProfiles.as_view()),
-    path('v1/profiles/<str:username>/', ListProfiles.as_view()),
+    path('<str:username>/avatar',
+         AvatarView.as_view(), name='profile-image'),
+    path('profile',
+         CreateProfileView.as_view(), name='profile-create'),
+    path('profiles/<str:username>',
+         RetrieveProfileView.as_view(), name='profile-create'),
+    path('<str:username>/edit',
+         EditProfileView.as_view(), name='profile-edit'),
 ]
