@@ -21,7 +21,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '7pgozr2jn7zs_o%i8id6=rddie!*0f0qy3$oy$(8231i^4*@u3'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", False)
@@ -74,8 +74,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                # TODO remove if not needed
-                'social_django.context_processors.backends', # this
+                'social_django.context_processors.backends', 
                 'social_django.context_processors.login_redirect' 
             ],
         },
@@ -91,6 +90,7 @@ WSGI_APPLICATION = 'authors.wsgi.application'
 DATABASES = {
     'default': dj_database_url.config(default=config('DATABASE_URL'))
 }
+
 
 # Use nose to run all tests
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
@@ -166,13 +166,15 @@ SOCIAL_AUTH_POSTGRES_JSONFIELD = True
 AUTHENTICATION_BACKENDS = (
     'social_core.backends.google.GoogleOAuth2',
     'social_core.backends.facebook.FacebookOAuth2',
+    'social_core.backends.github.GithubOAuth2',
     'django.contrib.auth.backends.ModelBackend',
 )
+LOGIN_REDIRECT_URL = '/'
 
+# GOOGLE AUTHENTICATION SETTINGS
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '499121628376-u6n459n2led52s0q41h8i751qs6967os.apps.googleusercontent.com'
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = "2f_zCZTI2hTffEWZXN8jDTVF"
 SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = ['email', ]
-LOGIN_REDIRECT_URL = '/'
 
 # FACEBOOK AUTHENTICATION
 SOCIAL_AUTH_FACEBOOK_KEY = '803640373323851'
@@ -181,3 +183,6 @@ SOCIAL_AUTH_FACEBOOK_SECRET = '975e27dd58c9fee4bd294996697fc63d'
 # Twitter Authentication
 SOCIAL_AUTH_TWITTER_KEY = 'MveI1R9ZPhZdQgY2FdtiZihZH'
 SOCIAL_AUTH_TWITTER_SECRET = 'bK8dD0tQqT0tveJWi4jgnuOFAQyJmfq2AYFhlawEMnhMOKF8PE'
+
+SOCIAL_AUTH_GITHUB_KEY='fde8373cc0cf9f5f5de8'
+SOCIAL_AUTH_GITHUB_SECRET='8d28a8e55f8045057dec4415ee307ebf53cb4f3c'
