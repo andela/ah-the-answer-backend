@@ -1,11 +1,12 @@
-from rest_framework.serializers import ModelSerializer, ReadOnlyField, ValidationError, CharField
 from .models import Profile
+from rest_framework.serializers import (ModelSerializer, ReadOnlyField,
+                                        ValidationError, CharField)
+
 
 class ProfileSerializer(ModelSerializer):
 
     username = ReadOnlyField(source='get_username')
     user_id = ReadOnlyField(source='user.id')
-
 
     class Meta:
         model = Profile

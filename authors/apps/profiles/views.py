@@ -12,9 +12,12 @@ from django.core.exceptions import ObjectDoesNotExist
 import cloudinary
 
 
-class EditProfileView(APIView):
+class CreateRetrieveProfileView(APIView):
+    """Implements two user profile related views. The 'get' view fetches a single
+    profile from the database and the 'post' view creates a single user
+    profile."""
     permission_classes = (IsAuthenticated,)
-    
+
     def get(self, request, username):
         """Returns a single user profile. Matches a profile
         based on the username."""
@@ -25,7 +28,7 @@ class EditProfileView(APIView):
         return Response({"Profile": [serializer.data]})
 
     def post(self, request):
-        """Creates a single user profile"""
+        """Creates and saves a single user profile to the database."""
         profile = request.data.get('profile')
         serializer = ProfileSerializer(data=profile)
         if serializer.is_valid(raise_exception=True):
@@ -37,7 +40,11 @@ class EditProfileView(APIView):
                         'contains the following fields only: user, user_bio, '
                         'name, number_of_followers, number_following and'
                         'total_article. Also ensure that the user exists.')
-      
+
+
+class EditProfileView(APIView):
+    permission_classes = (IsAuthenticated,)
+
     def put(self, request, username):
         try:
             saved_profile = Profile.objects.select_related('user').get(
@@ -54,8 +61,6 @@ class EditProfileView(APIView):
             APIException.status_code = HTTP_404_NOT_FOUND
             raise APIException(
                 {"message": "User with that profile does not exist"})
-
-
         data = request.data.get('profile')
         serializer = ProfileSerializer(
             instance=saved_profile, data=data, partial=True)

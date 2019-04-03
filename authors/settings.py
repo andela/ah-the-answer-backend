@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
+import dj_database_url
 from decouple import config
 import cloudinary
 
@@ -81,17 +82,12 @@ WSGI_APPLICATION = 'authors.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
+# DATABASE_URL format is:'postgres://db_role:db_role_password@127.0.0.1:5432/db_name'
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME'),
-        'USER': config('DB_USERNAME'),
-        'HOST': config('HOST'),
-        'PASSWORD': config('PASSWORD'),
-        'PORT': config('PORT')
-    }
+    'default': dj_database_url.config(default=config('DATABASE_URL'))
 }
+
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
 

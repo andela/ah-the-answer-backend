@@ -2,7 +2,7 @@ from django.db import models
 from cloudinary.models import CloudinaryField
 from authors import settings
 
-cloud_default = 'https://res.cloudinary.com/apibucket/image/upload/v1554188102/sample.jpg'
+cloud_default = 'https://res.cloudinary.com/dae3oj71g/image/upload/v1554186175/samples/avatar.png'
 
 
 class Profile(models.Model):
@@ -19,7 +19,7 @@ class Profile(models.Model):
     number_of_followers = models.IntegerField(default=0)
     number_of_followings = models.IntegerField(default=0)
     total_articles = models.IntegerField(default=0)
-    avatar = models.TextField(default='https://res.cloudinary.com/dae3oj71g/image/upload/v1554186175/samples/avatar.png')
+    avatar = models.TextField(default=cloud_default)
 
     @property
     def get_username(self):
