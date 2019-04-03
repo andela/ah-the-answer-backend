@@ -18,7 +18,8 @@ class ProfileSerializer(ModelSerializer):
         instance.username = validated_data.get('username', instance.username)
         instance.user_bio = validated_data.get('user_bio', instance.user_bio)
         instance.name = validated_data.get('name', instance.name)
-        instance.total_articles = validated_data.get('total_articles', instance.total_articles)
+        instance.total_articles = validated_data.get('total_articles',
+                                                     instance.total_articles)
         instance.number_of_following = validated_data.get('number_of_following', instance.number_of_following)
         instance.number_of_followers = validated_data.get('number_of_followers', instance.number_of_followers)
 

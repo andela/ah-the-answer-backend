@@ -10,9 +10,6 @@ from django.shortcuts import get_object_or_404
 
 class ListProfiles(APIView):
     permission_classes = (IsAuthenticated,)
-    #authentication_classes = (SessionAuthentication, JWTAuthentication, )
-    # queryset = Profile.objects.all()
-    # serializer_class = ProfileSerializer
 
     def get(self, request, username):
         """Returns a single user profile. Matches a profile
@@ -29,8 +26,13 @@ class ListProfiles(APIView):
         serializer = ProfileSerializer(data=profile)
         if serializer.is_valid(raise_exception=True):
             profile_saved = serializer.save(user=self.request.user)
-            return Response({"success": "Profile '{}' created successfully".format(profile_saved.user)})
-        return Response("Failed")
+            return Response({"Success": "Profile for '{}' created successfully"
+                            .format(profile_saved.user)})
+        return Response('Profile creation failed. Request contains invalid'
+                        'profile data. Ensure that your JSON profile payload '
+                        'contains the following fields only: user, user_bio, '
+                        'name, number_of_followers, number_following and'
+                        'total_article. Also ensure that the user exists.')
 
     def put(self, request, pk):
         saved_profile = get_object_or_404(Profile.objects.all(), pk=pk)
