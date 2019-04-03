@@ -64,7 +64,7 @@ class RetrieveArticleView(APIView):
                 article_saved = serializer.save()
                 return Response({"success": "Article '{}' updated successfully".format(article_saved.title)})
             response = {"message": "Only the owner can edit this article."}
-            return Response(response, status=401)
+            return Response(response, status=403)
 
     def delete(self, request, slug):
         try:
@@ -78,7 +78,7 @@ class RetrieveArticleView(APIView):
             return Response({"message": "Article `{}` has been deleted.".format(slug)}, status=200)
 
         response = {"message": "Only the owner can delete this article."}
-        return Response(response, status=401)
+        return Response(response, status=403)
 
 
 class ArticleImageView(APIView):
@@ -98,7 +98,7 @@ class ArticleImageView(APIView):
 
             serializer = ArticleImageSerializer(data={"image": image_url})
             if serializer.is_valid(raise_exception=True):
-                image_saved = serializer.save(article=article)
+                serializer.save(article=article)
 
             response = {"message": "Image uploaded Successfully"}
             return Response(response, status=200)

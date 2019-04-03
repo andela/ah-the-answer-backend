@@ -25,6 +25,8 @@ class Article(models.Model):
             self.slug = generate_slug(self.title)
         super(Article, self).save(*args, **kwargs)
 
+    class Meta:
+        ordering = ('-date_created',)
 
 class ArticleImage(models.Model):
     article = models.ForeignKey(
@@ -38,4 +40,4 @@ class ArticleImage(models.Model):
         auto_now=True)
 
     class Meta:
-        ordering = ('date_created',)
+        ordering = ('-date_created',)
