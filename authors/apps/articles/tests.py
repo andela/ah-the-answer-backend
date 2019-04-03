@@ -4,7 +4,6 @@ from rest_framework import test, status
 from .models import Article
 
 
-# Create your tests here.
 class TestArticle(TestCase):
     def setUp(self):
         self.client = test.APIClient()
