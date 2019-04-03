@@ -41,7 +41,7 @@ class JWTAuthentication(authentication.BaseAuthentication):
         """
 
         try:
-            user = User.objects.get(id=payload['user_id'])
+            user = User.objects.get(id=payload['id'])
 
         except User.DoesNotExist:
             msg = 'User does not exist'
