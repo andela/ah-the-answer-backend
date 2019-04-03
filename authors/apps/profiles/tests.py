@@ -15,7 +15,7 @@ class TestProfileModel(TestCase):
 
     def test_relation_between_profile_and_user_models(self):
         test_user = self.user
-        profile = Profile(user=test_user, user_bio="Biography", 
+        profile = Profile(user=test_user, user_bio="Biography",
                           name="Bobby Doe")
         profile.save()
         username = profile.user.username
