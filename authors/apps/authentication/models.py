@@ -9,6 +9,8 @@ from django.contrib.auth.models import (
 )
 from django.db import models
 from .jwt_generator import jwt_encode, jwt_decode
+from rest_framework import exceptions
+from .utilities import dispatch_email
 
 
 
@@ -121,7 +123,6 @@ class User(AbstractBaseUser, PermissionsMixin):
         """
         return self.username
 
-    @property
     def get_reset_token(self, days=30):
         """
         this method ensures that the generation of tokens is kept private
@@ -147,7 +148,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         """
         message = "A link for reseting your password will be sent to the \
              email provided"
-        subject = "Password Reset Email verification"
+        subject = "Password Reset"
 
         if serializer.is_valid(raise_exception=True):
             try:
@@ -156,33 +157,38 @@ class User(AbstractBaseUser, PermissionsMixin):
                 if previous_user_requests < 3:
                     token = user.get_reset_token(1)
                     user.persist_reset_token(user, token)
-                    request_message = User.generate_reset_link(token)
-                    output = send_email(
+                    request_message = User.generate_request_instances(token)
+                    output = dispatch_email(
                         to_email=user.email,
                         subject=subject,
                         message=request_message
                     )
-                    return message
+                    return output
                 else:
                     return "You have exceeded the request limit for the past 24hours." \
                         "wait for at least a day before resubmitting the request" 
             except User.DoesNotExist:
-                raise exceptions.AuthenticationFailed(message)
+                msg = "User with that email does not exist"
+                raise exceptions.AuthenticationFailed(msg)
     @staticmethod
     def generate_request_instances(token_variable):
         """
         uses the token to create a link to be sent to user's email
         """
-        link = "{}api/users/reset_password/{}".format(os.environ['URL'], token)
+        link = "{}api/users/reset_password/{}".format(os.getenv('URL'), token_variable)
+
+        req_message = "This email has requested for a password reset \
+            click the link {} to reset your password for author's haven".format(link)
+        return req_message
 
     def persist_reset_token(self, user_details, token_variable):
         """
         takes the token and saves it in the database with relation to user
         """
         reset_token = ResetPassowordToken.objects.create(
-                        user=user_details,
-                        token=token_variable
-                        )
+            user=user_details,
+            token=token_variable
+        )
         reset_token.save()
 
 class ResetPassowordToken(models.Model):
@@ -201,13 +207,13 @@ class ResetPassowordToken(models.Model):
         ordering = ('created_on',)
     
     @staticmethod
-    def generate_request_instances(user.id):
+    def generate_request_instances(user_id):
         """
         this method returns number of password reset requests a user has made
         """
         current_day = date.today()
         number_of_requests = ResetPassowordToken.objects.filter(
-            user=user.id,
+            user=user_id,
             created_on=current_day
         ).count()
         return number_of_requests
