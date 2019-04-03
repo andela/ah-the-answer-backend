@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_extensions',
     'rest_framework',
+    'django_inlinecss',
+    
 
     'authors.apps.authentication',
     'authors.apps.core',
@@ -73,6 +75,8 @@ TEMPLATES = [
         },
     },
 ]
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 WSGI_APPLICATION = 'authors.wsgi.application'
 
@@ -149,3 +153,10 @@ REST_FRAMEWORK = {
         'authors.apps.authentication.backends.JWTAuthentication',
     ),
 }
+#email configurations
+DOMAIN = os.getenv('DOMAIN')
+EMAIL_HOST = os.getenv('EMAIL_HOST', default='localhost')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', default='')
+EMAIL_PORT = os.getenv('EMAIL_PORT', default=587)
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', default=True)

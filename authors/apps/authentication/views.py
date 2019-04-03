@@ -1,3 +1,7 @@
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+from django.conf import settings
 from rest_framework import status
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -8,6 +12,7 @@ from .renderers import UserJSONRenderer
 from .serializers import (
     LoginSerializer, RegistrationSerializer, UserSerializer
 )
+from authors.apps.core.utils import TokenHandler
 
 
 class RegistrationAPIView(APIView):
@@ -24,9 +29,27 @@ class RegistrationAPIView(APIView):
         # your own work later on. Get familiar with it.
         serializer = self.serializer_class(data=user)
         serializer.is_valid(raise_exception=True)
+        user_email = serializer.validated_data['email']
+        username= serializer.validated_data['username']
+        #username = serializer.validated_data['username']
+
+        token_payload = {
+            'email': user_email
+        }
+        token = TokenHandler().create_verification_token(token_payload)
+        template_name = 'email_verification.html'
+        context = {'username': username, 'token': token, 'domain':settings.DOMAIN}
+        html_message = render_to_string(template_name, context)
+        text_message = strip_tags(html_message)
+        msg = EmailMultiAlternatives('Please verify your email', text_message, settings.EMAIL_HOST,  [user_email,settings.EMAIL_HOST ])
+        msg.attach_alternative(html_message , "text/html")
+        msg.send()
+        message = {
+            'message': 'Your account has been succesfully created. Check your email to verify your account'
+        }
         serializer.save()
 
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(message, status=status.HTTP_201_CREATED)
 
 
 class LoginAPIView(APIView):
