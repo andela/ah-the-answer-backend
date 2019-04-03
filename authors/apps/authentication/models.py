@@ -157,7 +157,7 @@ class User(AbstractBaseUser, PermissionsMixin):
                 if previous_user_requests < 3:
                     token = user.get_reset_token(1)
                     user.persist_reset_token(user, token)
-                    request_message = User.generate_request_instances(token)
+                    request_message = User.generate_reset_link(token)
                     output = dispatch_email(
                         user_email=user.email,
                         subject=subject,
@@ -171,7 +171,7 @@ class User(AbstractBaseUser, PermissionsMixin):
                 msg = "User with that email does not exist"
                 raise exceptions.AuthenticationFailed(msg)
     @staticmethod
-    def generate_request_instances(token_variable):
+    def generate_reset_link(token_variable):
         """
         uses the token to create a link to be sent to user's email
         """
