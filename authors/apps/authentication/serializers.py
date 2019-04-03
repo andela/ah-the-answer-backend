@@ -1,6 +1,7 @@
 from django.contrib.auth import authenticate
 from rest_framework import serializers
 from .models import User
+from .utilities import check_password
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
@@ -161,7 +162,7 @@ class SetUpdatedPasswordSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
         max_length=120,
         min_length=8,
-        validators=[check_password()],
+        validators=[check_password],
         write_only=True
     )
     class Meta:

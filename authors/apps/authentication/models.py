@@ -200,8 +200,8 @@ class User(AbstractBaseUser, PermissionsMixin):
         user = user_details[0]
         user.set_password(new_password)
         user.save()
-        return "Password reset successful. you may now log into your account with new \
-            credentials"
+        return "Password reset successful. you may now log into your account with \
+             new credentials"
 
 class ResetPassowordToken(models.Model):
     """

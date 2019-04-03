@@ -96,11 +96,11 @@ class SetUpdatedPasswordAPIView(APIView):
     permission_classes = (AllowAny,)
     def put(self, request, reset_token):
         serializer = SetUpdatedPasswordSerializer(data=request.data)
-        if serializers.is_valid(raise_exception=True):
-            new password = request.data['password']
+        if serializer.is_valid(raise_exception=True):
+            new_password = request.data['password']
             payload = jwt_decode(reset_token)
             user_details = JWTAuthentication().authenticate_credentials(payload)
-            message = User.persist_new_password(user_details, new_password)
+            output = User.persist_new_password(user_details, new_password)
             return Response(
                 {'message': output},
                 status=status.HTTP_202_ACCEPTED
