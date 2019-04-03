@@ -11,6 +11,7 @@ from .serializers import (
 )
 from .models import User
 from .backends import JWTAuthentication
+from .jwt_generator import jwt_decode
 
 
 class RegistrationAPIView(APIView):
@@ -97,7 +98,7 @@ class SetUpdatedPasswordAPIView(APIView):
         serializer = SetUpdatedPasswordSerializer(data=request.data)
         if serializers.is_valid(raise_exception=True):
             new password = request.data['password']
-            #payload = decode_token(reset_token)
+            payload = jwt_decode(reset_token)
             user_details = JWTAuthentication().authenticate_credentials(payload)
             message = User.persist_new_password(user_details, new_password)
             return Response(
