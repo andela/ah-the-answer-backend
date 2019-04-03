@@ -10,10 +10,10 @@ class ProfileSerializer(ModelSerializer):
 
     class Meta:
         model = Profile
-        fields = ('user_id', 'username', 'user_bio', 'name',
+        fields = ('username', 'user_bio', 'name',
                   'number_of_followers',
                   'number_of_followings',
-                  'total_articles', 'avatar')
+                  'total_articles', 'avatar', 'user_id')
 
     def create(self, validated_data):
         return Profile.objects.create(**validated_data)

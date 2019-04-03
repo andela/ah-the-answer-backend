@@ -10,6 +10,7 @@ from rest_framework.exceptions import APIException
 from rest_framework.status import HTTP_404_NOT_FOUND, HTTP_401_UNAUTHORIZED
 from django.core.exceptions import ObjectDoesNotExist
 import cloudinary
+from rest_framework import status
 
 
 class CreateRetrieveProfileView(APIView):
@@ -25,7 +26,7 @@ class CreateRetrieveProfileView(APIView):
         uid = user.pk
         profile = get_object_or_404(Profile.objects.all(), user_id=uid)
         serializer = ProfileSerializer(profile, many=False)
-        return Response({"Profile": [serializer.data]})
+        return Response({"Profile": serializer.data})
 
     def post(self, request):
         """Creates and saves a single user profile to the database."""
@@ -33,13 +34,10 @@ class CreateRetrieveProfileView(APIView):
         serializer = ProfileSerializer(data=profile)
         if serializer.is_valid(raise_exception=True):
             profile_saved = serializer.save(user=self.request.user)
-            return Response({"Success": "Profile for '{}' created successfully"
-                            .format(profile_saved.user)})
-        return Response('Profile creation failed. Request contains invalid'
-                        'profile data. Ensure that your JSON profile payload '
-                        'contains the following fields only: user, user_bio, '
-                        'name, number_of_followers, number_following and'
-                        'total_article. Also ensure that the user exists.')
+            return Response({"success": "Profile for '{}' created successfully"
+                            .format(profile_saved)},
+                            status=status.HTTP_201_CREATED)
+        return Response('Invalid profile', status=status.HTTP_400_BAD_REQUEST)
 
 
 class EditProfileView(APIView):
