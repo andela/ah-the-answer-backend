@@ -3,6 +3,10 @@ import jwt
 from django.conf import settings
 from rest_framework import exceptions
 
+import os
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
+
 class TokenHandler:
     """This class contains the methods for creating custom
     tokens for users"""
@@ -48,3 +52,21 @@ class TokenHandler:
             return msg
 
         return decoded_token
+
+def send_verification_email(host_email, to, email_subject, content):
+    message = Mail(
+        from_email=host_email,
+        to_emails=to,
+        subject=email_subject,
+        html_content=content)
+    try:
+        sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+        response = sg.send(message)
+        print(response.status_code)
+        #print(response.status_code)
+        #print(response.body)
+        #print(response.headers
+        return True
+    except Exception as e:
+        print(e.message)
+        return False

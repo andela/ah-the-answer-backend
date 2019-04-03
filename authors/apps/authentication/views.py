@@ -1,3 +1,4 @@
+import os
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
@@ -12,7 +13,7 @@ from .renderers import UserJSONRenderer
 from .serializers import (
     LoginSerializer, RegistrationSerializer, UserSerializer
 )
-from authors.apps.core.utils import TokenHandler
+from authors.apps.core.utils import TokenHandler,send_verification_email
 from .models import User
 
 class RegistrationAPIView(APIView):
@@ -40,10 +41,14 @@ class RegistrationAPIView(APIView):
         template_name = 'email_verification.html'
         context = {'username': username, 'token': token, 'domain':settings.DOMAIN}
         html_message = render_to_string(template_name, context)
-        text_message = strip_tags(html_message)
-        msg = EmailMultiAlternatives('Please verify your email', text_message, settings.EMAIL_HOST,  [user_email,settings.EMAIL_HOST ])
-        msg.attach_alternative(html_message , "text/html")
-        msg.send()
+        subject = 'Please verify your email'
+        response=send_verification_email(os.getenv('FROM_EMAIL'), user_email,subject,html_message)
+        #msg = EmailMultiAlternatives('Please verify your email', text_message, settings.EMAIL_HOST,  [user_email,settings.EMAIL_HOST ])
+        #msg.attach_alternative(html_message , "text/html")
+        #msg.send()
+        if not response:
+             return Response('something went wrong', status=status.HTTP_400_BAD_REQUEST)
+
         message = {
             'message': 'Your account has been succesfully created. Check your email to verify your account'
         }
