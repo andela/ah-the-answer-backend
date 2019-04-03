@@ -110,7 +110,17 @@ class TestArticle(TestCase):
         #test content as well as status code
 
     def test_get_specific_non_existent(self):
-        pass
+        response = self.client.get(
+            reverse(
+                'articles:details',
+                kwargs={
+                    "slug": "test-article-one"
+                }
+            ),
+            format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     # END OF RETRIEVE TESTS
 
