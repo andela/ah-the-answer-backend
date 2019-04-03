@@ -79,7 +79,7 @@ class AvatarView(APIView):
 
     def patch(self, request, username):
         try:
-            profile = Profile.objects.select_related('user').get(
+            saved_profile = Profile.objects.select_related('user').get(
                 user__username=username
             )
         except ObjectDoesNotExist:
@@ -87,7 +87,7 @@ class AvatarView(APIView):
             raise APIException(
                 {"message": "User with that profile does not exist"})
 
-        if saved_avatar.user != self.request.user:
+        if saved_profile.user != self.request.user:
             APIException.status_code = HTTP_401_UNAUTHORIZED
             raise APIException({
                 "errors": {
@@ -102,7 +102,7 @@ class AvatarView(APIView):
             raise ValidationError("Invalid image format")
         avatar_data = {'avatar': result['secure_url']}
         serializer = ProfileSerializer(
-            instance=saved_avatar, data=avatar_data, partial=True)
+            instance=saved_profile, data=avatar_data, partial=True)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
         return Response({"success": "Profile avatar was updated successfully"})
