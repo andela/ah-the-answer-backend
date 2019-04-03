@@ -142,7 +142,9 @@ class UserSerializer(serializers.ModelSerializer):
         return instance
 
 class PasswordResetSerializer(serializers.ModelSerializer):
-    """serializer for the password reset functionaility view"""
+    """
+    serializer for the password reset functionaility view
+    """
     email = serializers.EmailField(required=True)
     class Meta:
         model = User
@@ -152,3 +154,17 @@ class PasswordResetSerializer(serializers.ModelSerializer):
                 'read_only': True
             }
         }
+class SetUpdatedPasswordSerializer(serializers.ModelSerializer):
+    """
+    serializer for handling PUT view for resetting account password
+    """
+    password = serializers.CharField(
+        max_length=120,
+        min_length=8,
+        validators=[check_password()],
+        write_only=True
+    )
+    class Meta:
+        model = User
+        fields = ('password',)
+    
