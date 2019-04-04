@@ -18,6 +18,7 @@ class TestModelCase(TestCase):
         protected views contained in this test series. Lastly, two mock profile
         sets for a user are made: the first being valid,
         the second being invalid."""
+        user = User.objects.create(username="johndoe")
         self.client = APIClient()
         self.user = self.client.post(
             reverse('authentication:user-signup'),
@@ -40,6 +41,15 @@ class TestModelCase(TestCase):
             },
             format="json"
         )
+        self.record = Record(
+            user_bio="My life story",
+            name="John Doe",
+            number_followers=77,
+            number_following=77,
+            total_article=77,
+            department=77,
+            user=user
+        )
         self.user_profile_1 = {"profile":
                                {
                                    "user_bio": "My life story",
@@ -59,6 +69,14 @@ class TestModelCase(TestCase):
                                }
         self.token = self.login.data['token']
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token)
+
+    def test_model_can_create_record(self):
+        """Test whether model can create a record"""
+        initial = Profile.objects.count()
+        self.record.save()
+        updated = Profile.objects.count()
+
+        self.assertNotEqual(initial, updated)
 
     def test_user_can_edit_profile(self):
         """
