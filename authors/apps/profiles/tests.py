@@ -157,6 +157,36 @@ class TestModelCase(TestCase):
         )
         self.assertEquals(res.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_invalid_image_upload(self):
+        """
+        This test case tests that an authenticated
+        user cannot upload an empty file field of their own profile
+        """
+        create_response = self.client.post(
+            reverse('profiles:profile-create'),
+            data={
+                "profile": {
+                    "name": "John Doe",
+                    "user_bio": "I work at statefarm",
+                    "number_of_followers": 5,
+                    "number_of_followings": 6,
+                    "total_articles": 45
+                }
+            },
+            format="json"
+        )
+        self.assertEquals(create_response.status_code, status.HTTP_201_CREATED)
+        res = self.client.patch(
+            reverse('profiles:profile-image',
+                    kwargs={'username': User.objects.get().username}),
+            data={
+                "profile": {
+                    "avatar": "myfile"
+                }
+            },
+            format="json"
+        )
+        self.assertEquals(res.status_code, status.HTTP_400_BAD_REQUEST)
     @property
     def temporary_image(self):
         """
@@ -235,7 +265,19 @@ class TestModelCase(TestCase):
                                     self.user_profile_2, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_authorization_is_enforced(self):
+    def test_unathorized_user_cant_edit_profile(self):
         new_client = APIClient()
         res = new_client.put('/api/profile/username/edit/', format="json")
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_user_cant_edit_inexistent_avatar(self):
+        res = self.client.patch(
+            reverse('profiles:profile-image',
+                    kwargs={'username': "invalid_username"}),
+            data={
+                "avatar": self.temporary_image
+            },
+            format='multipart'
+        )
+        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
+
