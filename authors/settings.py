@@ -161,7 +161,7 @@ REST_FRAMEWORK = {
 
 
 cloudinary.config(
-  cloud_name="dvrmobxpm",
-  api_key="656296195734553",
-  api_secret="JjWji3WYcaaZN3J5J6k0x0As0vU"
+    cloud_name=os.getenv("CLOUDINARY_NAME"),
+    api_key=os.getenv("CLOUDINARY_API_KEY"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET")
 )
