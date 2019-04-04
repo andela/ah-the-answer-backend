@@ -1,5 +1,6 @@
 from django.test import TestCase
 from django.urls import reverse
+
 from rest_framework import test, status
 from rest_framework.test import APIClient
 
@@ -14,7 +15,7 @@ class TestProfileModel(TestCase):
         protected views contained in this test series. Lastly, two mock profile
         sets for a user are made: the first being valid,
         the second being invalid."""
-        self.client = test.APIClient()
+        self.client = APIClient()
         self.user = self.client.post(
             reverse('authentication:user-signup'),
             data={
@@ -72,8 +73,8 @@ class TestProfileModel(TestCase):
         response = self.client.get(reverse('profile:profile-fetch',
                                            args=['Bob']), format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['Profile']['username'], "Bob")
-        self.assertEqual(response.data['Profile']['name'], "Bobby Doe")
+        self.assertEqual(response.data['profile']['username'], "Bob")
+        self.assertEqual(response.data['profile']['name'], "Bobby Doe")
 
     def test_fetch_invalid_profile(self):
         """Attempt to fetch a user profile that does not exist."""

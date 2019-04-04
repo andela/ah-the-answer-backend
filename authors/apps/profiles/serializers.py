@@ -1,6 +1,7 @@
 from .models import Profile
 from rest_framework.serializers import (ModelSerializer, ReadOnlyField,
                                         ValidationError, CharField)
+from django.db import IntegrityError
 
 
 class ProfileSerializer(ModelSerializer):
@@ -16,7 +17,7 @@ class ProfileSerializer(ModelSerializer):
                   'total_articles', 'avatar', 'user_id')
 
     def create(self, validated_data):
-        return Profile.objects.create(**validated_data)
+            return Profile.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
         instance.user_bio = validated_data.get('user_bio', instance.user_bio)

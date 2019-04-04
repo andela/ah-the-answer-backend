@@ -1,16 +1,20 @@
-from rest_framework.views import APIView
-from .models import Profile
-from ..authentication.models import User
+from django.core.exceptions import ObjectDoesNotExist
+from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
-from .serializers import ProfileSerializer
+from django.core.exceptions import ObjectDoesNotExist
+
+from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
 from rest_framework.exceptions import APIException
-from rest_framework.status import HTTP_404_NOT_FOUND, HTTP_401_UNAUTHORIZED
-from django.core.exceptions import ObjectDoesNotExist
+from rest_framework.views import APIView
+
 import cloudinary
-from rest_framework import status
+
+from .models import Profile
+from ..authentication.models import User
+from .serializers import ProfileSerializer
 
 
 class CreateRetrieveProfileView(APIView):
@@ -26,10 +30,20 @@ class CreateRetrieveProfileView(APIView):
         uid = user.pk
         profile = get_object_or_404(Profile.objects.all(), user_id=uid)
         serializer = ProfileSerializer(profile, many=False)
-        return Response({"Profile": serializer.data})
+        return Response({"profile": serializer.data})
 
     def post(self, request):
-        """Creates and saves a single user profile to the database."""
+        """Creates and saves a single user profile to the database. Checks if
+        a profile already exits for the current user."""
+        user_check = self.request.user
+        try:
+            profile_check = Profile.objects.get(user=user_check).id
+        except ObjectDoesNotExist:
+            profile_check = None
+        if user_check.id == profile_check:
+            return Response('A profile for this user already exists. Please '
+                            'choose a new user to create a profile.',
+                            status=status.HTTP_400_BAD_REQUEST)
         profile = request.data.get('profile')
         serializer = ProfileSerializer(data=profile)
         if serializer.is_valid(raise_exception=True):
@@ -37,7 +51,9 @@ class CreateRetrieveProfileView(APIView):
             return Response({"success": "Profile for '{}' created successfully"
                             .format(profile_saved)},
                             status=status.HTTP_201_CREATED)
-        return Response('Invalid profile', status=status.HTTP_400_BAD_REQUEST)
+        return Response('Invalid data. Ensure your profile '
+                        'payload corresponds to the profile.serializers '
+                        'fields.', status=status.HTTP_400_BAD_REQUEST)
 
 
 class EditProfileView(APIView):
