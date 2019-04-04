@@ -22,8 +22,8 @@ class TestModelCreate(TestCase):
         self.record = Profile(
             user_bio = self.user_bio,
             name = self.name,
-            number_followers = self.number_followers,
-            number_followings = self.number_followings,
+            number_of_followers = self.number_followers,
+            number_of_followings = self.number_followings,
             total_articles = self.total_articles,
             user = user
         )
