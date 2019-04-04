@@ -3,8 +3,7 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework import test, status
 from ..models import User, ResetPasswordToken
-
-
+from ..jwt_generator import jwt_encode
 
 class TestPasswordResetRequest(TestCase):
     """
@@ -17,24 +16,15 @@ class TestPasswordResetRequest(TestCase):
             password="fireandblood",
             username="doggetofthehill"
         )
-        self.user_email = {"email": self.user.email}
-        self.non_existent_email = {"email": "test@gmail.com"}
-        self.invalid_email = {"email": "testgmail.com"}
-        self.empty_email = {"email": ""}
-        self.blank_email = {}
-        self.password = {"password": "passwordreal"}
-        self.short_password = {"password": "pass"}
-        self.empty_password = {"password": ""}
-        self.blank_password = {}
-        self.valid_token = ''
 
     def test_existent_user(self):
         """
         Test that a valid user can send password reset request
         """
+        user_email = {"email": self.user.email}
         response = self.client.post(
             reverse('authentication:password-reset'),
-            self.user_email,
+            user_email,
             format='json'
         )
         returned_data = json.loads(response.content)
@@ -45,9 +35,10 @@ class TestPasswordResetRequest(TestCase):
         """
         tests that an invalid user cannot send password reset request 
         """
+        non_existent_email = {"email": "test@gmail.com"}
         response = self.client.post(
             reverse('authentication:password-reset'),
-            self.non_existent_email,
+            non_existent_email,
             format='json'
         )
         returned_data = json.loads(response.content)
@@ -58,9 +49,10 @@ class TestPasswordResetRequest(TestCase):
         """
         tests that an invalid email address pattern cannot send request 
         """
+        invalid_email = {"email": "testgmail.com"}
         response = self.client.post(
             reverse('authentication:password-reset'),
-            self.invalid_email,
+            invalid_email,
             format='json'
         )
         returned_data = json.loads(response.content)
@@ -71,9 +63,10 @@ class TestPasswordResetRequest(TestCase):
         """
         tests that an empty string doesn't pass into the server 
         """
+        empty_email = {"email": ""}
         response = self.client.post(
             reverse('authentication:password-reset'),
-            self.empty_email,
+            empty_email,
             format='json'
         )
         returned_data = json.loads(response.content)
@@ -84,9 +77,10 @@ class TestPasswordResetRequest(TestCase):
         """
         tests that an empty email field is not sent as a request
         """
+        blank_email = {}
         response = self.client.post(
             reverse('authentication:password-reset'),
-            self.blank_email,
+            blank_email,
             format='json'
         )
         returned_data = json.loads(response.content)
@@ -97,12 +91,13 @@ class TestPasswordResetRequest(TestCase):
         """
         test for request with valid password
         """
+        password = {"password": "password12"}
         user = User.objects.get(email=self.user.email)
-        token = user.get_reset_token(10)
+        token = jwt_encode(user_id=user.pk, days=10)
         response = self.client.put(
             reverse('authentication:set-updated-password',
             kwargs={'reset_token': token}),
-            self.password,
+            password,
             format='json'
         )
         output = json.loads(response.content)
@@ -113,12 +108,13 @@ class TestPasswordResetRequest(TestCase):
         """
         test for request with blank request object
         """
+        blank_password = {}
         user = User.objects.get(email=self.user.email)
-        token = user.get_reset_token(10)
+        token = jwt_encode(user_id=user.pk, days=10)
         response = self.client.put(
             reverse('authentication:set-updated-password',
             kwargs={'reset_token': token}),
-            self.blank_password,
+            blank_password,
             format='json'
         )
         output = json.loads(response.content)
@@ -128,12 +124,13 @@ class TestPasswordResetRequest(TestCase):
         """
         test for request with empty password value in JSON object
         """
+        empty_password = {"password": ""}
         user = User.objects.get(email=self.user.email)
-        token = user.get_reset_token(10)
+        token = jwt_encode(user_id=user.pk, days=10)
         response = self.client.put(
             reverse('authentication:set-updated-password',
             kwargs={'reset_token': token}),
-            self.empty_password,
+            empty_password,
             format='json'
         )
         output = json.loads(response.content)
@@ -143,14 +140,32 @@ class TestPasswordResetRequest(TestCase):
         """
         test for request with a short password
         """
+        short_password = {"password": "pass"}
         user = User.objects.get(email=self.user.email)
-        token = user.get_reset_token(10)
+        token = jwt_encode(user_id=user.pk, days=1)
         response = self.client.put(
             reverse('authentication:set-updated-password',
             kwargs={'reset_token': token}),
-            self.short_password,
+            short_password,
             format='json'
         )
         output = json.loads(response.content)
         self.assertIn('Ensure this field has at least 8 characters', str(output))
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_non_aplhanumeric_password(self):
+        """
+        test for request with a short password
+        """
+        non_alphanumeric_password = {"password": "passwordtoday"}
+        user = User.objects.get(email=self.user.email)
+        token = jwt_encode(user_id=user.pk, days=1)
+        response = self.client.put(
+            reverse('authentication:set-updated-password',
+            kwargs={'reset_token': token}),
+            non_alphanumeric_password,
+            format='json'
+        )
+        output = json.loads(response.content)
+        self.assertIn('Please ensure your password contains at least one letter and one numeral', str(output))
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
