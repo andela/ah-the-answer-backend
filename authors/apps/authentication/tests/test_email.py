@@ -1,5 +1,6 @@
 from django.test import TestCase
 from django.core import mail
+from django.urls import reverse
 from rest_framework import test, status
 from ..models import User
 
