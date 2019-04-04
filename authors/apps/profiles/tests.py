@@ -234,3 +234,8 @@ class TestModelCase(TestCase):
         response = self.client.post(reverse('profile:profile-create'),
                                     self.user_profile_2, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_authorization_is_enforced(self):
+        new_client = APIClient()
+        res = new_client.put('/api/profile/username/edit/', format="json")
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
