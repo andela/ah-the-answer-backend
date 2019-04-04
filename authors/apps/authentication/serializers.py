@@ -155,7 +155,7 @@ class PasswordResetSerializer(serializers.ModelSerializer):
                 'read_only': True
             }
         }
-class SetUpdatedPasswordSerializer(serializers.ModelSerializer):
+class SetUpdatedPasswordSerializer(serializers.Serializer):
     """
     serializer for handling PUT view for resetting account password
     """
@@ -163,12 +163,13 @@ class SetUpdatedPasswordSerializer(serializers.ModelSerializer):
         max_length=120,
         min_length=8,
         validators=[RegexValidator(
-            regex="^[a-zA-Z0-9_]+$",
-            message="Please ensure your password contains letters and numerals"
+            regex="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$",
+            message="Please ensure your password contains at least one letter and one numeral"
         )],
         write_only=True
     )
-    class Meta:
-        model = User
-        fields = ('password',)
+
+    # class Meta:
+    #     model = User
+    #     fields = ('password',)
     
