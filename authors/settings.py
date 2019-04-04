@@ -50,7 +50,6 @@ INSTALLED_APPS = [
     'authors.apps.authentication',
     'authors.apps.core',
     'authors.apps.profiles',
-    'cloudinary',
     'authors.apps.articles.apps.ArticlesConfig',
 ]
 
