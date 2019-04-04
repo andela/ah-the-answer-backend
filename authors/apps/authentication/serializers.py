@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate
+from django.core.validators import RegexValidator
 from rest_framework import serializers
 from django.core.validators import RegexValidator
 from rest_framework.validators import UniqueValidator
@@ -177,3 +178,35 @@ class UserSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
+
+class PasswordResetSerializer(serializers.ModelSerializer):
+    """
+    serializer for the password reset functionaility view
+    """
+    email = serializers.EmailField(required=True)
+    class Meta:
+        model = User
+        fields = ('email',)
+        extra_kwargs = {
+            'email': {
+                'read_only': True
+            }
+        }
+class SetUpdatedPasswordSerializer(serializers.Serializer):
+    """
+    serializer for handling PUT view for resetting account password
+    """
+    password = serializers.CharField(
+        max_length=120,
+        min_length=8,
+        validators=[RegexValidator(
+            regex="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$",
+            message="Please ensure your password contains at least one letter and one numeral"
+        )],
+        write_only=True
+    )
+
+    # class Meta:
+    #     model = User
+    #     fields = ('password',)
+    
