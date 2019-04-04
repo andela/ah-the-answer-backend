@@ -12,7 +12,8 @@ from .renderers import UserJSONRenderer
 from .serializers import (
     LoginSerializer, RegistrationSerializer, UserSerializer
 )
-from authors.apps.core.utils import TokenHandler,send_verification_email
+from authors.apps.authentication.jwt_generator import jwt_encode, jwt_decode
+from authors.apps.core.utils import send_verification_email
 from .models import User
 
 class RegistrationAPIView(APIView):
@@ -33,10 +34,8 @@ class RegistrationAPIView(APIView):
         username= serializer.validated_data['username']
         username = serializer.validated_data['username']
 
-        token_payload = {
-            'email': user_email
-        }
-        token = TokenHandler().create_verification_token(token_payload)
+      
+        token = jwt_encode(user_email)
         template_name = 'email_verification.html'
         context = {'username': username, 'token': token, 'domain':settings.DOMAIN}
         html_message = render_to_string(template_name, context)
@@ -104,8 +103,8 @@ class EmailVerificationView(APIView):
     serializer_class = UserSerializer
 
     def get(self, request, token):
-        decoded_token = TokenHandler().validate_token(token)
-        email = decoded_token['email']
+        decoded_token = jwt_decode(token)
+        email = decoded_token['user_id']
         if not email:
             return Response(
                 {'error': 'Invalid token'},
