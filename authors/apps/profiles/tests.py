@@ -61,6 +61,11 @@ class TestModelCase(TestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token)
 
     def test_user_can_edit_profile(self):
+        """
+        This test case tests that an authenticated
+        user can edit their own profile
+        """
+
         create_response = self.client.post(
             reverse('profiles:profile-create'),
             data={
@@ -93,6 +98,10 @@ class TestModelCase(TestCase):
         self.assertContains(edit_response, "Mike Mill")
 
     def test_empty_image_upload(self):
+        """
+        This test case tests that an authenticated
+        user cannot upload an empty file field of their own profile
+        """
         create_response = self.client.post(
             reverse('profiles:profile-create'),
             data={
@@ -108,7 +117,7 @@ class TestModelCase(TestCase):
         )
         self.assertEquals(create_response.status_code, status.HTTP_201_CREATED)
         res = self.client.patch(
-            reverse('profiles:profile-avatar',
+            reverse('profiles:profile-image',
                     kwargs={'username': User.objects.get().username}),
             data={
                 "profile": {
@@ -122,6 +131,7 @@ class TestModelCase(TestCase):
     @property
     def temporary_image(self):
         """
+        Creates a dummy, temporary image for testing purposes
         Returns a new temporary image file
         """
         import tempfile
@@ -130,11 +140,16 @@ class TestModelCase(TestCase):
         image = Image.new('RGB', (100, 100))
         tmp_file = tempfile.NamedTemporaryFile(suffix='.jpg')
         image.save(tmp_file, 'jpeg')
-        # important because after save(), the fp is already at the end of the file
-        tmp_file.seek(0)
+        # important because after save(),
+        # the fp is already at the end of the file
+        tmp_file.seek(0)  # retrieves the created temp file
         return tmp_file
 
     def test_image_upload_successful(self):
+        """
+        This test case tests that an authenticated
+        user can update their own profile avatar
+        """
         create_response = self.client.post(
             reverse('profiles:profile-create'),
             data={
@@ -150,7 +165,7 @@ class TestModelCase(TestCase):
         )
         self.assertEquals(create_response.status_code, status.HTTP_201_CREATED)
         res = self.client.patch(
-            reverse('profiles:profile-avatar',
+            reverse('profiles:profile-image',
                     kwargs={'username': User.objects.get().username}),
             data={
                 "avatar": self.temporary_image
@@ -158,7 +173,6 @@ class TestModelCase(TestCase):
             format='multipart'
         )
         self.assertEquals(res.status_code, status.HTTP_200_OK)
-#Kyppy TESTS###############################################
 
     def test_create_profile(self):
         """Test if the 'create profile' view is able to successfully

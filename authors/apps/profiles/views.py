@@ -55,6 +55,11 @@ class CreateRetrieveProfileView(APIView):
 
 
 class EditProfileView(APIView):
+    """
+    View for updating a Users' profile
+    User editing the profile must be its creator
+    """
+
     permission_classes = (IsAuthenticated,)
 
     def put(self, request, username):
@@ -64,7 +69,7 @@ class EditProfileView(APIView):
             )
             if saved_profile.user != self.request.user:
                 # validates ownership of the profile
-                APIException.status_code = HTTP_401_UNAUTHORIZED
+                APIException.status_code = status.HTTP_401_UNAUTHORIZED
                 raise APIException({
                     "errors": {
                         "Unauthorized": "You are not allowed\
@@ -72,7 +77,7 @@ class EditProfileView(APIView):
                     }
                 })
         except ObjectDoesNotExist:
-            APIException.status_code = HTTP_404_NOT_FOUND
+            APIException.status_code = status.HTTP_404_NOT_FOUND
             raise APIException(
                 {"message": "User with that profile does not exist"})
         data = request.data.get('profile')
@@ -91,8 +96,8 @@ class EditProfileView(APIView):
 
 class AvatarView(APIView):
     """
-    Makes partioal edits to the profile to change the avatar to a desired one
-    Throws an Authorization error if user who did not create the profile,
+    Makes partial edits to the profile to change the avatar to a desired one
+    Throws an Authorization error if the user who did not create the profile,
     attempts edits
     """
     permission_classes = (IsAuthenticated, )
@@ -105,12 +110,12 @@ class AvatarView(APIView):
                 user__username=username
             )
         except ObjectDoesNotExist:
-            APIException.status_code = HTTP_404_NOT_FOUND
+            APIException.status_code = status.HTTP_404_NOT_FOUND
             raise APIException(
                 {"message": "User with that profile does not exist"})
 
         if saved_profile.user != self.request.user:
-            APIException.status_code = HTTP_401_UNAUTHORIZED
+            APIException.status_code = status.HTTP_401_UNAUTHORIZED
             raise APIException({
                 "errors": {
                     "Unauthorized": "You are not allowed to edit this Profile"
@@ -119,6 +124,7 @@ class AvatarView(APIView):
         try:
             avatar_data = str(request.data.get('avatar'))
             if not avatar_data.lower().endswith((".png", ".jpg", ".jpeg")):
+                # checks extension of image complies with 'png','jpg' and 'jpeg' formats
                 raise APIException(
                     {"message": "This is an invalid avatar format"})
             data = {"avatar": request.data.get('avatar')}
@@ -126,12 +132,14 @@ class AvatarView(APIView):
                 instance=saved_profile, data=data, partial=True)
             if serializer.is_valid(raise_exception=True):
                 serializer.save()
-            return Response(
-                {
-                    "success": "Profile avatar was updated successfully"
-                }, status=200)
+                print(serializer.data)
+                return Response(
+                    {
+                        "success": "Your profile avatar has been\
+                        updated successfully"
+                    }, status=200)
         except Exception as e:
-            APIException.status_code = HTTP_400_BAD_REQUEST
+            APIException.status_code = status.HTTP_400_BAD_REQUEST
             raise APIException({
                 "errors": str(e)
             })

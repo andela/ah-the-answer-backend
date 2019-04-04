@@ -4,7 +4,6 @@ from cloudinary import CloudinaryImage
 from cloudinary.models import CloudinaryField
 
 
-
 class Profile(models.Model):
     """This class represents the model for Author's Haven user profile
     information."""
@@ -23,14 +22,21 @@ class Profile(models.Model):
         "image", default='image/upload/v1554186175/samples/avatar.png')
 
     def get_cloudinary_url(self):
+        """
+        Retrieves saved avatar model path and generates a cloudinary url that
+        links to the location of the file online
+        """
+
         avatar_url = CloudinaryImage(str(self.avatar)).build_url(
-            width=200, height=200, gravity="face", background="black", radius="max", crop="thumb")
+            width=200, height=200, gravity="face",
+            background="black", radius="max", crop="thumb")
         return avatar_url
 
     @property
     def get_username(self):
         """
-        Gets username from through the OneToOne relationship through 'user' for profile display
+        Gets username from through the OneToOne relationship
+        through 'user' for profile display
         """
         return self.user.username
 

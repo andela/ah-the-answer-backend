@@ -83,7 +83,7 @@ WSGI_APPLICATION = 'authors.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
-# DATABASE_URL format is:'postgres://db_role:db_role_password@127.0.0.1:5432/db_name'
+# DATABASE_URL format:'postgres://db_role:db_role_password@127.0.0/db_name'
 
 DATABASES = {
     'default': dj_database_url.config(default=config('DATABASE_URL'))
@@ -157,9 +157,3 @@ REST_FRAMEWORK = {
         'authors.apps.authentication.backends.JWTAuthentication',
     ),
 }
-
-cloudinary.config(
-  cloud_name="dae3oj71g",
-  api_key="654595511188975",
-  api_secret="8aP4sV1RmnFvba2TRgWo-1uGADs"
-)
