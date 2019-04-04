@@ -13,8 +13,8 @@ install:
 before_script: 
  - psql -c "CREATE DATABASE authors_haven;" -U postgres
  - wget http://chromedriver.storage.googleapis.com/73.0.3683.20/chromedriver_linux64.zip
- - unzip ~/Downloads/chromedriver_linux64.zip -d ~/Downloads
- - sudo mv -f ~/Downloads/chromedriver /usr/local/share/
+ - unzip chromedriver_linux64.zip -d /home/travis/virtualenv/python3.6.3/lib/python3.6/site-packages/
+ - sudo mv -f /home/travis/virtualenv/python3.6.3/lib/python3.6/site-packages/chromedriver /usr/local/share/
  - sudo chmod +x /usr/local/share/chromedriver
  - sudo ln -s /usr/local/share/chromedriver /usr/local/bin/chromedriver
  - sudo ln -s /usr/local/share/chromedriver /usr/bin/chromedriver
