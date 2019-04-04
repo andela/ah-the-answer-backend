@@ -2,12 +2,13 @@
   "addons": [
   ],
   "buildpacks": [
+
   ],
   "env": {
-    "DATABASE_URL": "postgres://mgvbxxlnipjbgo:d596a3511c94f015739f9a05a0cd9aa7cd8bc746888687ca2857ba88c2c8b165@ec2-184-72-238-22.compute-1.amazonaws.com:5432/d50gd3h6pih4bm",
-    "SECRET_KEY": {
-     "required": true
-    }
+      "DATABASE_URL": "postgres://mgvbxxlnipjbgo:d596a3511c94f015739f9a05a0cd9aa7cd8bc746888687ca2857ba88c2c8b165@ec2-184-72-238-22.compute-1.amazonaws.com:5432/d50gd3h6pih4bm",
+      "SECRET_KEY": {
+        "required": true
+      }
   },
   "formation": {
   },
@@ -15,4 +16,4 @@
   "scripts": {
   },
   "stack": "heroku-18"
- }
+}
