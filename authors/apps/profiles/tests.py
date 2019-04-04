@@ -13,11 +13,11 @@ class TestModelCreate(TestCase):
 
     def setUp(self):
         user = User.objects.create(username="johndoe")
-        self.user_bio = "John Doe"
-        self.name = "Was asked to produce a bribe to get the service"
+        self.user_bio = "Was asked to produce a bribe to get the service"
+        self.name = "John Doe"
         self.number_followers = 67
         self.number_followings = 56
-        self.total_article = 88
+        self.total_articles = 88
 
         self.record = Profile(
             user_bio = self.user_bio,
