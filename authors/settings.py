@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
-import dj_database_url
 from decouple import config
 import cloudinary
 
@@ -40,7 +39,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django_nose',
 
     'corsheaders',
     'django_extensions',
@@ -83,21 +81,17 @@ WSGI_APPLICATION = 'authors.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
-# DATABASE_URL format:'postgres://db_role:db_role_password@127.0.0/db_name'
 
 DATABASES = {
-    'default': dj_database_url.config(default=config('DATABASE_URL'))
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': config('DB_NAME'),
+        'USER': config('DB_USERNAME'),
+        'HOST': config('HOST'),
+        'PASSWORD': config('PASSWORD'),
+        'PORT': config('PORT')
+    }
 }
-
-# Use nose to run all tests
-TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
-
-# Tell nose to measure coverage on the 'authentication' app
-NOSE_ARGS = [
-    '--with-coverage',
-    '--cover-package=authors',
-]
-
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
 
@@ -157,3 +151,9 @@ REST_FRAMEWORK = {
         'authors.apps.authentication.backends.JWTAuthentication',
     ),
 }
+
+cloudinary.config(
+  cloud_name=config("CLOUD_NAME"),
+  api_key=config("API_KEY"),
+  api_secret=config("API_SECRET")
+)
