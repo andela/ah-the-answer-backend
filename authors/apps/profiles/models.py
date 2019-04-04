@@ -1,8 +1,8 @@
 from django.db import models
-from cloudinary.models import CloudinaryField
 from authors import settings
-
-cloud_default = 'https://res.cloudinary.com/apibucket/image/upload/v1554188102/sample.jpg'
+from cloudinary import CloudinaryImage
+from cloudinary.models import CloudinaryField
+# cloud_default = 'https://res.cloudinary.com/dae3oj71g/image/upload/v1554186175/samples/avatar.png'
 
 
 class Profile(models.Model):
@@ -19,11 +19,24 @@ class Profile(models.Model):
     number_of_followers = models.IntegerField(default=0)
     number_of_followings = models.IntegerField(default=0)
     total_articles = models.IntegerField(default=0)
-    avatar = models.TextField(default='https://res.cloudinary.com/dae3oj71g/image/upload/v1554186175/samples/avatar.png')
+    avatar = CloudinaryField(
+        "image", default='image/upload/v1554186175/samples/avatar.png')
+
+    def get_cloudinary_url(self):
+        avatar_url = CloudinaryImage(str(self.avatar)).build_url(
+            width=200, height=200, gravity="face", background="black", radius="max", crop="thumb")
+        return avatar_url
 
     @property
     def get_username(self):
+        """
+        Gets username from through the OneToOne relationship through 'user' for profile display
+        """
         return self.user.username
 
     def __str__(self):
+        """
+       Human readable format of a direct db call
+        """
+
         return "{}".format(self.user.username)

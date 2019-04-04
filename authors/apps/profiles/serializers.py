@@ -1,18 +1,20 @@
-from rest_framework.serializers import ModelSerializer, ReadOnlyField, ValidationError, CharField
+from rest_framework.serializers import (ModelSerializer, ReadOnlyField,
+                                        ValidationError, CharField)
 from .models import Profile
+
 
 class ProfileSerializer(ModelSerializer):
 
     username = ReadOnlyField(source='get_username')
     user_id = ReadOnlyField(source='user.id')
-
+    avatar_url = ReadOnlyField(source='get_cloudinary_url')
 
     class Meta:
         model = Profile
         fields = ('user_id', 'username', 'user_bio', 'name',
                   'number_of_followers',
                   'number_of_followings',
-                  'total_articles', 'avatar')
+                  'total_articles', 'avatar', 'avatar_url')
 
     def create(self, validated_data):
         return Profile.objects.create(**validated_data)
