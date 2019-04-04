@@ -84,7 +84,7 @@ WSGI_APPLICATION = 'authors.wsgi.application'
 # DATABASE_URL format is:'postgres://db_role:db_role_password@127.0.0.1:5432/db_name'
 
 DATABASES = {
-    'default': dj_database_url.config(config('DATABASE_URL'))
+    'default': dj_database_url.config(default=config('DATABASE_URL'))
 }
 
 # Use nose to run all tests
