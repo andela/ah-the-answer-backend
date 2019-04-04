@@ -8,6 +8,33 @@ from rest_framework.test import APIClient
 from .models import Profile
 from ..authentication.models import User
 
+class TestModelCreate(TestCase):
+    """Tests the whether model can create a new record"""
+
+    def setUp(self):
+        user = User.objects.create(username="johndoe")
+        self.user_bio = "John Doe"
+        self.name = "Was asked to produce a bribe to get the service"
+        self.number_followers = 67
+        self.number_followings = 56
+        self.total_article = 88
+
+        self.record = Profile(
+            user_bio = self.user_bio,
+            name = self.name,
+            number_followers = self.number_followers,
+            number_followings = self.number_followings,
+            total_articles = self.total_articles,
+            user = user
+        )
+
+    def test_model_can_create_record(self):
+        """Test whether model can create a record"""
+        initial = Profile.objects.count()
+        self.record.save()
+        updated = Profile.objects.count()
+
+        self.assertNotEqual(initial, updated)
 
 class TestModelCase(TestCase):
     """Tests the whether model can create a new record"""
@@ -41,18 +68,6 @@ class TestModelCase(TestCase):
             },
             format="json"
         )
-        self.record = Profile(
-            {"profile":
-                               {
-                                   "user_bio": "My life story",
-                                   "name": "Bobby Doe",
-                                   "number_followers": 100,
-                                   "number_following": 50,
-                                   "total_article": 500,
-                                   "user": user
-                               }
-                               }
-        )
         self.user_profile_1 = {"profile":
                                {
                                    "user_bio": "My life story",
@@ -73,13 +88,6 @@ class TestModelCase(TestCase):
         self.token = self.login.data['token']
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token)
 
-    def test_model_can_create_record(self):
-        """Test whether model can create a record"""
-        initial = Profile.objects.count()
-        self.record.save()
-        updated = Profile.objects.count()
-
-        self.assertNotEqual(initial, updated)
 
     def test_user_can_edit_profile(self):
         """
