@@ -41,7 +41,7 @@ class TestModelCase(TestCase):
             },
             format="json"
         )
-        self.record = Record(
+        self.record = Profile(
             user_bio="My life story",
             name="John Doe",
             number_followers=77,
