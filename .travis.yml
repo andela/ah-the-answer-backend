@@ -24,7 +24,7 @@ before_script:
   - psql -c "CREATE DATABASE authors_haven;" -U postgres
   - wget http://chromedriver.storage.googleapis.com/2.24/chromedriver_linux64.zip
   - unzip chromedriver_linux64.zip -d /home/travis/virtualenv/python3.6.3/bin/
-  - export CHROME_WEBDRIVER=chromium-browser
+  - export CHROME_WEBDRIVER=/home/travis/virtualenv/python3.6.3/bin/chromedriver
 
 script:
   - python manage.py test
