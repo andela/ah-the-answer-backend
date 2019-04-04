@@ -47,7 +47,6 @@ class TestModelCase(TestCase):
             number_followers=77,
             number_following=77,
             total_article=77,
-            department=77,
             user=user
         )
         self.user_profile_1 = {"profile":
