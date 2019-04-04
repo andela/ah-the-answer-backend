@@ -42,12 +42,16 @@ class TestModelCase(TestCase):
             format="json"
         )
         self.record = Profile(
-            user_bio="My life story",
-            name="John Doe",
-            number_followers=77,
-            number_following=77,
-            total_article=77,
-            user=user
+            {"profile":
+                               {
+                                   "user_bio": "My life story",
+                                   "name": "Bobby Doe",
+                                   "number_followers": 100,
+                                   "number_following": 50,
+                                   "total_article": 500,
+                                   "user": user
+                               }
+                               }
         )
         self.user_profile_1 = {"profile":
                                {
