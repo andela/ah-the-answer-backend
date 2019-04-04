@@ -1,7 +1,6 @@
 import sendgrid
 import os
 from sendgrid.helpers.mail import *
-from django.core.exceptions import ValidationError
 
 def dispatch_email(user_email, subject, message):
     """
