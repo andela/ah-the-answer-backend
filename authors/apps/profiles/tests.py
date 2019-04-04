@@ -20,12 +20,12 @@ class TestModelCreate(TestCase):
         self.total_articles = int(88)
 
         self.record = Profile(
-            user_bio = self.user_bio,
-            name = self.name,
-            number_of_followers = self.number_followers,
-            number_of_followings = self.number_followings,
-            total_articles = self.total_articles,
-            user = user
+            user_bio=self.user_bio,
+            name=self.name,
+            number_of_followers=self.number_followers,
+            number_of_followings=self.number_followings,
+            total_articles=self.total_articles,
+            user=user
         )
 
     def test_model_can_create_record(self):
