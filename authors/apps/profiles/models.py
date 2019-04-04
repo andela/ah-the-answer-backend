@@ -2,7 +2,7 @@ from django.db import models
 from authors import settings
 from cloudinary import CloudinaryImage
 from cloudinary.models import CloudinaryField
-# cloud_default = 'https://res.cloudinary.com/dae3oj71g/image/upload/v1554186175/samples/avatar.png'
+
 
 
 class Profile(models.Model):

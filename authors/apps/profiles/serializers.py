@@ -1,6 +1,9 @@
 from rest_framework.serializers import (ModelSerializer, ReadOnlyField,
                                         ValidationError, CharField)
 from .models import Profile
+from rest_framework.serializers import (ModelSerializer, ReadOnlyField,
+                                        ValidationError, CharField)
+from django.db import IntegrityError
 
 
 class ProfileSerializer(ModelSerializer):
@@ -11,10 +14,10 @@ class ProfileSerializer(ModelSerializer):
 
     class Meta:
         model = Profile
-        fields = ('user_id', 'username', 'user_bio', 'name',
+        fields = ('username', 'user_bio', 'name',
                   'number_of_followers',
                   'number_of_followings',
-                  'total_articles', 'avatar', 'avatar_url')
+                  'total_articles', 'avatar_url', 'user_id')
 
     def create(self, validated_data):
         return Profile.objects.create(**validated_data)
