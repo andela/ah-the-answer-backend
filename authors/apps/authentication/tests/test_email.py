@@ -41,4 +41,3 @@ class EmailTest(TestCase):
         response = send_verification_email('authorshaven23@gmail.com', 
         'to', '', '<p>outhors</p>')
         self.assertFalse(response)
-    
