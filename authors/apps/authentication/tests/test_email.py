@@ -5,11 +5,10 @@ from ..models import User
 from authors.apps.core.utils import send_verification_email
 
 
-
 class EmailTest(TestCase):
     def setUp(self):
         self.client = test.APIClient()
-        self.data={
+        self.data = {
                 "user": {
                     "email": "tester3@mail.com",
                     "username": "tester3",
@@ -32,13 +31,4 @@ class EmailTest(TestCase):
         test_user = User.objects.get(email="tester@mail.com")
         self.assertFalse(test_user.is_verified)
 
-    def test_email_sent(self):
-        response = send_verification_email('authorshaven23@gmail.com', 'yt@yopmail.com',
-        'Please verify mail', '<p>hello sir<p>')
-        print(response.body)
-        self.assertTrue(response.status_code == 202)
-
-
-    def test_error_email_not_sent(self):
-        response = send_verification_email('authorshaven23@gmail.com', 'to', '', '<p>outhors</p>')
-        self.assertFalse(response)
+    
