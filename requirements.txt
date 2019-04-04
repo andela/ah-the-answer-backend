@@ -16,16 +16,10 @@ gunicorn==19.9.0
 idna==2.8
 isort==4.3.16
 lazy-object-proxy==1.3.1
-<<<<<<< HEAD
-nose==1.3.7
-psycopg2-binary==2.7.7
-PyJWT==1.4.2
-=======
 mccabe==0.6.1
 nose==1.3.7
 psycopg2-binary==2.7.7
 PyJWT==1.7.1
->>>>>>> 3b67f00da3e1efa8c9f5d5ce25b596594e1c1579
 python-decouple==3.1
 python-dotenv==0.10.1
 python-http-client==3.1.0
