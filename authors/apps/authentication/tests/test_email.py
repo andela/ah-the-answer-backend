@@ -31,4 +31,14 @@ class EmailTest(TestCase):
         test_user = User.objects.get(email="tester@mail.com")
         self.assertFalse(test_user.is_verified)
 
+    def test_email_sent(self):
+        response = send_verification_email('authorshaven23@gmail.com',
+          'yt@yopmail.com',
+          'Please verify mail', '<p>hello sir<p>')
+        self.assertTrue(response.status_code == 202)
+
+    def test_error_email_not_sent(self):
+        response = send_verification_email('authorshaven23@gmail.com', 
+        'to', '', '<p>outhors</p>')
+        self.assertFalse(response)
     
