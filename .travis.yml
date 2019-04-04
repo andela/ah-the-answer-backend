@@ -6,7 +6,11 @@ services:
 sudo: required
 addons:
  postgresql: "9.6"
- chrome: stable
+ sources:
+   - google-chrome
+ packages:
+   - google-chrome-stable
+ 
 env: 
  -DJANGO=2.1.7 DB=postgresql
 install: 
