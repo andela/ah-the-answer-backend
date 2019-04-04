@@ -36,6 +36,7 @@ class TestModelCreate(TestCase):
 
         self.assertNotEqual(initial, updated)
 
+
 class TestModelCase(TestCase):
     """Tests the whether model can create a new record"""
 
