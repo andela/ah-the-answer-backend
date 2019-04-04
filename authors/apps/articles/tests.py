@@ -84,7 +84,7 @@ class TestArticle(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_specific_article(self):
-        create_res = self.client.post(
+        self.client.post(
             reverse('articles:create-list'),
             data={
                 "article": {
@@ -127,7 +127,7 @@ class TestArticle(TestCase):
     # UPDATE TESTS
 
     def test_update_article(self):
-        create_res = self.client.post(
+        self.client.post(
             reverse('articles:create-list'),
             data={
                 "article": {
@@ -159,7 +159,23 @@ class TestArticle(TestCase):
         # Test content as well as status code
 
     def test_update_non_existent(self):
-        pass
+        response = self.client.put(
+            reverse(
+                'articles:details',
+                kwargs={
+                    "slug": "test-article-one"
+                }
+            ),
+            data={
+                "article": {
+                    "title": "Test title updated",
+                    "description": "Written by updater",
+                }
+            },
+            format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_update_not_authenticated(self):
         pass
@@ -171,7 +187,7 @@ class TestArticle(TestCase):
 
     # DELETE TESTS
     def test_delete_article(self):
-        create_res = self.client.post(
+        self.client.post(
             reverse('articles:create-list'),
             data={
                 "article": {
@@ -195,7 +211,17 @@ class TestArticle(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_delete_non_existent(self):
-        pass
+        response = self.client.delete(
+            reverse(
+                'articles:details',
+                kwargs={
+                    "slug": "test-article-one"
+                }
+            ),
+            format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_delete_not_authorized(self):
         pass

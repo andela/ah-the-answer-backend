@@ -1,11 +1,12 @@
 from rest_framework import serializers
 from .models import Article, ArticleImage
+from ..authentication.serializers import UserSerializer
 
 
 class ArticleSerializer(serializers.ModelSerializer):
     """Serializer to map the Article Model instance into JSON format."""
 
-    author = serializers.ReadOnlyField(source='author.id')
+    author = UserSerializer(read_only=True)
     title = serializers.CharField(max_length=100)
     description = serializers.CharField(max_length=128)
     body = serializers.CharField()
@@ -18,7 +19,6 @@ class ArticleSerializer(serializers.ModelSerializer):
         instance.description = validated_data.get(
             'description', instance.description)
         instance.body = validated_data.get('body', instance.body)
-        validated_data.pop('slug', None)
         instance.save()
         return instance
 

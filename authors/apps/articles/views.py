@@ -2,6 +2,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
+from rest_framework.exceptions import APIException
 
 from .models import Article, ArticleImage
 from .serializers import ArticleSerializer, ArticleImageSerializer
@@ -93,7 +94,14 @@ class ArticleImageView(APIView):
                 {"message": "The article requested does not exist"}, status=404)
 
         if request.FILES:
-            response = cloudinary.uploader.upload(request.FILES['file'])
+            try:
+                response = cloudinary.uploader.upload(
+                    request.FILES['file'], allowed_formats=['png', 'jpg', 'jpeg'])
+            except Exception as e:
+                APIException.status_code = 400
+                raise APIException({
+                    "errors": str(e)
+                })
             image_url = response.get('secure_url')
 
             serializer = ArticleImageSerializer(data={"image": image_url})
@@ -108,6 +116,7 @@ class ArticleImageView(APIView):
             return Response(response, status=400)
 
     def get(self, request, slug):
-        images = ArticleImage.objects.select_related('article').filter(article__slug=slug)
+        images = ArticleImage.objects.select_related(
+            'article').filter(article__slug=slug)
         serializer = ArticleImageSerializer(images, many=True)
         return Response({"images": serializer.data})
