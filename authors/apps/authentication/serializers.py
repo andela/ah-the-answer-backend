@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate
+from django.core.validators import RegexValidator
 from rest_framework import serializers
 from .models import User
-from .utilities import check_password
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
@@ -162,7 +162,10 @@ class SetUpdatedPasswordSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
         max_length=120,
         min_length=8,
-        validators=[check_password],
+        validators=[RegexValidator(
+            regex="^[a-zA-Z0-9_]+$",
+            message="Please ensure your password contains letters and numerals"
+        )],
         write_only=True
     )
     class Meta:

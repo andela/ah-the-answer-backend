@@ -122,6 +122,10 @@ class User(AbstractBaseUser, PermissionsMixin):
         the user's real name, we return their username instead.
         """
         return self.username
+    
+    @property
+    def get_token(self):
+        return jwt_encode(self.pk)
 
     def get_reset_token(self, days=30):
         """
@@ -135,7 +139,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         """
         duration = datetime.now() + timedelta(days)
         token = jwt.encode({
-            'id': self.pk,
+            'user_id': self.pk,
             'exp': int(duration.strftime('%s'))
         }, settings.SECRET_KEY, algorithm='HS256')
         return token.decode('utf-8')
@@ -153,11 +157,11 @@ class User(AbstractBaseUser, PermissionsMixin):
         if serializer.is_valid(raise_exception=True):
             try:
                 user = User.objects.get(email=request.data['email'])
-                previous_user_requests = ResetPassowordToken.generate_request_instances(user.id)
+                previous_user_requests = ResetPasswordToken.generate_request_instances(user.id)
                 if previous_user_requests < 3:
                     token = user.get_reset_token(1)
                     user.persist_reset_token(user, token)
-                    request_message = User.generate_request_instances(token)
+                    request_message = User.generate_reset_link(token)
                     output = dispatch_email(
                         user_email=user.email,
                         subject=subject,
@@ -171,7 +175,7 @@ class User(AbstractBaseUser, PermissionsMixin):
                 msg = "User with that email does not exist"
                 raise exceptions.AuthenticationFailed(msg)
     @staticmethod
-    def generate_request_instances(token_variable):
+    def generate_reset_link(token_variable):
         """
         uses the token to create a link to be sent to user's email
         """
@@ -185,7 +189,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         """
         takes the token and saves it in the database with relation to user
         """
-        reset_token = ResetPassowordToken.objects.create(
+        reset_token = ResetPasswordToken.objects.create(
             user=user_details,
             token=token_variable
         )
@@ -200,10 +204,9 @@ class User(AbstractBaseUser, PermissionsMixin):
         user = user_details[0]
         user.set_password(new_password)
         user.save()
-        return "Password reset successful. you may now log into your account with \
-             new credentials"
+        return "Password reset successful. you may now log into your account with new credentials"
 
-class ResetPassowordToken(models.Model):
+class ResetPasswordToken(models.Model):
     """
     this class creates a Model for the tokens generated during password reset request
     """
@@ -224,7 +227,7 @@ class ResetPassowordToken(models.Model):
         this method returns number of password reset requests a user has made
         """
         current_day = date.today()
-        number_of_requests = ResetPassowordToken.objects.filter(
+        number_of_requests = ResetPasswordToken.objects.filter(
             user=user_id,
             created_on=current_day
         ).count()
