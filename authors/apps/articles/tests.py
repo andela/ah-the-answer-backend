@@ -18,6 +18,17 @@ class TestArticle(TestCase):
             },
             format="json"
         )
+        self.user_create_2 = self.client.post(
+            reverse('authentication:user-signup'),
+            data={
+                "user": {
+                    "email": "tester1@mail.com",
+                    "username": "tester1",
+                    "password": "tester1234"
+                }
+            },
+            format="json"
+        )
         self.user = self.client.post(
             reverse('authentication:user-login'),
             data={
@@ -28,7 +39,9 @@ class TestArticle(TestCase):
             },
             format="json"
         )
-        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.user.data['token'])
+
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Bearer ' + self.user.data['token'])
 
     # CREATE TESTS
 
@@ -64,14 +77,36 @@ class TestArticle(TestCase):
         self.assertTrue(response.data['errors']['description'])
 
     def test_create_with_invalid_fields(self):
-        pass
+        response = self.client.post(
+            reverse('articles:create-list'),
+            data={
+                "article": {
+                    "title": "",
+                    "body": "Hello world",
+                    "description": "hello"
+                }
+            },
+            format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertTrue(response.data['errors']['title'])
 
     # END OF CREATE TESTS
 
     # RETRIEVE TESTS
 
     def test_get_without_token(self):
-        pass
+        self.client.logout()
+
+        response = self.client.get(
+            reverse(
+                'articles:create-list',
+            ),
+            format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_all_article(self):
         response = self.client.get(
@@ -107,7 +142,7 @@ class TestArticle(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        #test content as well as status code
+        # test content as well as status code
 
     def test_get_specific_non_existent(self):
         response = self.client.get(
@@ -178,10 +213,68 @@ class TestArticle(TestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_update_not_authenticated(self):
-        pass
+
+        self.client.post(
+            reverse('articles:create-list'),
+            data={
+                "article": {
+                    "title": "Test title",
+                    "body": "This is a very awesome article on testing tests",
+                    "description": "Written by testing tester",
+                }
+            },
+            format="json"
+        )
+        self.client.logout()
+        response = self.client.put(
+            reverse(
+                'articles:details',
+                kwargs={
+                    "slug": Article.objects.get().slug
+                }
+            ),
+            data={
+                "article": {
+                    "title": "Test title updated",
+                    "description": "Written by updater",
+                }
+            },
+            format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_update_not_authorized(self):
-        pass
+        self.client.post(
+            reverse('articles:create-list'),
+            data={
+                "article": {
+                    "title": "Test title",
+                    "body": "This is a very awesome article on testing tests",
+                    "description": "Written by testing tester",
+                }
+            },
+            format="json"
+        )
+        self.client.logout()
+        self.client.login(username='tester1', password='tester1234')
+        response = self.client.put(
+            reverse(
+                'articles:details',
+                kwargs={
+                    "slug": Article.objects.get().slug
+                }
+            ),
+            data={
+                "article": {
+                    "title": "Test title updated",
+                    "description": "Written by updater",
+                }
+            },
+            format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     # END OF UPDATE TESTS
 
@@ -224,7 +317,30 @@ class TestArticle(TestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_delete_not_authorized(self):
-        pass
+        self.client.post(
+            reverse('articles:create-list'),
+            data={
+                "article": {
+                    "title": "Test title",
+                    "body": "This is a very awesome article on testing tests",
+                    "description": "Written by testing tester",
+                }
+            },
+            format="json"
+        )
+        self.client.logout()
+        self.client.login(username='tester1', password='tester1234')
+        response = self.client.delete(
+            reverse(
+                'articles:details',
+                kwargs={
+                    "slug": Article.objects.get().slug
+                }
+            ),
+            format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     # END OF DELETE TESTS
 

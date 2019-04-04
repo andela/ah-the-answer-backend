@@ -12,14 +12,17 @@ import cloudinary
 
 
 class ArticleView(APIView):
+    """Class that contains the method that retrieves all articles and creates an article"""
     permission_classes = (IsAuthenticated | ReadOnly,)
 
     def get(self, request):
+        """Method to get all articles"""
         articles = Article.objects.all()
         serializer = ArticleSerializer(articles, many=True)
         return Response({"articles": serializer.data})
 
     def post(self, request):
+        """Method to create an article"""
         article = request.data.get('article')
 
         # Create an article from the above data
@@ -34,6 +37,7 @@ class ArticleView(APIView):
 
 
 class RetrieveArticleView(APIView):
+    """Class with get, put and delete methods"""
     permission_classes = (IsAuthenticated | ReadOnly,)
 
     def is_owner(self, current_user_id, article_author_id):
@@ -42,6 +46,7 @@ class RetrieveArticleView(APIView):
         return False
 
     def get(self, request, slug):
+        """Method to get a specific article"""
         try:
             article = Article.objects.get(slug=slug)
             serializer = ArticleSerializer(article, many=False)
@@ -51,6 +56,7 @@ class RetrieveArticleView(APIView):
                 {"message": "The article requested does not exist"}, status=404)
 
     def put(self, request, slug):
+        """Method to update a specific article"""
         try:
             saved_article = Article.objects.get(slug=slug)
         except Article.DoesNotExist:
@@ -68,6 +74,7 @@ class RetrieveArticleView(APIView):
             return Response(response, status=403)
 
     def delete(self, request, slug):
+        """Method to delete a specific article"""
         try:
             article = Article.objects.get(slug=slug)
         except Article.DoesNotExist:
@@ -83,9 +90,11 @@ class RetrieveArticleView(APIView):
 
 
 class ArticleImageView(APIView):
+    """Class with methods to upload an image and retrieve all images of an article"""
     permission_classes = (IsAuthenticated | ReadOnly,)
 
     def post(self, request, slug):
+        """Method to upload an image"""
 
         try:
             article = Article.objects.get(slug=slug)
@@ -116,6 +125,7 @@ class ArticleImageView(APIView):
             return Response(response, status=400)
 
     def get(self, request, slug):
+        """Method to get all images of an article"""
         images = ArticleImage.objects.select_related(
             'article').filter(article__slug=slug)
         serializer = ArticleImageSerializer(images, many=True)

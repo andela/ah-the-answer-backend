@@ -30,6 +30,7 @@ class ArticleSerializer(serializers.ModelSerializer):
 
 
 class ArticleImageSerializer(serializers.ModelSerializer):
+    """Serializer to map the Article Image Model metadata into JSON format."""
     article = serializers.ReadOnlyField(source='article.id')
     image = serializers.CharField()
 
