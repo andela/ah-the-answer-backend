@@ -5,6 +5,7 @@ from rest_framework import test, status
 from ..models import User, ResetPasswordToken
 
 
+
 class TestPasswordResetRequest(TestCase):
     """
     tests password reset functionality
