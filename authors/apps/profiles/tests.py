@@ -8,6 +8,33 @@ from rest_framework.test import APIClient
 from .models import Profile
 from ..authentication.models import User
 
+class TestModelCreate(TestCase):
+    """Tests the whether model can create a new record"""
+
+    def setUp(self):
+        user = User.objects.create(username="johndoe")
+        self.user_bio = "John Doe"
+        self.name = "Was asked to produce a bribe to get the service"
+        self.number_followers = 67
+        self.number_followings = 56
+        self.total_article = 88
+
+        self.record = Profile(
+            user_bio = self.user_bio,
+            name = self.name,
+            number_followers = self.number_followers,
+            number_followings = self.number_followings,
+            total_articles = self.total_articles,
+            user = user
+        )
+
+    def test_model_can_create_record(self):
+        """Test whether model can create a record"""
+        initial = Profile.objects.count()
+        self.record.save()
+        updated = Profile.objects.count()
+
+        self.assertNotEqual(initial, updated)
 
 class TestModelCase(TestCase):
     """Tests the whether model can create a new record"""
@@ -18,7 +45,6 @@ class TestModelCase(TestCase):
         protected views contained in this test series. Lastly, two mock profile
         sets for a user are made: the first being valid,
         the second being invalid."""
-        user = User.objects.create(username="johndoe")
         self.client = APIClient()
         self.user = self.client.post(
             reverse('authentication:user-signup'),
