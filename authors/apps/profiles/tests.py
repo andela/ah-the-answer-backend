@@ -239,3 +239,8 @@ class TestModelCase(TestCase):
         new_client = APIClient()
         res = new_client.put('/api/profile/username/edit/', format="json")
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+    
+    def test_avatar_authorization_is_enforced(self):
+        new_client = APIClient()
+        res = new_client.put('/api/profile/username/avatar/', format="json")
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
