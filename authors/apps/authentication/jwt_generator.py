@@ -1,17 +1,27 @@
 import jwt
 from django.conf import settings
+from datetime import datetime, timedelta
 
 
-def jwt_encode(user_id=None):
+def jwt_encode(user_id=None, days=None):
     if user_id:
-        token = jwt.encode(
-            {
-                "user_id": user_id
-            },
-            settings.SECRET_KEY,
-            algorithm='HS256'
-        )
-
+        if days:
+            duration = datetime.now() + timedelta(days)
+            token = jwt.encode(
+                {
+                    "user_id": user_id,
+                    "exp": int(duration.strftime('%s'))
+                }, 
+                settings.SECRET_KEY,
+                algorithm='HS256')
+        else:
+            token = jwt.encode(
+                {
+                    "user_id": user_id
+                },
+                settings.SECRET_KEY,
+                algorithm='HS256'
+            )
         return token.decode('utf-8')
     else:
         return None

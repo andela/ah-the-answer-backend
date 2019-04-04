@@ -1,6 +1,7 @@
 import jwt
+import os
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 from django.conf import settings
 from django.contrib.auth.models import (
@@ -8,6 +9,8 @@ from django.contrib.auth.models import (
 )
 from django.db import models
 from .jwt_generator import jwt_encode, jwt_decode
+from rest_framework import exceptions
+from .utilities import dispatch_email
 
 
 
@@ -122,7 +125,98 @@ class User(AbstractBaseUser, PermissionsMixin):
         the user's real name, we return their username instead.
         """
         return self.username
-
+    
     @property
     def get_token(self):
         return jwt_encode(self.pk)
+
+    @staticmethod
+    def dispatch_reset_token(serializer, request):
+        """
+        this method processes the reset token and sends it to the user's
+         email
+        """
+        message = "A link for reseting your password will be sent to the \
+             email provided"
+        subject = "Password Reset link for Author's Haven User Account"
+
+        if serializer.is_valid(raise_exception=True):
+            try:
+                user = User.objects.get(email=request.data['email'])
+                previous_user_requests = ResetPasswordToken.generate_request_instances(user.id)
+                if previous_user_requests < 3:
+                    token = jwt_encode(user_id=user.pk, days=1)
+                    user.persist_reset_token(user, token)
+                    request_message = User.generate_reset_link(token)
+                    output = dispatch_email(
+                        user_email=user.email,
+                        subject=subject,
+                        message=request_message
+                    )
+                    return output
+                else:
+                    return "You have exceeded the request limit for the past 24hours." \
+                         "Wait for at least a day before resubmitting the request" 
+            except User.DoesNotExist:
+                msg = "User with that email does not exist"
+                raise exceptions.AuthenticationFailed(msg)
+    @staticmethod
+    def generate_reset_link(token_variable):
+        """
+        uses the token to create a link to be sent to user's email
+        """
+        link = "{}api/users/reset_password/{}/".format(os.getenv('URL'), token_variable)
+
+        req_message = "This email has requested for a password reset \
+            click the link {} to reset your password for author's haven".format(link)
+        return req_message
+
+    def persist_reset_token(self, user_details, token_variable):
+        """
+        takes the token and saves it in the database with relation to user
+        """
+        reset_token = ResetPasswordToken.objects.create(
+            user=user_details,
+            token=token_variable
+        )
+        reset_token.save()
+    
+    @staticmethod
+    def persist_new_password(user_details, password):
+        """
+        takes the password from PUT reset password view and saves it to the database
+        """
+        new_password = password
+        user = user_details[0]
+        user.set_password(new_password)
+        user.save()
+        return "Password reset successful. you may now log into your account with new credentials"
+
+class ResetPasswordToken(models.Model):
+    """
+    this class creates a Model for the tokens generated during password reset request
+    """
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='password_reset_tokens'
+    )
+    token = models.CharField(max_length=256)
+    created_on = models.DateTimeField(auto_now=True,
+        verbose_name='when token was generated')
+    class Meta:
+        ordering = ('created_on',)
+    
+    @staticmethod
+    def generate_request_instances(user_id):
+        """
+        this method returns number of password reset requests a user has made
+        """
+        current_day = date.today()
+        print(current_day)
+        number_of_requests = ResetPasswordToken.objects.filter(
+            user=user_id,
+            created_on__startswith=current_day
+        ).count()
+        return number_of_requests
+                
