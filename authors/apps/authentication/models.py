@@ -169,8 +169,8 @@ class User(AbstractBaseUser, PermissionsMixin):
                     )
                     return output
                 else:
-                    return "You have exceeded the request limit for the past 24hours. \
-                         Wait for at least a day before resubmitting the request" 
+                    return "You have exceeded the request limit for the past 24hours." \
+                         "Wait for at least a day before resubmitting the request" 
             except User.DoesNotExist:
                 msg = "User with that email does not exist"
                 raise exceptions.AuthenticationFailed(msg)
@@ -179,7 +179,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         """
         uses the token to create a link to be sent to user's email
         """
-        link = "{}api/users/reset_password/{}".format(os.getenv('URL'), token_variable)
+        link = "{}api/users/reset_password/{}/".format(os.getenv('URL'), token_variable)
 
         req_message = "This email has requested for a password reset \
             click the link {} to reset your password for author's haven".format(link)
@@ -227,9 +227,10 @@ class ResetPasswordToken(models.Model):
         this method returns number of password reset requests a user has made
         """
         current_day = date.today()
+        print(current_day)
         number_of_requests = ResetPasswordToken.objects.filter(
             user=user_id,
-            created_on=current_day
+            created_on__startswith=current_day
         ).count()
         return number_of_requests
                 
