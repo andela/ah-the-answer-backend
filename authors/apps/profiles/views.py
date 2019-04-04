@@ -1,7 +1,5 @@
 from django.core.exceptions import ObjectDoesNotExist
-from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
-from django.core.exceptions import ObjectDoesNotExist
 
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -49,7 +47,7 @@ class CreateRetrieveProfileView(APIView):
         if serializer.is_valid(raise_exception=True):
             profile_saved = serializer.save(user=self.request.user)
             return Response({"success": "Profile for '{}' created successfully"
-                            .format(profile_saved)},
+                             .format(profile_saved)},
                             status=status.HTTP_201_CREATED)
         return Response('Invalid data. Ensure your profile '
                         'payload corresponds to the profile.serializers '
@@ -57,6 +55,11 @@ class CreateRetrieveProfileView(APIView):
 
 
 class EditProfileView(APIView):
+    """
+    View for updating a Users' profile
+    User editing the profile must be its creator
+    """
+
     permission_classes = (IsAuthenticated,)
 
     def put(self, request, username):
@@ -65,14 +68,16 @@ class EditProfileView(APIView):
                 user__username=username
             )
             if saved_profile.user != self.request.user:
-                APIException.status_code = HTTP_401_UNAUTHORIZED
+                # validates ownership of the profile
+                APIException.status_code = status.HTTP_401_UNAUTHORIZED
                 raise APIException({
                     "errors": {
-                        "Unauthorized": "You are not allowed to edit this Profile"
+                        "Unauthorized": "You are not allowed\
+                                        to edit this Profile"
                     }
                 })
         except ObjectDoesNotExist:
-            APIException.status_code = HTTP_404_NOT_FOUND
+            APIException.status_code = status.HTTP_404_NOT_FOUND
             raise APIException(
                 {"message": "User with that profile does not exist"})
         data = request.data.get('profile')
@@ -84,39 +89,57 @@ class EditProfileView(APIView):
             {
                 "success": "Profile updated successfully",
                 "profile": serializer.data
-            }
+            },
+            status=200
         )
 
 
 class AvatarView(APIView):
+    """
+    Makes partial edits to the profile to change the avatar to a desired one
+    Throws an Authorization error if the user who did not create the profile,
+    attempts edits
+    """
     permission_classes = (IsAuthenticated, )
+    # checks whether user is logged in
 
     def patch(self, request, username):
         try:
+            # retrieves user object throws error if profile is in-existent
             saved_profile = Profile.objects.select_related('user').get(
                 user__username=username
             )
         except ObjectDoesNotExist:
-            APIException.status_code = HTTP_404_NOT_FOUND
+            APIException.status_code = status.HTTP_404_NOT_FOUND
             raise APIException(
                 {"message": "User with that profile does not exist"})
 
         if saved_profile.user != self.request.user:
-            APIException.status_code = HTTP_401_UNAUTHORIZED
+            APIException.status_code = status.HTTP_401_UNAUTHORIZED
             raise APIException({
                 "errors": {
                     "Unauthorized": "You are not allowed to edit this Profile"
                 }
             })
-        data = request.data.get('avatar')
         try:
-            result = cloudinary.uploader.upload(
-                data, allowed_formats=['png', 'jpg', 'jpeg'])
-        except:
-            raise ValidationError("Invalid image format")
-        avatar_data = {'avatar': result['secure_url']}
-        serializer = ProfileSerializer(
-            instance=saved_profile, data=avatar_data, partial=True)
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
-        return Response({"success": "Profile avatar was updated successfully"})
+            avatar_data = str(request.data.get('avatar'))
+            if not avatar_data.lower().endswith((".png", ".jpg", ".jpeg")):
+                # checks extension of image complies with 'png','jpg' and 'jpeg' formats
+                raise APIException(
+                    {"message": "This is an invalid avatar format"})
+            data = {"avatar": request.data.get('avatar')}
+            serializer = ProfileSerializer(
+                instance=saved_profile, data=data, partial=True)
+            if serializer.is_valid(raise_exception=True):
+                serializer.save()
+                print(serializer.data)
+                return Response(
+                    {
+                        "success": "Your profile avatar has been\
+                        updated successfully"
+                    }, status=200)
+        except Exception as e:
+            APIException.status_code = status.HTTP_400_BAD_REQUEST
+            raise APIException({
+                "errors": str(e)
+            })
