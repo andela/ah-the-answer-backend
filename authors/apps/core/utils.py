@@ -13,11 +13,7 @@ def send_verification_email(host_email, to, email_subject, content):
     to_email = Email(email=to)
     subject = email_subject
     content = Content("text/html", content)
-    # message = Mail(
-    #     from_email=host_email,
-    #     to_emails=to,
-    #     subject=email_subject,
-    #     html_content=content)
+    
     try:
         mail = Mail(from_email, subject, to_email, content)
         response = sg.client.mail.send.post(request_body=mail.get())
