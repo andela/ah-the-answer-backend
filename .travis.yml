@@ -1,25 +1,31 @@
 language: python 
-
 python: 
-  - "3.6"
-
+ - "3.6"
 services: 
-  - postgresql
-
+ - postgresql
 addons:
-  postgresql: "9.6"
-
+ postgresql: "9.6"
+ chrome: stable
+ 
 env: 
-  -DJANGO=2.1.7 DB=postgresql
-
+ -DJANGO=2.1.7 DB=postgresql
 install: 
-  - pip install -r requirements.txt
-
+ - pip install -r requirements.txt
 before_script: 
-  - psql -c "CREATE DATABASE authors_haven;" -U postgres
-
+ - psql -c "CREATE DATABASE authors_haven;" -U postgres
+ - wget http://chromedriver.storage.googleapis.com/2.46/chromedriver_linux64.zip
+ - unzip chromedriver_linux64.zip -d /home/travis/virtualenv/python3.6.3/lib/python3.6/site-packages/
+ - sudo mv -f /home/travis/virtualenv/python3.6.3/lib/python3.6/site-packages/chromedriver /usr/local/share/
+ - sudo chmod +x /usr/local/share/chromedriver
+ - sudo ln -s /usr/local/share/chromedriver /usr/local/bin/chromedriver
+ - sudo ln -s /usr/local/share/chromedriver /usr/bin/chromedriver
+ - export CHROME_WEBDRIVER=/usr/bin/chromedriver
+ - "export DISPLAY=:99.0"
+ - "sh -e /etc/init.d/xvfb start" 
+ - sleep 3 #
 script:
-  - python manage.py test
-
+ - python manage.py test
 after_success:
-  - coveralls
+ - coveralls
+after_script:
+  - "sh -e /etc/init.d/xvfb stop"
