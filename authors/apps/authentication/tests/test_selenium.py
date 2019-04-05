@@ -35,7 +35,7 @@ class TestSelenium(unittest.TestCase):
         elem = driver.find_element_by_name("pass")
         elem.send_keys("jdaf")
         elem.send_keys(Keys.RETURN)
-        self.assertIn("The password that you've entered is incorrect.",
+        self.assertIn("The password you’ve entered is incorrect.",
                       driver.page_source)
 
     def tearDown(self):
