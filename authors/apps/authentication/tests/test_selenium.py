@@ -11,7 +11,7 @@ class TestSelenium(unittest.TestCase):
     def setUp(self):
         self.driver = webdriver.Chrome(
             os.getenv('CHROME_WEBDRIVER'))
-        self.current_site = "https://ah-the-answer-backend-st-pr-24.herokuapp.com/"
+        self.current_site = os.getenv('AH_HOST')
         self.github_url = self.current_site + "login/github/"
         self.facebook_url = self.current_site + "login/facebook/"
 
