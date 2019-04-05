@@ -27,7 +27,7 @@ class SocialAuthTest(TestCase):
         self.assertEqual(res.status_code, status.HTTP_302_FOUND)
 
     # GOOGLE
-    def test_user_signup_page_redirects_to_github(self):
+    def test_user_signup_page_redirects_to_google(self):
         """
             Ensures that the redirects are found, basically tests
             that the configurations are functional
