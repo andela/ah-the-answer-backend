@@ -35,8 +35,6 @@ pep8==1.7.1
 Pillow==6.0.0
 psycopg2-binary==2.7.7
 PyJWT==1.4.2
-pylint==2.3.1
-pynliner==0.8.0
 pyparsing==2.3.1
 python-dateutil==2.8.0
 python-decouple==3.1
