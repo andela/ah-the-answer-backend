@@ -12,10 +12,8 @@ class TestSelenium(unittest.TestCase):
         self.driver = webdriver.Chrome(
             os.getenv('CHROME_WEBDRIVER'))
         self.current_site = "https://ah-the-answer-backend-st-pr-24.herokuapp.com/"
-        self.github_url = self.current_site + \
-            reverse('social:begin', kwargs={'backend': 'github'})
-        self.facebook_url = self.current_site + \
-            reverse('social:begin', kwargs={'backend': 'facebook'})
+        self.github_url = self.current_site + "login/github/"
+        self.facebook_url = self.current_site + "login/facebook/"
 
     def test_incorrect_github_credentials(self):
         driver = self.driver
