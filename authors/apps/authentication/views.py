@@ -76,7 +76,7 @@ class LoginAPIView(APIView):
 
 class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
     permission_classes = (IsAuthenticated,)
-    renderer_classes = (UserJSONRenderer,)
+    #renderer_classes = (UserJSONRenderer,)
     serializer_class = UserSerializer
 
     def retrieve(self, request, *args, **kwargs):
