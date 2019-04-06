@@ -1,7 +1,6 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
-from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import APIException
 
 from .models import Article, ArticleImage
@@ -32,7 +31,8 @@ class ArticleView(APIView):
 
         return Response(
             {
-                "success": "Article '{}' created successfully".format(article_saved.title)
+                "success": "Article '{}' created successfully".format(article_saved.title),
+                "article": serializer.data
             }, status=201)
 
 
@@ -69,7 +69,10 @@ class RetrieveArticleView(APIView):
         if serializer.is_valid(raise_exception=True):
             if self.is_owner(saved_article.author.id, request.user.id) is True:
                 article_saved = serializer.save()
-                return Response({"success": "Article '{}' updated successfully".format(article_saved.title)})
+                return Response({
+                    "success": "Article '{}' updated successfully".format(article_saved.title),
+                    "article": serializer.data
+                })
             response = {"message": "Only the owner can edit this article."}
             return Response(response, status=403)
 
