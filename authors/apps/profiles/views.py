@@ -97,7 +97,7 @@ class AvatarView(APIView):
     Throws an Authorization error if the user who did not create the profile,
     attempts edits
     """
-    permission_classes = (IsAuthenticated, )
+    permission_classes = (IsAuthenticated, ) # only authenticated users can access this route
 
     def patch(self, request, username):
         try:
@@ -106,6 +106,7 @@ class AvatarView(APIView):
                 user__username=username
             )
         except ObjectDoesNotExist:
+            # raises an exception if user object does not exist
             APIException.status_code = status.HTTP_404_NOT_FOUND
             raise APIException(
                 {"message": "User with that profile does not exist"})
