@@ -141,7 +141,7 @@ class AvatarView(APIView):
                 # checks that avatar size does not exceed 5mb
                 APIException.status_code = status.HTTP_400_BAD_REQUEST
                 raise APIException(
-                    {"message": "This is image is too large avatars cannot be more than 5mb"})
+                    {"message": "This is image is too large, avatars cannot be more than 5mb"})
 
             data = {"avatar": upload_info}
             serializer = ProfileSerializer(
