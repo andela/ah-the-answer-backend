@@ -1,13 +1,24 @@
 from django.urls import path
 from .views import (
+<<<<<<< HEAD
     LoginAPIView,
     RegistrationAPIView,
     UserRetrieveUpdateAPIView,
+=======
+    LoginAPIView, RegistrationAPIView,
+    UserRetrieveUpdateAPIView,
+    EmailVerificationView,
+>>>>>>> [ft #164829362] Add views for social login
     PasswordResetAPIView,
     SetUpdatedPasswordAPIView,
     GoogleAuthView,
     FacebookAuthAPIView,
     TwitterAuthAPIView
+<<<<<<< HEAD
+=======
+    SetUpdatedPasswordAPIView
+
+>>>>>>> [ft #164829362] Add views for social login
 )
 
 urlpatterns = [

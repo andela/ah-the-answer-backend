@@ -6,7 +6,11 @@ from rest_framework.validators import UniqueValidator
 from random import randint
 from .models import User
 
+<<<<<<< HEAD
 from .validators import (
+=======
+from .validators import ( 
+>>>>>>> [ft #164829362] Add views for social login
     GoogleValidate, FacebookValidate,
     TwitterValidate)
 
@@ -238,7 +242,11 @@ class GoogleAuthSerializer(serializers.ModelSerializer):
 
     def validate_access_token(self, access_token):
         """
+<<<<<<< HEAD
         Validate access_token, decode the access_token  and finally retrieve
+=======
+        Validate access_token, decode the access_token  and finally retrieve 
+>>>>>>> [ft #164829362] Add views for social login
         user info to grant access to that user.
         """
 
@@ -264,7 +272,11 @@ class GoogleAuthSerializer(serializers.ModelSerializer):
                     'name', decoded_user_data['email']),
                 'email': decoded_user_data.get('email'),
                 'password': randint(10000000, 20000000),
+<<<<<<< HEAD
 
+=======
+            
+>>>>>>> [ft #164829362] Add views for social login
             }
 
             try:
