@@ -6,7 +6,7 @@ def dispatch_email(user_email, subject, message):
     """
     This method handles the sending of mails to users
     """
-    sg = sendgrid.SendGridAPIClient(apikey=os.getenv("SENDGRID_API_KEY"))
+    sg = sendgrid.SendGridAPIClient(os.getenv("SENDGRID_API_KEY"))
     from_email = Email(email=os.getenv("FROM_EMAIL"))
     to_email = Email(email=user_email)
     subject = subject
