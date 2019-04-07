@@ -1,8 +1,8 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
-
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.parsers import FileUploadParser
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
 from rest_framework.exceptions import APIException
@@ -72,8 +72,7 @@ class EditProfileView(APIView):
                 APIException.status_code = status.HTTP_401_UNAUTHORIZED
                 raise APIException({
                     "errors": {
-                        "Unauthorized": "You are not allowed\
-                                        to edit this Profile"
+                        "Unauthorized": "You are not allowed to edit this Profile"
                     }
                 })
         except ObjectDoesNotExist:
@@ -101,7 +100,6 @@ class AvatarView(APIView):
     attempts edits
     """
     permission_classes = (IsAuthenticated, )
-    # checks whether user is logged in
 
     def patch(self, request, username):
         try:
@@ -122,24 +120,40 @@ class AvatarView(APIView):
                 }
             })
         try:
-            avatar_data = str(request.data.get('avatar'))
+            upload_info = request.data.get('avatar')
+            content = request.FILES.get('avatar')
+            if not content:
+                APIException.status_code = status.HTTP_400_BAD_REQUEST
+                raise APIException(
+                    {
+                        "message": "You have not supplied any file for upload"
+                    })
+            size = content.size
+            avatar_data = str(upload_info)
             if not avatar_data.lower().endswith((".png", ".jpg", ".jpeg")):
                 # checks extension of image complies with 'png','jpg' and 'jpeg' formats
+                APIException.status_code = status.HTTP_400_BAD_REQUEST
                 raise APIException(
-                    {"message": "This is an invalid avatar format"})
-            data = {"avatar": request.data.get('avatar')}
+                    {
+                        "message": "This is an invalid avatar format, '.jpg','.jpeg', '.png' are the accepted formats"
+                    })
+
+            if size > 5021440:
+                APIException.status_code = status.HTTP_400_BAD_REQUEST
+                raise APIException(
+                    {"message": "This is image is too large avatars cannot be more than 5mb"})
+
+            data = {"avatar": upload_info}
             serializer = ProfileSerializer(
                 instance=saved_profile, data=data, partial=True)
             if serializer.is_valid(raise_exception=True):
                 serializer.save()
-                print(serializer.data)
                 return Response(
                     {
-                        "success": "Your profile avatar has been\
-                        updated successfully"
+                        "success": "Your profile avatar has been updated successfully"
                     }, status=200)
         except Exception as e:
             APIException.status_code = status.HTTP_400_BAD_REQUEST
             raise APIException({
-                "errors": str(e)
+                "errors": e.detail
             })
