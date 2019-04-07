@@ -19,6 +19,7 @@ class ArticleSerializer(serializers.ModelSerializer):
         instance.description = validated_data.get(
             'description', instance.description)
         instance.body = validated_data.get('body', instance.body)
+        instance.is_published = validated_data.get('is_published', instance.is_published)
         instance.save()
         return instance
 
