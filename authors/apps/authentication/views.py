@@ -105,3 +105,4 @@ class SetUpdatedPasswordAPIView(APIView):
                 {'message': output},
                 status=status.HTTP_202_ACCEPTED
             )
+            

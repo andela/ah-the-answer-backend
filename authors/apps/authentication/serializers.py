@@ -205,8 +205,3 @@ class SetUpdatedPasswordSerializer(serializers.Serializer):
         )],
         write_only=True
     )
-
-    # class Meta:
-    #     model = User
-    #     fields = ('password',)
-    
