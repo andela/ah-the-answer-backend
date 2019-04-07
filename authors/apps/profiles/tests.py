@@ -270,6 +270,10 @@ class TestModelCase(TestCase):
         res = new_client.put('/api/profile/username/edit/', format="json")
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
 
+    def test_inexistent_profile_cant_be_edited(self):
+        res = self.client.put('/api/profile/username/edit/', format="json")
+        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
+
     def test_user_cant_edit_inexistent_avatar(self):
         res = self.client.patch(
             reverse('profiles:profile-image',
