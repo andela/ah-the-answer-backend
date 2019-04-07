@@ -22,7 +22,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
             code='invalid_password')],
 
         error_messages={
-            'min_length': 'Password should be at least 8 characters longclear',
+            'min_length': 'Password should be at least 8 characters long',
             'max_length': 'Password should not be longer than 128 characters',
             'blank': 'Password cannot be blank',
             'required': 'Password is required'
