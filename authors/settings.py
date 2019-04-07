@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_extensions',
     'rest_framework',
+    'django_inlinecss',
     'social_django',
     'cloudinary',
 
@@ -84,6 +85,8 @@ TEMPLATES = [
         },
     },
 ]
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 WSGI_APPLICATION = 'authors.wsgi.application'
 
@@ -165,6 +168,14 @@ REST_FRAMEWORK = {
     ),
 }
 
+#email configurations
+DOMAIN = os.getenv('DOMAIN')
+EMAIL_HOST = os.getenv('EMAIL_HOST', default='localhost')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', default='')
+EMAIL_PORT = os.getenv('EMAIL_PORT', default=587)
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', default=True)
+
 # social_django app settings
 SOCIAL_AUTH_POSTGRES_JSONFIELD = True
 AUTHENTICATION_BACKENDS = (
@@ -186,6 +197,7 @@ SOCIAL_AUTH_FACEBOOK_SECRET = os.getenv('SOCIAL_AUTH_FACEBOOK_SECRET')
 
 SOCIAL_AUTH_GITHUB_KEY = os.getenv('SOCIAL_AUTH_GITHUB_KEY')
 SOCIAL_AUTH_GITHUB_SECRET = os.getenv('SOCIAL_AUTH_GITHUB_SECRET')
+
 
 cloudinary.config(
     cloud_name=os.getenv("CLOUDINARY_NAME"),
