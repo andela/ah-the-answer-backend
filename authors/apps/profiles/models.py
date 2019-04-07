@@ -15,11 +15,11 @@ class Profile(models.Model):
                                 'description about yourself.')
     name = models.CharField(max_length=50, help_text='Enter your first '
                             'and last names.')
-    number_of_followers = models.IntegerField(default=0)
-    number_of_followings = models.IntegerField(default=0)
-    total_articles = models.IntegerField(default=0)
+    number_of_followers = models.IntegerField(default=150)
+    number_of_followings = models.IntegerField(default=100)
+    total_articles = models.IntegerField(default=60)
     avatar = CloudinaryField(
-        "image", default='image/upload/v1554186175/samples/avatar.png')
+        "image", default='image/upload/v1554548354/21.jpg')
 
     def get_cloudinary_url(self):
         """
