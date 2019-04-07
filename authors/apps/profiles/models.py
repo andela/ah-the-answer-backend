@@ -15,9 +15,9 @@ class Profile(models.Model):
                                 'description about yourself.')
     name = models.CharField(max_length=50, help_text='Enter your first '
                             'and last names.')
-    number_of_followers = models.IntegerField(default=150)
-    number_of_followings = models.IntegerField(default=100)
-    total_articles = models.IntegerField(default=60)
+    number_of_followers = models.IntegerField(default=0)
+    number_of_followings = models.IntegerField(default=0)
+    total_articles = models.IntegerField(default=0)
     avatar = CloudinaryField(
         "image", default='image/upload/v1554548354/21.jpg')
 
