@@ -15,10 +15,11 @@ class RegistrationSerializer(serializers.ModelSerializer):
         max_length=128,
         min_length=8,
         write_only=True,
-        required = True,
-        validators =[RegexValidator(
+        required=True,
+        validators=[RegexValidator(
             regex="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$",
-            message = "Please ensure your password contains at least one letter and one numeral",
+            message="Please ensure your password contains at least one letter\
+                 and one numeral",
             code='invalid_password')],
 
         error_messages={
@@ -42,11 +43,12 @@ class RegistrationSerializer(serializers.ModelSerializer):
                 'error_messages': {
                     'required': 'Email is required',
                     'blank': 'Email field cannot be empty',
-                    'invalid':'Please enter a valid email address'
+                    'invalid': 'Please enter a valid email address'
                 },
                 'validators': [
-                    UniqueValidator(queryset=User.objects.all(),
-                    message='A user with this email already exists')
+                    UniqueValidator(
+                        queryset=User.objects.all(),
+                        message='A user with this email already exists')
                 ]
             },
 
@@ -56,11 +58,13 @@ class RegistrationSerializer(serializers.ModelSerializer):
                     'blank': 'Username field cannot be empty'
                 },
                 'validators': [
-                    UniqueValidator(queryset=User.objects.all(),
-                    message='A user with this username already exists')
+                    UniqueValidator(
+                        queryset=User.objects.all(),
+                        message='A user with this username already exists')
                 ]
             }
         }
+        
     def create(self, validated_data):
         # Use the `create_user` method we wrote earlier to create a new user.
         return User.objects.create_user(**validated_data)
