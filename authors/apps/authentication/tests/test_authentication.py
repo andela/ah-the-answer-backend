@@ -40,7 +40,10 @@ class TestJWTGenerator(TestCase):
             },
             format="json"
         )
-
+        #verify the user
+        test_user = User.objects.get(username='tester')
+        test_user.is_verified = True
+        test_user.save()
         login_res = self.client.post(
             reverse('authentication:user-login'),
             data={

@@ -1,5 +1,14 @@
+
 from rest_framework import status, serializers
 from rest_framework.generics import RetrieveUpdateAPIView, GenericAPIView
+
+import os
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+from django.conf import settings
+from rest_framework import status
+from rest_framework.generics import RetrieveUpdateAPIView
+
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -11,14 +20,18 @@ from .serializers import (
     GoogleAuthSerializer, FacebookAuthSerializer,
     TwitterAuthSerializer
 )
+
 from social_django.utils import load_backend, load_strategy
 
 from social_core.backends.oauth import BaseOAuth1, BaseOAuth2
 from social_core.exceptions import MissingBackend
 
+
+from authors.apps.authentication.jwt_generator import jwt_encode, jwt_decode
+from authors.apps.core.utils import send_verification_email
+
 from .models import User
 from .backends import JWTAuthentication
-from .jwt_generator import jwt_decode
 
 from .validators import GoogleValidate
 class RegistrationAPIView(APIView):
@@ -35,9 +48,27 @@ class RegistrationAPIView(APIView):
         # your own work later on. Get familiar with it.
         serializer = self.serializer_class(data=user)
         serializer.is_valid(raise_exception=True)
+        user_email = serializer.validated_data['email']
+        username= serializer.validated_data['username']
+        username = serializer.validated_data['username']
+
+      
+        token = jwt_encode(user_email)
+        template_name = 'email_verification.html'
+        context = {'username': username, 'token': token, 'domain':settings.DOMAIN}
+        html_message = render_to_string(template_name, context)
+        subject = 'Please verify your email'
+        response=send_verification_email(os.getenv('FROM_EMAIL'), user_email,subject,html_message)
+        
+        if not response:
+             return Response('something went wrong', status=status.HTTP_400_BAD_REQUEST)
+
+        message = {
+            'message': 'Your account has been succesfully created. Check your email to verify your account'
+        }
         serializer.save()
 
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.validated_data, status=status.HTTP_201_CREATED)
 
 
 class LoginAPIView(APIView):
@@ -84,6 +115,46 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+class EmailVerificationView(APIView):
+    """This view handles request for verifying email adresses"""
+    permission_classes = (AllowAny,)
+    renderer_classes = (UserJSONRenderer,)
+    serializer_class = UserSerializer
+
+    def get(self, request, token):
+        decoded_token = jwt_decode(token)
+        email = decoded_token['user_id']
+        if not email:
+            return Response(
+                {'error': 'Invalid token'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        #check if a user exists and if they are verified
+        #if a user is not found we return an error
+        #if we find a verified user , we raise an error
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response(
+                {'email': 'No user with email has been registered'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        if user.is_verified is True:
+            return Response(
+                {'email': 'This email has already been verified'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user.is_verified = True
+        user.save()
+        return Response(
+            {'Success': 'Your email has been verified'}
+        )
+      
+
 class PasswordResetAPIView(APIView):
     """
     This view handles the request for the password reset  link to be sent to
@@ -117,6 +188,7 @@ class SetUpdatedPasswordAPIView(APIView):
                 {'message': output},
                 status=status.HTTP_202_ACCEPTED
             )
+
 
 
 class GoogleAuthView(GenericAPIView):
@@ -168,3 +240,4 @@ class TwitterAuthAPIView(GenericAPIView):
         serializer.is_valid(raise_exception=True)
         res = {"token": serializer.data['access_token']}
         return Response(res, status=status.HTTP_200_OK)
+

@@ -59,6 +59,8 @@ class TestArticle(TestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(response.data['success'])
+        self.assertTrue(response.data['article'])
 
     def test_create_missing_fields(self):
         response = self.client.post(
@@ -190,8 +192,8 @@ class TestArticle(TestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        # Test content as well as status code
+        self.assertTrue(response.data['success'])
+        self.assertTrue(response.data['article'])
 
     def test_update_non_existent(self):
         response = self.client.put(

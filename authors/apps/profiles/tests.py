@@ -58,6 +58,10 @@ class TestModelCase(TestCase):
             },
             format="json"
         )
+        #verify email
+        test_user = User.objects.get(username='Bob')
+        test_user.is_verified = True
+        test_user.save()
         self.login = self.client.post(
             reverse('authentication:user-login'),
             data={
