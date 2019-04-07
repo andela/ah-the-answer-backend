@@ -5,8 +5,7 @@ from rest_framework import exceptions
 
 import os
 from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Email, Content, Mail
-
+from sendgrid.helpers.mail import *
 
 def send_verification_email(host_email, to, email_subject, content):
     sg = SendGridAPIClient(apikey=os.getenv('SENDGRID_API_KEY'))
@@ -14,7 +13,7 @@ def send_verification_email(host_email, to, email_subject, content):
     to_email = Email(email=to)
     subject = email_subject
     content = Content("text/html", content)
-
+    
     try:
         mail = Mail(from_email, subject, to_email, content)
         response = sg.client.mail.send.post(request_body=mail.get())

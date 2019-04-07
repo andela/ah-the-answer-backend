@@ -22,7 +22,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
             code='invalid_password')],
 
         error_messages={
-            'min_length': 'Password should be at least 8 characters longclear',
+            'min_length': 'Password should be at least 8 characters long',
             'max_length': 'Password should not be longer than 128 characters',
             'blank': 'Password cannot be blank',
             'required': 'Password is required'
@@ -119,6 +119,12 @@ class LoginSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 'This user has been deactivated.'
             )
+
+        if not user.is_verified:
+            raise serializers.ValidationError(
+                'This email has not been Verified.'
+            )
+
 
         # The `validate` method should return a dictionary of validated data.
         # This is the data that is passed to the `create` and `update` methods

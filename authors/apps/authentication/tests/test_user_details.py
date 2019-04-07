@@ -1,6 +1,7 @@
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework import test, status
+from authors.apps.authentication.models import User
 
 
 class TestUser(TestCase):
@@ -17,6 +18,11 @@ class TestUser(TestCase):
             },
             format="json"
         )
+        #verify the user
+        test_user = User.objects.get(username='user')
+        test_user.is_verified = True
+        test_user.save()
+        print(User.objects.get(username='user').is_verified)
         self.login = self.client.post(
             reverse('authentication:user-login'),
             data={
