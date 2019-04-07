@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_extensions',
     'rest_framework',
+    'django_inlinecss',
     'cloudinary',
 
     'authors.apps.authentication',
