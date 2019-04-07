@@ -273,7 +273,6 @@ class TestJWTGenerator(TestCase):
         )
         output = json.loads(response.content)
         self.assertIn(
-            'Please ensure your password contains at least one letter\
-                 and one numeral', str(output)
+            'Please ensure your password contains at least one letter and one numeral', str(output)
                  )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

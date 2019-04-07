@@ -18,8 +18,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
         required=True,
         validators=[RegexValidator(
             regex="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$",
-            message="Please ensure your password contains at least one letter\
-                 and one numeral",
+            message="Please ensure your password contains at least one letter and one numeral",
             code='invalid_password')],
 
         error_messages={
@@ -64,7 +63,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
                 ]
             }
         }
-        
+
     def create(self, validated_data):
         # Use the `create_user` method we wrote earlier to create a new user.
         return User.objects.create_user(**validated_data)
