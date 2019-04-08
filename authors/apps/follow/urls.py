@@ -10,6 +10,6 @@ urlpatterns = [
          ManageFollowers.as_view(), name='list-followers'),
     path('followings/<str:user>/',
          ManageFollowings.as_view(), name='list-followings'),
-    path('<str:user>/unfollow/<str:follower>',
+    path('unfollow/<str:user>/<str:follower>',
          ManageFollowers.as_view(), name='unfollow-user'),
 ]

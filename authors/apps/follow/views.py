@@ -24,7 +24,7 @@ class ManageFollowers(APIView):
             return Response({'error': 'User is attempting to '
                             'follow themselves. This is not allowed.'},
                             status=status.HTTP_400_BAD_REQUEST)
-        if User.objects.get(username=following).exists():
+        if User.objects.filter(username=following).exists():
                 if Follows.objects.filter(followed_user=following).filter(following_user=follower).exists():
                     return Response({'error': 'User already followed.'},
                                     status=status.HTTP_400_BAD_REQUEST)
@@ -48,9 +48,15 @@ class ManageFollowers(APIView):
         """Removes a follower from a users following."""
         check_user = self.request.user.username
         if check_user != user:
-            return Response({'error': 'Incorrect user logged in. '
+            return Response({'error': 'Incorrect user logged in.'
                             'Check username in the URL.'},
                             status=status.HTTP_400_BAD_REQUEST)
+        if Follows.objects.filter(followed_user=follower).filter(following_user=user).exists():
+            Follows.objects.filter(followed_user=follower).filter(following_user=user).delete()
+            return Response({"success": '{} has been unfollowed.'.format(
+                            follower)})
+        return Response({"error": 'You do not follow {}. Unfollow failed.'
+                        .format(follower)})
 
 
 class ManageFollowings(APIView):
