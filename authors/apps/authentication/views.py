@@ -49,8 +49,10 @@ class RegistrationAPIView(APIView):
         
         if not response:
             return Response(
-                 'something went wrong',
-                  status=status.HTTP_400_BAD_REQUEST
+                {
+                   'error': 'something went wrong'
+                },
+                status=status.HTTP_400_BAD_REQUEST
                   )
 
         message = {
