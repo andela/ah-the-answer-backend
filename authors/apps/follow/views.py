@@ -9,10 +9,10 @@ from rest_framework.response import Response
 from ..authentication.models import User
 from .models import Follows
 
-from .serializers import FollowSerializer
+from .serializers import FollowersSerializer, FollowingSerializer
 
 
-class ManageFollows(APIView):
+class ManageFollowers(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request, following):
@@ -37,8 +37,27 @@ class ManageFollows(APIView):
         return Response({'error': 'Unable to create a following. '
                         'This user does not exist. Please choose another '
                          'user.'}, status=status.HTTP_400_BAD_REQUEST)
-    
+
     def get(self, request, user):
+        """Returns a list of followers for a given user."""
         followers_list = Follows.objects.filter(followed_user=user)
-        serializer = FollowSerializer(followers_list, many=True)
+        serializer = FollowersSerializer(followers_list, many=True)
         return Response({"followers": serializer.data})
+
+    def delete(self, request, user, follower):
+        """Removes a follower from a users following."""
+        check_user = self.request.user.username
+        if check_user != user:
+            return Response({'error': 'Incorrect user logged in. '
+                            'Check username in the URL.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+
+class ManageFollowings(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, user):
+        """Returns a list of followed users for a given user."""
+        followings_list = Follows.objects.filter(following_user=user)
+        serializer = FollowingSerializer(followings_list, many=True)
+        return Response({"followed users": serializer.data})
