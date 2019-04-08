@@ -6,7 +6,6 @@ from selenium.webdriver.common.action_chains import ActionChains
 from django.urls import reverse
 
 
-
 class TestSelenium(unittest.TestCase):
     def setUp(self):
         self.driver = webdriver.Chrome(
