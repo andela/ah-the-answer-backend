@@ -2,7 +2,7 @@ from django.db import models
 from cloudinary.models import CloudinaryField
 from ..authentication.models import User
 from django.utils.text import slugify
-from .utils import generate_slug
+from .utils import generate_slug, get_readtime
 
 
 class Article(models.Model):
@@ -13,6 +13,7 @@ class Article(models.Model):
     date_created = models.DateTimeField(auto_now_add=True)
     date_modified = models.DateTimeField(auto_now=True)
     slug = models.SlugField(max_length=120, db_index=True, unique=True)
+    read_time = models.CharField(max_length=10, null=False, blank=False)
     author = models.ForeignKey(
         User, related_name='articles',
         on_delete=models.CASCADE)
@@ -23,6 +24,7 @@ class Article(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = generate_slug(self.title)
+        self.read_time = get_readtime(self.body)
         super(Article, self).save(*args, **kwargs)
 
     class Meta:
