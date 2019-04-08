@@ -5,8 +5,9 @@ from rest_framework import test, status
 import io
 from rest_framework.test import APIClient
 
-from .models import Profile
-from ..authentication.models import User
+from authors.apps.profiles.models import Profile
+from authors.apps.authentication.models import User
+
 
 class TestModelCreate(TestCase):
     """Tests the whether model can create a new record"""
@@ -58,7 +59,7 @@ class TestModelCase(TestCase):
             },
             format="json"
         )
-        #verify email
+        # Verify email
         test_user = User.objects.get(username='Bob')
         test_user.is_verified = True
         test_user.save()
@@ -91,7 +92,6 @@ class TestModelCase(TestCase):
                                }
         self.token = self.login.data['token']
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token)
-
 
     def test_user_can_edit_profile(self):
         """
@@ -191,6 +191,7 @@ class TestModelCase(TestCase):
             format="json"
         )
         self.assertEquals(res.status_code, status.HTTP_400_BAD_REQUEST)
+
     @property
     def temporary_image(self):
         """
