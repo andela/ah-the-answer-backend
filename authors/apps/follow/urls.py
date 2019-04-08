@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import (ManageFollowers, ManageFollowings)
+from .views import (ManageFollowers, ManageFollowings, UserStats)
 
 app_name = 'follow'
 
@@ -10,6 +10,8 @@ urlpatterns = [
          ManageFollowers.as_view(), name='list-followers'),
     path('followings/<str:user>/',
          ManageFollowings.as_view(), name='list-followings'),
-    path('unfollow/<str:user>/<str:follower>',
+    path('unfollow/<str:user>/<str:follower>/',
          ManageFollowers.as_view(), name='unfollow-user'),
+    path('follows/count/<str:user>/',
+         UserStats.as_view(), name='count-follows')
 ]

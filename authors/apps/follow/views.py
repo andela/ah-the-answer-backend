@@ -13,12 +13,16 @@ from .serializers import FollowersSerializer, FollowingSerializer
 
 
 class ManageFollowers(APIView):
+    """Contains views related to a user's followers. This includes methods
+    that allow users to follow and unfollow each other, as well as return a
+    list of all user followers. Only authenticated users may
+    access the views."""
     permission_classes = (IsAuthenticated,)
 
     def post(self, request, following):
         """Enables one user to follower another user. The method checks if a
         user is trying to follow themselves, if the user to be followed is
-        an existing user, and finally if the user has already been followed."""
+        an existing user, and if the given user has already been followed."""
         follower = self.request.user.username
         if follower == following:
             return Response({'error': 'User is attempting to '
@@ -42,28 +46,56 @@ class ManageFollowers(APIView):
         """Returns a list of followers for a given user."""
         followers_list = Follows.objects.filter(followed_user=user)
         serializer = FollowersSerializer(followers_list, many=True)
-        return Response({"followers": serializer.data})
+        return Response({"followers": serializer.data},
+                        status=status.HTTP_200_OK)
 
     def delete(self, request, user, follower):
-        """Removes a follower from a users following."""
+        """Removes a follower from a user's following. Checks if user
+        attempts to delete followers unrelated to them. It then confirms if the
+        given user actually follows the given follower."""
         check_user = self.request.user.username
         if check_user != user:
             return Response({'error': 'Incorrect user logged in.'
                             'Check username in the URL.'},
                             status=status.HTTP_400_BAD_REQUEST)
-        if Follows.objects.filter(followed_user=follower).filter(following_user=user).exists():
-            Follows.objects.filter(followed_user=follower).filter(following_user=user).delete()
+        if Follows.objects.filter(followed_user=follower).filter(
+                                  following_user=user).exists():
+            Follows.objects.filter(followed_user=follower).filter(
+                                  following_user=user).delete()
             return Response({"success": '{} has been unfollowed.'.format(
-                            follower)})
+                            follower)}, status=status.HTTP_200_OK)
         return Response({"error": 'You do not follow {}. Unfollow failed.'
-                        .format(follower)})
+                        .format(follower)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ManageFollowings(APIView):
+    """Contains views related to a user's follows. This includes a method that
+    returns a list of all the followed users. Only authenticated users may
+    access the view."""
     permission_classes = (IsAuthenticated,)
 
     def get(self, request, user):
         """Returns a list of followed users for a given user."""
         followings_list = Follows.objects.filter(following_user=user)
         serializer = FollowingSerializer(followings_list, many=True)
-        return Response({"followed users": serializer.data})
+        return Response({"followed users": serializer.data},
+                        status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserStats(APIView):
+    """Contains views related to calculating statistics based on a user's
+    followers and follows. This includes a method that counts the number of
+    followers and follows of a given user."""
+    def get(self, request, user):
+        """Returns a count of a user's followers and follows."""
+        if User.objects.filter(username=user).exists():
+            amount_follows = Follows.objects.filter(
+                              following_user=user).count()
+            amount_followers = Follows.objects.filter(
+                                followed_user=user).count()
+            return Response({"social stats": [{"follows": amount_follows},
+                            {"followers": amount_followers}]},
+                            status=status.HTTP_200_OK)
+        return Response({"error": "This given username does not have an \
+                        'Author's Haven account."},
+                        status=status.HTTP_400_BAD_REQUEST)
