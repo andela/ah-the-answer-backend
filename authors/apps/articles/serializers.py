@@ -26,8 +26,8 @@ class ArticleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Article
         fields = ('id', 'title', 'body', 'description', 'is_published',
-                  'date_created', 'date_modified', 'slug', 'author')
-        read_only_fields = ('date_created', 'date_modified', 'slug', 'author')
+                  'date_created', 'date_modified', 'slug', 'read_time', 'author')
+        read_only_fields = ('date_created', 'date_modified', 'slug', 'read_time', 'author')
 
 
 class ArticleImageSerializer(serializers.ModelSerializer):
