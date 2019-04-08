@@ -4,6 +4,6 @@ from .views import (ManageFollows)
 app_name = 'follow'
 
 urlpatterns = [
-    path('follows/<str:username>/',
+    path('follow/<str:following>/',
          ManageFollows.as_view(), name='followers-list'),
 ]
