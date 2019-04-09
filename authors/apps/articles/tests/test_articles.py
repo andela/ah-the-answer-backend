@@ -340,6 +340,79 @@ class TestArticle(TestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     # END OF DELETE TESTS
+    @property
+    def temporary_image(self):
+        """
+        Creates a dummy, temporary image for testing purposes
+        Returns a new temporary image file
+        """
+        import tempfile
+        from PIL import Image
+
+        image = Image.new('RGB', (100, 100))
+        tmp_file = tempfile.NamedTemporaryFile(suffix='.jpg')
+        image.save(tmp_file, 'jpeg')
+        # important because after save(),
+        # the fp is already at the end of the file
+        tmp_file.seek(0)  # retrieves the created temp file
+        return tmp_file
+
+    def test_image_upload_successful(self):
+        """
+        This test case tests that an authenticated
+        user can update their own profile avatar
+        """
+        self.client.post(
+            reverse('articles:create-list'),
+            data={
+                "article": {
+                    "title": "Test title",
+                    "body": "This is a very awesome article on testing tests",
+                    "description": "Written by testing tester",
+                }
+            },
+            format="json"
+        )
+        res = self.client.post(
+            reverse('articles:add-image',
+                    kwargs={
+                        "slug": Article.objects.get().slug
+                    }),
+            data={
+                "file": self.temporary_image
+            },
+            format='multipart'
+        )
+        self.assertEquals(res.status_code, status.HTTP_200_OK)
+
+    def test_invalid_image_upload(self):
+        """
+        This test case tests that an authenticated
+        user can update their own profile avatar
+        """
+        self.client.post(
+            reverse('articles:create-list'),
+            data={
+                "article": {
+                    "title": "Test title",
+                    "body": "This is a very awesome article on testing tests",
+                    "description": "Written by testing tester",
+                }
+            },
+            format="json"
+        )
+        res = self.client.post(
+            reverse('articles:add-image',
+                    kwargs={
+                        "slug": Article.objects.get().slug
+                    }),
+            data={
+                "file": "self.temporary_image"
+            },
+            format='multipart'
+        )
+        self.assertEquals(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertRaises(Exception)
 
     def tearDown(self):
         Article.objects.all().delete()

@@ -14,7 +14,7 @@ class SocialAuthTest(TestCase):
         """
         res = self.client.get(
             reverse('social:begin', kwargs={'backend': 'facebook'}))
-        self.assertEqual(res.status_code, status.HTTP_302_FOUND) 
+        self.assertEqual(res.status_code, status.HTTP_302_FOUND)
 
     # Github
     def test_user_signup_page_redirects_to_github(self):

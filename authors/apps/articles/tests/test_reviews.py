@@ -1,5 +1,6 @@
 from .commons import *
 
+
 class TestReviewModel(BaseSetup):
     def setUp(self):
         user = User.objects.create(username="johndoe")
@@ -128,3 +129,29 @@ class ReviewTestCase(BaseSetup):
             format="json"
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_cant_edit_non_existent_review(self):
+        self.test_user_can_delete_review()
+        response = self.client2.delete(reverse('articles:review', kwargs={
+            "slug": Article.objects.get().slug
+        }))
+        self.assertEqual(response.status_code,
+                         status.HTTP_404_NOT_FOUND)
+        self.assertRaises(Exception)
+
+    def test_cant_review_non_existent_article(self):
+        response = self.client2.post(
+            reverse('articles:review', kwargs={
+                "slug": "fake_article"
+            }),
+            data={
+                "review": {
+                    "review_body": "I really liked the article",
+                    "rating_value": 5
+                }
+            },
+            format="json"
+        )
+        self.assertEqual(response.status_code,
+                         status.HTTP_404_NOT_FOUND)
+        self.assertRaises(Exception)
