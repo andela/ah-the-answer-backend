@@ -4,10 +4,11 @@ from rest_framework import views, permissions, status, response, exceptions
 from .serializers import CommentSerializer
 from authors.apps.comments.models import Comment
 from authors.apps.articles.models import Article
+from authors.apps.articles.permissions import ReadOnly
 
 
 class CommentsCreateList(views.APIView):
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated | ReadOnly,)
 
     def get(self, request, slug):
         article = Article.objects.get(slug=slug)
@@ -39,7 +40,10 @@ class CommentsCreateList(views.APIView):
 
 
 class CommentsDetail(views.APIView):
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated | ReadOnly,)
+    validation_message = (
+        "Only the author of this comment can make the requested changes"
+    )
 
     def get(self, request, slug, pk):
         try:
@@ -67,23 +71,35 @@ class CommentsDetail(views.APIView):
         if len(update_body) < 1:
             raise exceptions.ValidationError("Body should not be empty")
 
-        else:
+        try:
+            self.validate_user(comment.author, self.request.user)
             comment.body = update_body
             comment.save()
 
-        return response.Response(
-            {
-                "success": "Update successful",
-                "comment": serializer.data
-            }
-        )
+            return response.Response(
+                {
+                    "success": "Comment updated successful",
+                    "comment": serializer.data
+                }
+            )
+        except exceptions.ValidationError:
+            return response.Response(
+                {
+                    "errors": self.validation_message
+                },
+                status.HTTP_401_UNAUTHORIZED
+            )
 
     def delete(self, request, slug, pk):
         try:
             comment = Comment.objects.get(id=pk)
+            self.validate_user(comment.author, self.request.user)
             comment.delete()
             return response.Response(
-                status=status.HTTP_204_NO_CONTENT
+                {
+                    "success": "Comment deleted successfully"
+                },
+                status=status.HTTP_200_OK
             )
         except ObjectDoesNotExist:
             return response.Response(
@@ -92,3 +108,17 @@ class CommentsDetail(views.APIView):
                 },
                 status.HTTP_404_NOT_FOUND
             )
+        except exceptions.ValidationError:
+
+            return response.Response(
+                {
+                    "errors": self.validation_message
+                },
+                status.HTTP_401_UNAUTHORIZED
+            )
+
+    def validate_user(self, comment_user, user):
+        if comment_user != user:
+            raise exceptions.ValidationError()
+        else:
+            return True
