@@ -22,8 +22,8 @@ class RegistrationSerializer(serializers.ModelSerializer):
         write_only=True,
         required=True,
         validators=[RegexValidator(
-            regex='^[a-zA-Z0-9]*',
-            message='Password should be alphanumeric',
+            regex="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$",
+            message="Please ensure your password contains at least one letter and one numeral",
             code='invalid_password')],
 
         error_messages={
