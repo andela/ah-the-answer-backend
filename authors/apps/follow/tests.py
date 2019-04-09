@@ -75,8 +75,8 @@ class TestFollowViews(TestCase):
         response = self.client_1.post(reverse('follow:follow-user',
                                       args=['Bob']), format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data['error'], "User is attempting to '
-                         'follow themselves. This is not allowed.')
+        self.assertEqual(response.data['error'], "User is attempting to "
+                         "follow themselves. This is not allowed.")
 
     def test_user_follows_other_user(self):
         self.token_1 = self.login_1.data['token']
@@ -143,7 +143,7 @@ class TestFollowViews(TestCase):
         response = self.client_1.delete(reverse('follow:unfollow-user',
                                         args=['Mary', 'Bob']), format="json")
         self.assertEqual(response.data['error'], 'Incorrect user logged in.'
-                         'Check username in the URL.')
+                         ' Check username in the URL.')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_get_user_stats(self):
