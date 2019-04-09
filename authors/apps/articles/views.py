@@ -1,13 +1,15 @@
 from rest_framework.response import Response
+from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import APIException
+import cloudinary
 
-from .models import Article, ArticleImage
-from .serializers import ArticleSerializer, ArticleImageSerializer
+from .models import Article, ArticleImage, ReviewsModel
+from .serializers import ArticleSerializer, ArticleImageSerializer, ReviewsSerializer
 from .permissions import ReadOnly
 from authors.apps.authentication.models import User
-import cloudinary
+from .utils import is_article_owner, has_reviewed
 
 
 def find_article(slug):
@@ -41,9 +43,9 @@ class ArticleView(APIView):
             article_saved = serializer.save(author=self.request.user)
 
         return Response({
-                "success": "Article '{}' created successfully".format(article_saved.title),
-                "article": serializer.data
-            }, status=201)
+            "success": "Article '{}' created successfully".format(article_saved.title),
+            "article": serializer.data
+        }, status=201)
 
 
 class RetrieveArticleView(APIView):
@@ -126,3 +128,77 @@ class ArticleImageView(APIView):
             'article').filter(article__slug=slug)
         serializer = ArticleImageSerializer(images, many=True)
         return Response({"images": serializer.data})
+
+
+class ReviewView(APIView):
+    permission_classes = (IsAuthenticated | ReadOnly,)
+
+    def post(self, request, slug):
+
+        saved_article = Article.objects.get(slug=slug)
+        if is_article_owner(saved_article.author.pk, self.request.user.pk):
+            APIException.status_code = status.HTTP_400_BAD_REQUEST
+            raise APIException(
+                {"message": "You cannot review your own article"})
+
+        if has_reviewed(saved_article, self.request.user):
+            raise APIException(
+                {"message": "You have already reviewed this article"})
+        review = request.data.get('review')
+        serializer = ReviewsSerializer(data=review)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save(article=saved_article,
+                            reviewed_by=self.request.user)
+
+        return Response(
+            {
+                "success": "Review for {} created successfully".format(saved_article.title),
+                "Review": serializer.data
+            },
+            status=201
+        )
+
+    def get(self, request, slug):
+        try:
+            saved_article = Article.objects.get(slug=slug)
+            average_rating = ReviewsModel.average_rating(saved_article.pk)
+            reviews = ReviewsModel.objects.filter(article__slug=slug)
+            serializer = ReviewsSerializer(reviews, many=True)
+            return Response(
+                {"Average Rating": round(average_rating.get('rating_value__avg') + 0.005),
+                 "reviews": serializer.data},
+            )
+        except TypeError:
+            APIException.status_code = status.HTTP_404_NOT_FOUND
+            raise APIException(
+                {"errors": "There are no reviews for that article"})
+
+    def put(self, request, slug):
+        try:
+            saved_article = Article.objects.get(slug=slug)
+            review = ReviewsModel.objects.get(
+                article=saved_article, reviewed_by=self.request.user.pk)
+            if review:
+                data = request.data.get('review')
+                serializer = ReviewsSerializer(
+                    instance=review, data=data, partial=True)
+                if serializer.is_valid(raise_exception=True):
+                    review_saved = serializer.save()
+                    return Response({"message": "Review for '{}' has been updated.".format(slug)}, status=200)
+            raise APIException(
+                {"message": "You are unathorized to edit that review"})
+        except Exception as e:
+            raise APIException({"errors": e})
+
+    def delete(self, request, slug):
+        try:
+            saved_article = Article.objects.get(slug=slug)
+            review = ReviewsModel.objects.get(
+                article=saved_article, reviewed_by=self.request.user.pk)
+            if review:
+                review.delete()
+                return Response({"message": "Review for '{}' has been deleted.".format(slug)}, status=200)
+            raise APIException(
+                {"message": "You are unathorized to delete that review"})
+        except Exception as e:
+            raise APIException({"errors": e})
