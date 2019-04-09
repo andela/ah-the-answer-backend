@@ -382,7 +382,6 @@ class TwitterAuthSerializer(serializers.ModelSerializer):
                     twitter_user_data.get('screen_name'),'twitter.com'),
                 'password': randint(10000000, 20000000)
             }
-
             try:
                 new_user = User.objects.create_user(**user_obj)
                 new_user.is_verified = True

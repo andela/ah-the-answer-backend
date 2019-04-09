@@ -4,8 +4,8 @@ import os
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.conf import settings
-from rest_framework import status, serializers
-from rest_framework.generics import RetrieveUpdateAPIView, GenericAPIView
+from rest_framework import status
+from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -48,14 +48,7 @@ class RegistrationAPIView(APIView):
         context = {'username': username, 'token': token, 'domain':settings.DOMAIN}
         html_message = render_to_string(template_name, context)
         subject = 'Please verify your email'
-<<<<<<< HEAD
-        response = send_verification_email(
-            os.getenv('FROM_EMAIL'),
-            user_email, subject, html_message
-            )
-=======
         response=send_verification_email(os.getenv('FROM_EMAIL'), user_email,subject,html_message)
->>>>>>> [ft #164829362] Add views for social login
 
         if not response:
             return Response(
@@ -117,6 +110,7 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
         serializer.save()
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 class EmailVerificationView(APIView):
     """This view handles request for verifying email adresses"""
