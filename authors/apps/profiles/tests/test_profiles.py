@@ -93,6 +93,16 @@ class TestModelCase(TestCase):
         self.token = self.login.data['token']
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token)
 
+    def test_user_can_get_all_profiles(self):
+        response = self.client.get(
+            reverse(
+                'profiles:profiles-all',
+            ),
+            format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
     def test_user_can_edit_profile(self):
         """
         This test case tests that an authenticated

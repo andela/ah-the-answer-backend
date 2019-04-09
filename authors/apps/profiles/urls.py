@@ -1,6 +1,6 @@
 from django.urls import path
-from .views import (AvatarView, EditProfileView,
-                    CreateRetrieveProfileView)
+from .views import (ProfilesListAPIview, AvatarView, EditProfileView,
+                    CreateRetrieveProfileView,)
 
 app_name = 'profiles'
 
@@ -13,4 +13,5 @@ urlpatterns = [
          CreateRetrieveProfileView.as_view(), name='profile-fetch'),
     path('profile/<str:username>/edit/',
          EditProfileView.as_view(), name='profile-edit'),
+    path('profiles/', ProfilesListAPIview.as_view(), name='profiles-all')
 ]

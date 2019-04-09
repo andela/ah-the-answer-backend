@@ -34,26 +34,31 @@ class RegistrationAPIView(APIView):
         serializer = self.serializer_class(data=user)
         serializer.is_valid(raise_exception=True)
         user_email = serializer.validated_data['email']
-        username= serializer.validated_data['username']
         username = serializer.validated_data['username']
-
-      
+        username = serializer.validated_data['username']
         token = jwt_encode(user_email)
         template_name = 'email_verification.html'
-        context = {'username': username, 'token': token, 'domain':settings.DOMAIN}
+        context = {
+            'username': username,
+            'token': token,
+            'domain': os.getenv('domain')
+            }
         html_message = render_to_string(template_name, context)
         subject = 'Please verify your email'
-        response=send_verification_email(os.getenv('FROM_EMAIL'), user_email,subject,html_message)
-        
-        if not response:
-             return Response('something went wrong', status=status.HTTP_400_BAD_REQUEST)
+        response = send_verification_email(
+            os.getenv('FROM_EMAIL'),
+            user_email,
+            subject,
+            html_message)
 
-        message = {
-            'message': 'Your account has been succesfully created. Check your email to verify your account'
-        }
+        if not response:
+            return Response('something went wrong',
+                            status=status.HTTP_400_BAD_REQUEST)
+
         serializer.save()
 
-        return Response(serializer.validated_data, status=status.HTTP_201_CREATED)
+        return Response(serializer.validated_data,
+                        status=status.HTTP_201_CREATED)
 
 
 class LoginAPIView(APIView):
@@ -99,6 +104,7 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
 class EmailVerificationView(APIView):
     """This view handles request for verifying email adresses"""
     permission_classes = (AllowAny,)
@@ -114,9 +120,9 @@ class EmailVerificationView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        #check if a user exists and if they are verified
-        #if a user is not found we return an error
-        #if we find a verified user , we raise an error
+        # check if a user exists and if they are verified
+        # if a user is not found we return an error
+        # if we find a verified user , we raise an error
 
         try:
             user = User.objects.get(email=email)
@@ -137,12 +143,14 @@ class EmailVerificationView(APIView):
         return Response(
             {'Success': 'Your email has been verified'}
         )
-      
+
+
 class PasswordResetAPIView(APIView):
     """
     This view handles the request for the password reset  link to be sent to the email
     """
     permission_classes = (AllowAny,)
+
     def post(self, request):
         """POST request for the password reset functionality"""
         serializer = PasswordResetSerializer(data=request.data)
@@ -151,11 +159,13 @@ class PasswordResetAPIView(APIView):
             'message': sent_email
         }, status=status.HTTP_202_ACCEPTED)
 
+
 class SetUpdatedPasswordAPIView(APIView):
     """
     this view handles PUT request for setting new login password
     """
     permission_classes = (AllowAny,)
+
     def put(self, request, reset_token):
         serializer = SetUpdatedPasswordSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
@@ -167,4 +177,3 @@ class SetUpdatedPasswordAPIView(APIView):
                 {'message': output},
                 status=status.HTTP_202_ACCEPTED
             )
-

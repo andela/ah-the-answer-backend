@@ -5,12 +5,19 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.exceptions import APIException
 from rest_framework.views import APIView
-
+from rest_framework.generics import ListAPIView
 import cloudinary
 
 from .models import Profile
 from ..authentication.models import User
 from .serializers import ProfileSerializer
+
+
+class ProfilesListAPIview(ListAPIView):
+    """This class allows authenticated users to get all profiles"""
+    permission_classes = (IsAuthenticated,)
+    queryset = Profile.objects.all()
+    serializer_class = ProfileSerializer
 
 
 class CreateRetrieveProfileView(APIView):
