@@ -2,6 +2,10 @@ from django.db import models
 from cloudinary.models import CloudinaryField
 from ..authentication.models import User
 from django.utils.text import slugify
+from django.shortcuts import get_object_or_404
+from rest_framework.exceptions import APIException
+from rest_framework.response import Response
+from rest_framework import status
 from .utils import generate_slug, get_readtime
 
 
@@ -43,3 +47,71 @@ class ArticleImage(models.Model):
 
     class Meta:
         ordering = ('-date_created',)
+
+class LikeArticles(models.Model):
+    user = models.ForeignKey(
+        User,
+        related_name='liked_by',
+        on_delete=models.CASCADE
+    )
+    article = models.ForeignKey(
+        Article,
+        to_field='slug',
+        related_name='liked',
+        db_column='article',
+        on_delete=models.CASCADE
+    )
+    likes = models.IntegerField(null=True)
+    dislikes = models.IntegerField(null=True)
+    created_on = models.DateTimeField(auto_now=True)
+    class Meta:
+        ordering = ('created_on',)
+
+    @staticmethod
+    def retrieve_article(slug):
+        article = get_object_or_404(Article, slug=slug)
+        return article
+
+    @staticmethod
+    def like_by_user(user, slug, ArticleSerializer, value):
+        try:
+            likes = LikeArticles.objects.filter(user=user, article=slug)
+            article = LikeArticles.retrieve_article(slug=slug)
+        except:
+            APIException.status_code = status.HTTP_404_NOT_FOUND
+            raise APIException(
+                {
+                    'article': {
+                        'message': 'Article requested does not exist'
+                    }
+                }
+            )
+        if not likes:
+            if value == 1:
+                LikeArticles.objects.create(
+                    user=user,
+                    article=article,
+                    likes=value
+                )
+                return Response({
+                    'message': 'you liked {} article'.format(slug),
+                    'article': ArticleSerializer(article).data
+                },
+                status=status.HTTP_201_CREATED
+                )
+            LikeArticles.objects.create(
+                user=user,
+                article=article,
+                likes=value
+            )
+            return Response({
+                'message': 'you have disliked {} article'.format(slug),
+                'article': ArticleSerializer(article).data
+            },
+            status=status.HTTP_201_CREATED
+            )
+        likes.delete()
+        return Response({
+            'message': 'you have reverted your like/dislike for {} article'.format(slug),
+            'article': ArticleSerializer(article).data
+        }, status=status.HTTP_202_ACCEPTED)
