@@ -27,7 +27,6 @@ class RegistrationAPIView(APIView):
 
     def post(self, request):
         user = request.data.get('user', {})
-
         # The create serializer, validate serializer, save serializer pattern
         # below is common and you will see it a lot throughout this course and
         # your own work later on. Get familiar with it.
@@ -43,17 +42,27 @@ class RegistrationAPIView(APIView):
         context = {'username': username, 'token': token, 'domain':settings.DOMAIN}
         html_message = render_to_string(template_name, context)
         subject = 'Please verify your email'
-        response=send_verification_email(os.getenv('FROM_EMAIL'), user_email,subject,html_message)
+        response = send_verification_email(
+            os.getenv('FROM_EMAIL'),
+            user_email, subject, html_message
+            )
         
         if not response:
-             return Response('something went wrong', status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {
+                   'error': 'something went wrong'
+                },
+                status=status.HTTP_400_BAD_REQUEST
+                  )
 
         message = {
             'message': 'Your account has been succesfully created. Check your email to verify your account'
         }
         serializer.save()
-
-        return Response(serializer.validated_data, status=status.HTTP_201_CREATED)
+        serializer.validated_data.pop('password')
+        return Response(
+            serializer.validated_data,
+            status=status.HTTP_201_CREATED)
 
 
 class LoginAPIView(APIView):
@@ -167,4 +176,3 @@ class SetUpdatedPasswordAPIView(APIView):
                 {'message': output},
                 status=status.HTTP_202_ACCEPTED
             )
-
