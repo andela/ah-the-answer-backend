@@ -1,11 +1,10 @@
 [run]
-    include = *authors/apps/*
+    include = *authors/apps/comments*
 
 omit =
     */migrations/*
     authors/settings.py
     */tests/*
-    
 
 
 [report]
