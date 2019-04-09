@@ -28,6 +28,7 @@ class RegistrationAPIView(APIView):
 
     def post(self, request):
         user = request.data.get('user', {})
+
         # The create serializer, validate serializer, save serializer pattern
         # below is common and you will see it a lot throughout this course and
         # your own work later on. Get familiar with it.
@@ -54,16 +55,14 @@ class RegistrationAPIView(APIView):
         if not response:
             return Response('something went wrong',
                             status=status.HTTP_400_BAD_REQUEST)
-            user_email, subject, html_message
-            )
-        
+
         serializer.save()
-        serializer.validated_data.pop('password')
-        return Response(
-            serializer.validated_data,
-            status=status.HTTP_201_CREATED)
+
+        return Response(serializer.validated_data,
+                        status=status.HTTP_201_CREATED)
 
     def get(self, request):
+        permission_classes = (IsAuthenticated,)
         users = User.objects.all()
         serializer = UserSerializer(users, many=True)
         if len(serializer.data) == 0:
@@ -72,7 +71,7 @@ class RegistrationAPIView(APIView):
             )
             
         return Response({"users": serializer.data})
-       
+
 
 class LoginAPIView(APIView):
     permission_classes = (AllowAny,)
