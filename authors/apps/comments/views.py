@@ -79,8 +79,16 @@ class CommentsDetail(views.APIView):
         )
 
     def delete(self, request, slug, pk):
-        comment = Comment.objects.get(id=pk)
-        comment.delete()
-        return response.Response(
-            status=status.HTTP_204_NO_CONTENT
-        )
+        try:
+            comment = Comment.objects.get(id=pk)
+            comment.delete()
+            return response.Response(
+                status=status.HTTP_204_NO_CONTENT
+            )
+        except ObjectDoesNotExist:
+            return response.Response(
+                {
+                    "errors": "The record does not exist in the database"
+                },
+                status.HTTP_404_NOT_FOUND
+            )
