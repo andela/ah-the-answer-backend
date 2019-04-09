@@ -1,6 +1,7 @@
 from rest_framework import serializers
-from .models import Article, ArticleImage
+from .models import Article, ArticleImage, ReviewsModel
 from ..authentication.serializers import UserSerializer
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 
 class ArticleSerializer(serializers.ModelSerializer):
@@ -19,7 +20,8 @@ class ArticleSerializer(serializers.ModelSerializer):
         instance.description = validated_data.get(
             'description', instance.description)
         instance.body = validated_data.get('body', instance.body)
-        instance.is_published = validated_data.get('is_published', instance.is_published)
+        instance.is_published = validated_data.get(
+            'is_published', instance.is_published)
         instance.save()
         return instance
 
@@ -27,7 +29,8 @@ class ArticleSerializer(serializers.ModelSerializer):
         model = Article
         fields = ('id', 'title', 'body', 'description', 'is_published',
                   'date_created', 'date_modified', 'slug', 'read_time', 'author')
-        read_only_fields = ('date_created', 'date_modified', 'slug', 'read_time', 'author')
+        read_only_fields = ('date_created', 'date_modified',
+                            'slug', 'read_time', 'author')
 
 
 class ArticleImageSerializer(serializers.ModelSerializer):
@@ -42,3 +45,33 @@ class ArticleImageSerializer(serializers.ModelSerializer):
         model = ArticleImage
         fields = "__all__"
         read_only_fields = ["date_created"]
+
+
+class ReviewsSerializer(serializers.ModelSerializer):
+    rating_value = serializers.IntegerField(validators=[MaxValueValidator(5),
+                                                   MinValueValidator(0)])
+    reviewer_username = serializers.ReadOnlyField(
+        source='reviewed_by.username')
+    article = serializers.ReadOnlyField(source='article.pk')
+    avg_rating = serializers.ReadOnlyField(source='average_rating(article)')
+
+    class Meta:
+        model = ReviewsModel
+        fields = '__all__'
+
+        read_only_fields = ('average_rating', 'date_created', 'date_modified',
+                            'article', 'reviewed_by', 'reviewer_username', 'avg_rating')
+
+    def create(self, validated_data):
+        return ReviewsModel.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+
+        instance.review_body = validated_data.get(
+            'review_body', instance.review_body)
+        instance.rating_value = validated_data.get(
+            'rating_value', instance.rating_value)
+
+        instance.save()
+
+        return instance
