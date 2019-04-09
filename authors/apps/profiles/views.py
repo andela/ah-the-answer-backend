@@ -16,8 +16,15 @@ from .serializers import ProfileSerializer
 class ProfilesListAPIview(ListAPIView):
     """This class allows authenticated users to get all profiles"""
     permission_classes = (IsAuthenticated,)
-    queryset = Profile.objects.all()
-    serializer_class = ProfileSerializer
+
+    def get(self, request):
+        profiles = Profile.objects.all()
+        serializer = ProfileSerializer(profiles, many=True)
+        if len(serializer.data) == 0:
+            return Response(
+                {"message": "No profile available"}
+            )
+        return Response({"profiles": serializer.data})
 
 
 class CreateRetrieveProfileView(APIView):
