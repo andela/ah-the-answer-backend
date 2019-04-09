@@ -72,11 +72,8 @@ class TestCommentsAPI(TestCase):
             author=self.user
         )
 
-    def test_create_comment(self):
-        """
-        Test that a comment is created on sending a POST request
-        """
-        res = self.client.post(
+        # Create Comment
+        self.comment = self.client.post(
             reverse(
                 'comments:create-list',
                 kwargs={
@@ -90,8 +87,13 @@ class TestCommentsAPI(TestCase):
             },
             format="json"
         )
+        self.comment_id = self.comment.data.get('comment')['id']
 
-        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+    def test_create_comment(self):
+        """
+        Test that a comment is created on sending a POST request
+        """
+        self.assertEqual(self.comment.status_code, status.HTTP_201_CREATED)
 
     def test_get_all_comments(self):
         """
@@ -113,33 +115,18 @@ class TestCommentsAPI(TestCase):
         """
         Test that a specific comment is retrieved on sending a GET request
         """
-        create_res = self.client.post(
-            reverse(
-                'comments:create-list',
-                kwargs={
-                    "slug": self.article.slug
-                }
-            ),
-            data={
-                "comment": {
-                    "body": "This is a comment"
-                }
-            },
-            format="json"
-        )
-
         res = self.client.get(
             reverse(
                 'comments:details',
                 kwargs={
                     "slug": self.article.slug,
-                    'pk': Comment.objects.get().id
+                    'pk': self.comment_id
                 }
             ),
             format="json"
         )
 
-        self.assertEqual(create_res.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(self.comment.status_code, status.HTTP_201_CREATED)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_error_on_invalid_data(self):
@@ -183,27 +170,13 @@ class TestCommentsAPI(TestCase):
         """
         Test that a comment is updated successfully
         """
-        create_res = self.client.post(
-            reverse(
-                'comments:create-list',
-                kwargs={
-                    "slug": self.article.slug
-                }
-            ),
-            data={
-                "comment": {
-                    "body": "This is a comment"
-                }
-            },
-            format="json"
-        )
 
         res = self.client.put(
             reverse(
                 'comments:details',
                 kwargs={
                     "slug": self.article.slug,
-                    'pk': Comment.objects.get().id
+                    'pk': self.comment_id
                 }
             ),
             data={
@@ -230,10 +203,13 @@ class TestCommentsAPI(TestCase):
             format="json"
         )
 
-        self.assertEqual(create_res.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(self.comment.status_code, status.HTTP_201_CREATED)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res2.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertNotEqual(create_res.data.get('comment'), res.data.get('comment'))
+        self.assertNotEqual(
+            self.comment.data.get('comment'),
+            res.data.get('comment')
+        )
 
     def test_delete_comment(self):
         """
@@ -259,42 +235,25 @@ class TestCommentsAPI(TestCase):
                 'comments:details',
                 kwargs={
                     "slug": self.article.slug,
-                    'pk': Comment.objects.get().id
+                    'pk': self.comment_id
                 }
             ),
             format="json"
         )
 
         self.assertEqual(create_res.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(del_res.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(del_res.status_code, status.HTTP_200_OK)
 
     def test_delete_non_existent_comment(self):
         """
         Test that error raised if comment to be deleted does not exist
         """
-        create_res = self.client.post(
-            reverse(
-                'comments:create-list',
-                kwargs={
-                    "slug": self.article.slug
-                }
-            ),
-            data={
-                "comment": {
-                    "body": "This is a comment"
-                }
-            },
-            format="json"
-        )
-
-        c_id = create_res.data['comment'].get('id')
-
         del_res = self.client.delete(
             reverse(
                 'comments:details',
                 kwargs={
                     "slug": self.article.slug,
-                    'pk': c_id
+                    'pk': self.comment_id
                 }
             ),
             format="json"
@@ -305,12 +264,15 @@ class TestCommentsAPI(TestCase):
                 'comments:details',
                 kwargs={
                     "slug": self.article.slug,
-                    'pk': c_id
+                    'pk': self.comment_id
                 }
             ),
             format="json"
         )
 
-        self.assertEqual(create_res.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(del_res.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(self.comment.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(del_res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
+
+    def tearDown(self):
+        self.comment = None
