@@ -26,7 +26,26 @@
       },
       "SOCIAL_AUTH_GITHUB_SECRET": {
         "required": true
+      },
+      "SENDGRID_API_KEY": {
+        "required": true
+      },
+      "FROM_EMAIL": {
+        "required": true
+      },
+      "EMAIL_HOST": {
+        "required": true
+      },
+      "EMAIL_HOST_PASSWORD": {
+        "required": true
+      },
+      "EMAIL_PORT": {
+        "required": true
+      },
+      "EMAIL_USE_TLS": {
+        "required": true
       }
+      
   },
   "formation": {
   },
