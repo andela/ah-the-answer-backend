@@ -10,6 +10,7 @@ from .views import (
     TwitterAuthAPIView,
     SetUpdatedPasswordAPIView
 
+
 )
 
 urlpatterns = [

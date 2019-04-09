@@ -39,7 +39,7 @@ class RegistrationAPIView(APIView):
         username= serializer.validated_data['username']
         username = serializer.validated_data['username']
 
-
+      
         token = jwt_encode(user_email)
         template_name = 'email_verification.html'
         context = {'username': username, 'token': token, 'domain':settings.DOMAIN}
@@ -100,6 +100,7 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
         serializer.save()
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 class EmailVerificationView(APIView):
     """This view handles request for verifying email adresses"""
