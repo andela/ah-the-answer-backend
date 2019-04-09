@@ -96,6 +96,6 @@ class UserStats(APIView):
             return Response({"social stats": [{"follows": amount_follows},
                             {"followers": amount_followers}]},
                             status=status.HTTP_200_OK)
-        return Response({"error": "This given username does not have an \
+        return Response({"error": "This given username does not have an\
                         'Author's Haven account."},
                         status=status.HTTP_400_BAD_REQUEST)
