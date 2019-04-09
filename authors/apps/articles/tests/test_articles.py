@@ -346,7 +346,7 @@ class TestArticle(TestCase):
         response = self.client.get("/api/articles/?search=raywire", format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_user_can_filter_articles(self):
+    def test_user_can_filter_articles_by_title(self):
         self.client.post(
             reverse('articles:create-list'),
             data={
@@ -362,6 +362,21 @@ class TestArticle(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(response.data['articles'])
 
+    def test_user_can_filter_articles_by_author(self):
+        self.client.post(
+            reverse('articles:create-list'),
+            data={
+                "article": {
+                    "title": "Test title",
+                    "body": "This is a very awesome article on testing tests",
+                    "description": "Written by testing tester",
+                }
+            },
+            format="json"
+        )        
+        response = self.client.get("/api/articles/?author=Test", format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data['articles'])
 
     def tearDown(self):
         Article.objects.all().delete()

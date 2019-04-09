@@ -41,7 +41,7 @@ class ArticleView(APIView):
                 searched_articles, many=True)
             return Response({"articles": search_serializer.data})
 
-
+        # Functionality to filter articles by author and title
         articles = Article.objects.all()
         article_filter = ArticleFilter()
         filtered_articles = article_filter.filter_queryset(
