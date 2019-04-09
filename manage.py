@@ -19,4 +19,19 @@ if __name__ == "__main__":
                 "forget to activate a virtual environment?"
             )
         raise
+
+    is_testing = 'test' in sys.argv
+
+    if is_testing:
+        import coverage
+        cov = coverage.coverage()
+        cov.set_option('report:show_missing', True)
+        cov.erase()
+        cov.start()
+
     execute_from_command_line(sys.argv)
+
+    if is_testing:
+        cov.stop()
+        cov.save()
+        cov.report()

@@ -1,0 +1,12 @@
+[run]
+    include = *authors/apps/follow/*
+
+omit =
+    */migrations/*
+    authors/settings.py
+    */tests/*
+    
+
+
+[report]
+show_missing=True

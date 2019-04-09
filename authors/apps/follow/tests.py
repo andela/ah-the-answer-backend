@@ -71,8 +71,92 @@ class TestFollowViews(TestCase):
         # self.token_2 = self.login_2.data['token']
         # self.client_2.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token)
 
-        def test_user_attempts_to_follow_themselves(self):
-            self.token_1 = self.login_1.data['token']
-            self.client_1.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token)
-            response = self.client_1.post(reverse('follow:follow-user'), args=['Bob'], format="json")
-            self.assertEqual(response.status_code, "Cheese")
+    def test_user_attempts_to_follow_themselves(self):
+        self.token_1 = self.login_1.data['token']
+        self.client_1.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token_1)
+        response = self.client_1.post(reverse('follow:follow-user', args=['Bob']), format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['error'], "User is attempting to follow themselves. This is not allowed.")
+    
+    def test_user_follows_other_user(self):
+        self.token_1 = self.login_1.data['token']
+        self.client_1.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token_1)
+        response = self.client_1.post(reverse('follow:follow-user', args=['Mary']), format="json")
+        self.assertEqual(response.data['success'], "Now following Mary.")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+    
+    def test_user_attempts_to_follow_same_user_twice(self):
+        self.token_1 = self.login_1.data['token']
+        self.client_1.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token_1)
+        response = self.client_1.post(reverse('follow:follow-user', args=['Mary']), format="json")
+        response = self.client_1.post(reverse('follow:follow-user', args=['Mary']), format="json")
+        self.assertEqual(response.data['error'], "User already followed.")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+    
+    def test_user_attempts_to_follow_non_existent_user(self):
+        self.token_1 = self.login_1.data['token']
+        self.client_1.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token_1)
+        response = self.client_1.post(reverse('follow:follow-user', args=['John']), format="json")
+        self.assertEqual(response.data['error'], 'Unable to create a '
+                         'following. This user does not exist. Please choose '
+                         'another user.')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+    
+    def test_get_user_follows(self):
+        self.token_1 = self.login_1.data['token']
+        self.client_1.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token_1)
+        self.client_1.post(reverse('follow:follow-user', args=['Mary']), format="json")
+        response = self.client_1.get(reverse('follow:list-followers', args=['Mary']), format="json")
+        self.assertEqual(response.data['followers'][0]['following_user'], 'Bob')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+    
+    def test_user_unfollows_user(self):
+        self.token_1 = self.login_1.data['token']
+        self.client_1.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token_1)
+        self.client_1.post(reverse('follow:follow-user', args=['Mary']), format="json")
+        self.client_1.delete(reverse('follow:unfollow-user', args=['Bob', 'Mary']), format="json")
+        response = self.client_1.get(reverse('follow:list-followings', args=['Bob']), format="json")
+        self.assertEqual(response.data['followed_users'], [])
+    
+    def test_user_attempts_to_unfollow_unfollowed_user(self):
+        self.token_1 = self.login_1.data['token']
+        self.client_1.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token_1)
+        response = self.client_1.delete(reverse('follow:unfollow-user', args=['Bob', 'Mary']), format="json")
+        self.assertEqual(response.data['error'], 'You do not follow Mary. Unfollow failed.')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+    
+    def test_user_attempts_to_unfollow_as_another_user(self):
+        self.token_1 = self.login_1.data['token']
+        self.client_1.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token_1)
+        response = self.client_1.delete(reverse('follow:unfollow-user', args=['Mary', 'Bob']), format="json")
+        self.assertEqual(response.data['error'], 'Incorrect user logged in. Check username in the URL.')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+    
+    def test_get_user_stats(self):
+        self.token_1 = self.login_1.data['token']
+        self.client_1.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token_1)
+        self.client_1.post(reverse('follow:follow-user', args=['Mary']), format="json")
+
+        self.token_2 = self.login_2.data['token']
+        self.client_2.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token_2)
+        self.client_2.post(reverse('follow:follow-user', args=['Bob']), format="json")
+        response = self.client_1.get(reverse('follow:count-follows', args=['Bob']), format="json")
+        self.assertEqual(response.data['success'][0]['follows'], 1)
+        self.assertEqual(response.data['success'][1]['followers'], 1)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+    
+    def test_attempt_to_get_user_stats_for_nonexistent_user(self):
+        response = self.client_1.get(reverse('follow:count-follows', args=['John']), format="json")
+        self.assertEqual(response.data['error'], "This given username does not have an Author's Haven account.")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        
+
+
+
+
+
+        
+
+
+        
+        

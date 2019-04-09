@@ -55,7 +55,7 @@ class ManageFollowers(APIView):
         given user actually follows the given follower."""
         check_user = self.request.user.username
         if check_user != user:
-            return Response({'error': 'Incorrect user logged in.'
+            return Response({'error': 'Incorrect user logged in. '
                             'Check username in the URL.'},
                             status=status.HTTP_400_BAD_REQUEST)
         if Follows.objects.filter(followed_user=follower).filter(
@@ -78,7 +78,7 @@ class ManageFollowings(APIView):
         """Returns a list of followed users for a given user."""
         followings_list = Follows.objects.filter(following_user=user)
         serializer = FollowingSerializer(followings_list, many=True)
-        return Response({"followed users": serializer.data},
+        return Response({"followed_users": serializer.data},
                         status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -93,9 +93,9 @@ class UserStats(APIView):
                               following_user=user).count()
             amount_followers = Follows.objects.filter(
                                 followed_user=user).count()
-            return Response({"social stats": [{"follows": amount_follows},
+            return Response({"success": [{"follows": amount_follows},
                             {"followers": amount_followers}]},
                             status=status.HTTP_200_OK)
-        return Response({"error": "This given username does not have an\
-                        'Author's Haven account."},
+        return Response({"error": "This given username does not have an "
+                        "Author's Haven account."},
                         status=status.HTTP_400_BAD_REQUEST)
