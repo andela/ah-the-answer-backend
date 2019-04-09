@@ -206,9 +206,8 @@ class GoogleAuthView(GenericAPIView):
             'access_token': request.data.get('access_token', {})
             })
         serializer.is_valid(raise_exception=True)
-        serializer
         return Response({
-            "token": serializer},
+            "token": serializer.data['access_token']},
             status=status.HTTP_200_OK)
 
 
