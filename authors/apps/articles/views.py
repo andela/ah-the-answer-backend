@@ -184,7 +184,10 @@ class ReviewView(APIView):
                     instance=review, data=data, partial=True)
                 if serializer.is_valid(raise_exception=True):
                     review_saved = serializer.save()
-                    return Response({"message": "Review for '{}' has been updated.".format(slug)}, status=200)
+                    return Response(
+                        {"message": "Review for '{}' has been updated.".format(slug),
+                         "Review": serializer.data
+                         }, status=200)
             raise APIException(
                 {"message": "You are unathorized to edit that review"})
         except Exception as e:
