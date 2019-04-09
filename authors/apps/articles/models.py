@@ -69,11 +69,13 @@ class LikeArticles(models.Model):
 
     @staticmethod
     def retrieve_article(slug):
+        """Method gets a single article"""
         article = get_object_or_404(Article, slug=slug)
         return article
 
     @staticmethod
     def like_by_user(user, slug, ArticleSerializer, value):
+        """This method holds logic for like, dislike, or revoking"""
         try:
             likes = LikeArticles.objects.filter(user=user, article=slug)
             article = LikeArticles.retrieve_article(slug=slug)
