@@ -275,7 +275,9 @@ class GoogleAuthSerializer(serializers.ModelSerializer):
             }
 
             try:
-                User.objects.create_user(**user_obj)
+                new_user = User.objects.create_user(**user_obj)
+                new_user.is_verified = True
+                new_user.save()
             except:
                 raise serializers.ValidationError(
                     'Failed to register the user. Email already exists in '
@@ -327,7 +329,9 @@ class FacebookAuthSerializer(serializers.ModelSerializer):
                 'password': randint(10000000, 20000000)
             }
             try:
-                User.objects.create_user(**user_obj)
+                new_user = User.objects.create_user(**user_obj)
+                new_user.is_verified = True
+                new_user.save()
             except:
                 raise serializers.ValidationError(
                     'Failed to register the user. Email already exists in '
@@ -380,7 +384,9 @@ class TwitterAuthSerializer(serializers.ModelSerializer):
             }
 
             try:
-                User.objects.create_user(**user_obj)
+                new_user = User.objects.create_user(**user_obj)
+                new_user.is_verified = True
+                new_user.save()
             except:
                 raise serializers.ValidationError(
                     'Failed to register the user. Email already exists in '
