@@ -7,7 +7,7 @@ from .views import (
     SetUpdatedPasswordAPIView,
     GoogleAuthView,
     FacebookAuthAPIView,
-    TwitterAuthAPIView
+    TwitterAuthAPIView,
     SetUpdatedPasswordAPIView
 
 )
