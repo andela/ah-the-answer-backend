@@ -3,6 +3,7 @@ from django.urls import reverse
 from rest_framework import test, status
 from ..models import User
 from ..jwt_generator import jwt_encode, jwt_decode
+import json
 
 
 class TestJWTGenerator(TestCase):
@@ -292,3 +293,25 @@ class TestJWTGenerator(TestCase):
             ),
                 format="json")
             self.assertEqual(response.status_code, status.HTTP_200_OK)
+          
+    def test_signup_nonalphanumeric_password(self):
+        """
+        test for request with a  non alphanumeric password
+        """
+        response = self.client.post(
+            reverse('authentication:user-signup'),
+            data={
+                "user": {
+                    "email": "tester3@mail.com",
+                    "username": "tester3",
+                    "password": "testetthhhhhkk"
+                }
+            },
+            format="json"
+        )
+        output = json.loads(response.content)
+        self.assertIn(
+            'Please ensure your password contains at least one letter and one numeral', str(output)
+                 )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
