@@ -4,6 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import APIException
 import cloudinary
+from django.core.exceptions import ObjectDoesNotExist
 
 from .models import Article, ArticleImage, ReviewsModel
 from .serializers import ArticleSerializer, ArticleImageSerializer, ReviewsSerializer
@@ -134,29 +135,37 @@ class ReviewView(APIView):
     permission_classes = (IsAuthenticated | ReadOnly,)
 
     def post(self, request, slug):
+        try:
+            saved_article = Article.objects.get(slug=slug)
+            if is_article_owner(saved_article.author.pk, self.request.user.pk):
+                APIException.status_code = status.HTTP_400_BAD_REQUEST
+                raise APIException(
+                    {"message": "You cannot review your own article"})
 
-        saved_article = Article.objects.get(slug=slug)
-        if is_article_owner(saved_article.author.pk, self.request.user.pk):
+            if has_reviewed(saved_article, self.request.user):
+                raise APIException(
+                    {"message": "You have already reviewed this article"})
+            review = request.data.get('review')
+            serializer = ReviewsSerializer(data=review)
+            if serializer.is_valid(raise_exception=True):
+                serializer.save(article=saved_article,
+                                reviewed_by=self.request.user)
+
+            return Response(
+                {
+                    "success": "Review for {} created successfully".format(saved_article.title),
+                    "Review": serializer.data
+                },
+                status=201
+            )
+        except ObjectDoesNotExist:
+            APIException.status_code = status.HTTP_404_NOT_FOUND
+            raise APIException(
+                {"errors": "That Article does not exist"})
+        except Exception as e:
             APIException.status_code = status.HTTP_400_BAD_REQUEST
             raise APIException(
-                {"message": "You cannot review your own article"})
-
-        if has_reviewed(saved_article, self.request.user):
-            raise APIException(
-                {"message": "You have already reviewed this article"})
-        review = request.data.get('review')
-        serializer = ReviewsSerializer(data=review)
-        if serializer.is_valid(raise_exception=True):
-            serializer.save(article=saved_article,
-                            reviewed_by=self.request.user)
-
-        return Response(
-            {
-                "success": "Review for {} created successfully".format(saved_article.title),
-                "Review": serializer.data
-            },
-            status=201
-        )
+                {"errors": e})
 
     def get(self, request, slug):
         try:
@@ -190,8 +199,13 @@ class ReviewView(APIView):
                          }, status=200)
             raise APIException(
                 {"message": "You are unathorized to edit that review"})
+        except ObjectDoesNotExist:
+            APIException.status_code = status.HTTP_404_NOT_FOUND
+            raise APIException(
+                {"errors": "That Article does not exist"})
         except Exception as e:
-            raise APIException({"errors": e})
+            APIException.status_code = status.HTTP_400_BAD_REQUEST
+            raise APIException({"errors": e.detail})
 
     def delete(self, request, slug):
         try:
@@ -203,5 +217,10 @@ class ReviewView(APIView):
                 return Response({"message": "Review for '{}' has been deleted.".format(slug)}, status=200)
             raise APIException(
                 {"message": "You are unathorized to delete that review"})
+        except ObjectDoesNotExist:
+            APIException.status_code = status.HTTP_404_NOT_FOUND
+            raise APIException(
+                {"errors": "That Article does not exist"})
         except Exception as e:
-            raise APIException({"errors": e})
+            APIException.status_code = status.HTTP_400_BAD_REQUEST
+            raise APIException({"errors": e.detail})
