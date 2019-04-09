@@ -17,13 +17,15 @@ from authors.apps.authentication.jwt_generator import jwt_encode, jwt_decode
 from authors.apps.core.utils import send_verification_email
 from .models import User
 from .backends import JWTAuthentication
+from authors.apps.core.utils import ReadOnly
 
 
 class RegistrationAPIView(APIView):
     # Allow any user (authenticated or not) to hit this endpoint.
-    permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
     serializer_class = RegistrationSerializer
+
+    permission_classes = (IsAuthenticated | ReadOnly,)
 
     def post(self, request):
         user = request.data.get('user', {})
@@ -59,6 +61,16 @@ class RegistrationAPIView(APIView):
 
         return Response(serializer.validated_data,
                         status=status.HTTP_201_CREATED)
+
+    def get(self, request):
+        permission_classes = (IsAuthenticated,)
+        users = User.objects.all()
+        serializer = UserSerializer(users, many=True)
+        if len(serializer.data) == 0:
+            return Response(
+                {"message": "No user available"}
+            )
+        return Response({"users": serializer.data})
 
 
 class LoginAPIView(APIView):

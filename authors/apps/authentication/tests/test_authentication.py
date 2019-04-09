@@ -10,6 +10,34 @@ class TestJWTGenerator(TestCase):
         self.id = 11
         self.token = jwt_encode(self.id)
         self.client = test.APIClient()
+        self.user = self.client.post(
+            reverse('authentication:user-signup'),
+            data={
+                "user": {
+                    "email": "demo@mail.com",
+                    "username": "Bob",
+                    "password": "Bob12345"
+                }
+            },
+            format="json"
+        )
+        # Verify email
+        test_user = User.objects.get(username='Bob')
+        test_user.is_verified = True
+        test_user.save()
+        self.login = self.client.post(
+            reverse('authentication:user-login'),
+            data={
+                "user": {
+                    "email": "demo@mail.com",
+                    "password": "Bob12345"
+                }
+            },
+            format="json"
+        )
+
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Bearer ' + self.login.data['token'])
 
     def test_that_token_encoded_decoded(self):
         decoded_id = jwt_decode(self.token)
@@ -40,7 +68,7 @@ class TestJWTGenerator(TestCase):
             },
             format="json"
         )
-        #verify the user
+        # verify the user
         test_user = User.objects.get(username='tester')
         test_user.is_verified = True
         test_user.save()
@@ -257,3 +285,10 @@ class TestJWTGenerator(TestCase):
         self.assertTrue(response2.data['errors'])
         self.assertTrue(response2.data['errors']['username'])
         self.assertTrue(response2.data['errors']['email'])
+
+    def test_get_users(self):
+            response = self.client.get(reverse(
+                'authentication:user-details',
+            ),
+                format="json")
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
