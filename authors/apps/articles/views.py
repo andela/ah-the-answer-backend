@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import APIException
 
-from .models import Article, ArticleImage, ArticleLikes
+from .models import Article, ArticleImage, LikeArticles
 from .serializers import ArticleSerializer, ArticleImageSerializer
 from .permissions import ReadOnly
 from authors.apps.authentication.models import User
@@ -136,10 +136,27 @@ class LikeArticleView(APIView):
         """
         method for inciting a like for a particular article
         """
-        message = ArticleLikes.like_by_user(
+        message = LikeArticles.like_by_user(
             request.user,
             slug,
             ArticleSerializer,
             1
+        )
+        return message
+
+class DislikeArticleView(APIView):
+    """
+    Class for POST view allowing authenticated users to dislike articles
+    """
+    permission_classes = (IsAuthenticated,)
+    def post(self, request, slug):
+        """
+        method for inciting a like for a particular article
+        """
+        message = LikeArticles.like_by_user(
+            request.user,
+            slug,
+            ArticleSerializer,
+            -1
         )
         return message
