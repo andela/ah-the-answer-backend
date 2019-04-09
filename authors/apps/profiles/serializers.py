@@ -23,6 +23,10 @@ class ProfileSerializer(ModelSerializer):
                   'number_of_followings', 'avatar',
                   'total_articles', 'avatar_url', 'user_id')
 
+        read_only_fields = ('number_of_followers',
+                            'number_of_followings',
+                            'total_articles')
+
     def create(self, validated_data):
         """
         Validates and creates new record
