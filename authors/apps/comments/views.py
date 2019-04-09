@@ -68,9 +68,6 @@ class CommentsDetail(views.APIView):
 
         update_body = request.data['comment']['body'].strip()
 
-        if is_empty(update_body):
-            raise exceptions.ValidationError("Body should not be empty")
-
         try:
             self.validate_user(comment.author, self.request.user)
             comment.body = update_body
