@@ -7,7 +7,7 @@ from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
+import json
 from .renderers import UserJSONRenderer
 from .serializers import (
     LoginSerializer, RegistrationSerializer, UserSerializer, 
@@ -22,7 +22,6 @@ from authors.apps.core.utils import ReadOnly
 
 class RegistrationAPIView(APIView):
     # Allow any user (authenticated or not) to hit this endpoint.
-    renderer_classes = (UserJSONRenderer,)
     serializer_class = RegistrationSerializer
 
     permission_classes = (IsAuthenticated | ReadOnly,)
@@ -70,6 +69,7 @@ class RegistrationAPIView(APIView):
             return Response(
                 {"message": "No user available"}
             )
+            
         return Response({"users": serializer.data})
 
 
