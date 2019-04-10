@@ -1,47 +1,42 @@
 from django.test import TestCase
+from authors.apps.authentication.models import User
 from django.urls import reverse
 from rest_framework import test, status
-from .models import Article
+from authors.apps.articles.models import Article
 
 
 class TestArticle(TestCase):
     def setUp(self):
         self.client = test.APIClient()
-        self.user_create = self.client.post(
-            reverse('authentication:user-signup'),
-            data={
-                "user": {
-                    "email": "tester@mail.com",
-                    "username": "tester",
-                    "password": "tester1234"
-                }
-            },
-            format="json"
-        )
-        self.user_create_2 = self.client.post(
-            reverse('authentication:user-signup'),
-            data={
-                "user": {
-                    "email": "tester1@mail.com",
-                    "username": "tester1",
-                    "password": "tester1234"
-                }
-            },
-            format="json"
-        )
         self.user = self.client.post(
+            reverse('authentication:user-signup'),
+            data={
+                "user": {
+                    "email": "test@mail.com",
+                    "username": "Test",
+                    "password": "test1234"
+                }
+            },
+            format="json"
+        )
+
+        # verify email
+        test_user = User.objects.get(username='Test')
+        test_user.is_verified = True
+        test_user.save()
+        self.login = self.client.post(
             reverse('authentication:user-login'),
             data={
                 "user": {
-                    "email": "tester@mail.com",
-                    "password": "tester1234"
+                    "email": "test@mail.com",
+                    "password": "test1234"
                 }
             },
             format="json"
         )
 
         self.client.credentials(
-            HTTP_AUTHORIZATION='Bearer ' + self.user.data['token'])
+            HTTP_AUTHORIZATION='Bearer ' + self.login.data['token'])
 
     # CREATE TESTS
 

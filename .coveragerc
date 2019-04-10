@@ -1,5 +1,5 @@
 [run]
-    include = *authors/apps/follow/*
+    include = *authors/apps/*
 
 omit =
     */migrations/*
