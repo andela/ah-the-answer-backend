@@ -62,10 +62,10 @@
 	},
 	"addons": [
 		{
-		  "plan": "cloudinary"
+			"plan": "heroku-postgresql:hobby-dev"
 		},
 		{
-		  "plan": "heroku-postgresql:hobby-dev"
+		  "plan": "cloudinary"
 		}
 	  ],
   	"stack": "heroku-18"
