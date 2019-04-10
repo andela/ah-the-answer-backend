@@ -18,7 +18,7 @@ class TestUser(TestCase):
             },
             format="json"
         )
-        # verify the user
+        #verify the user
         test_user = User.objects.get(username='user')
         test_user.is_verified = True
         test_user.save()
