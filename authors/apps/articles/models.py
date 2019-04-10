@@ -43,3 +43,91 @@ class ArticleImage(models.Model):
 
     class Meta:
         ordering = ('-date_created',)
+
+class LikeArticles(models.Model):
+    """
+    Class handles model for recording like/dislike, user, and article
+    """
+    user = models.ForeignKey(
+        User,
+        related_name='liked_by',
+        on_delete=models.CASCADE
+    )
+    article = models.ForeignKey(
+        Article,
+        to_field='slug',
+        related_name='liked',
+        db_column='article',
+        on_delete=models.CASCADE
+    )
+    likes = models.IntegerField(null=True)
+    dislikes = models.IntegerField(null=True)
+    created_on = models.DateTimeField(auto_now=True)
+    class Meta:
+        ordering = ('created_on',)
+
+    @staticmethod
+    def dislike_article(user, article, slug, value):
+        """
+        method handles the data queries for disliking article
+        """
+        dislikes = LikeArticles.objects.filter(
+            user=user,
+            article=slug).values(
+                'dislikes', 'likes'
+            )
+        if len(dislikes) == 0:
+            LikeArticles.objects.create(
+                user=user,
+                article=article,
+                dislikes=value
+            )
+            return True   
+        elif dislikes[0]['dislikes'] == value:
+            LikeArticles.objects.filter(
+                user=user,
+                article=slug).delete()
+            return False
+        LikeArticles.objects.filter(
+            user=user,
+            article=slug).delete()
+        LikeArticles.objects.create(
+            user=user,
+            article=article,
+            dislikes=value
+        )
+        return True
+    
+    @staticmethod
+    def like_article(user, article, slug, value):
+        """
+        method handles logic for liking articles
+        """
+        likes = LikeArticles.objects.filter(
+            user=user,
+            article=slug).values(
+                'dislikes', 'likes'
+            )
+        if len(likes) == 0:
+            LikeArticles.objects.create(
+                user=user,
+                article=article,
+                likes=value
+            )
+            return True   
+        elif likes[0]['likes'] == value:
+            LikeArticles.objects.filter(
+                user=user,
+                article=slug).delete()
+            return False
+        LikeArticles.objects.filter(
+            user=user,
+            article=slug).delete()
+        LikeArticles.objects.create(
+            user=user,
+            article=article,
+            likes=value
+        )
+        return True
+
+   
