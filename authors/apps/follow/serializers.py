@@ -3,7 +3,7 @@ from .models import Follows
 
 
 class FollowersSerializer(serializers.Serializer):
-    following_user = serializers.CharField(max_length=100)
+    follower = serializers.CharField(max_length=100)
 
 
 class FollowingSerializer(serializers.Serializer):

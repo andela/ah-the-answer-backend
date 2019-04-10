@@ -15,7 +15,8 @@ class TestFollowViews(TestCase):
     """Tests the views contained in the 'follow' app"""
     def setUp(self):
 
-        """Create, authenticate and login first user"""
+        """Create, authenticate and login first user. Also creates
+        a profile."""
         self.client_1 = APIClient()
         self.user_1 = self.client_1.post(
             reverse('authentication:user-signup'),
@@ -41,6 +42,15 @@ class TestFollowViews(TestCase):
             },
             format="json"
         )
+        self.user_profile_1 = {"profile":
+                               {
+                                   "user_bio": "Doing the right thing!",
+                                   "name": "Bobby Doe",
+                                   "number_followers": 0,
+                                   "number_following": 0,
+                                   "total_article": 0
+                               }
+                               }
 
         """Create, authenticate and login second user"""
         self.client_2 = APIClient()
@@ -113,7 +123,7 @@ class TestFollowViews(TestCase):
                            format="json")
         response = self.client_1.get(reverse('follow:list-followers',
                                      args=['Mary']), format="json")
-        self.assertEqual(response.data['followers'][0]['following_user'],
+        self.assertEqual(response.data['followers'][0],
                          'Bob')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -149,6 +159,8 @@ class TestFollowViews(TestCase):
     def test_get_user_stats(self):
         self.token_1 = self.login_1.data['token']
         self.client_1.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token_1)
+        self.client_1.post(reverse('profile:profile-create'),
+                           self.user_profile_1, format="json")
         self.client_1.post(reverse('follow:follow-user', args=['Mary']),
                            format="json")
 

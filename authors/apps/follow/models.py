@@ -10,8 +10,7 @@ class Follows(models.Model):
         on_delete=models.CASCADE
     )
     followed_user = models.CharField(max_length=100)
-    following_user = models.CharField(max_length=100)
 
     def __str__(self):
-        return "{} is following {}".format(self.following_user,
+        return "{} is following {}".format(self.follower.username,
                                            self.followed_user)
