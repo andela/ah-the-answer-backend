@@ -2,13 +2,13 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import APIException
+from rest_framework import status
 
-from .models import Article, ArticleImage
+from .models import Article, ArticleImage, LikeArticles
 from .serializers import ArticleSerializer, ArticleImageSerializer
 from .permissions import ReadOnly
 from authors.apps.authentication.models import User
 import cloudinary
-
 
 def find_article(slug):
     """Method to check if an article exists"""
@@ -126,3 +126,47 @@ class ArticleImageView(APIView):
             'article').filter(article__slug=slug)
         serializer = ArticleImageSerializer(images, many=True)
         return Response({"images": serializer.data})
+
+class LikeArticleView(APIView):
+    """
+    Class for POST view allowing authenticated users to like articles
+    """
+    permission_classes = (IsAuthenticated,)
+    def post(self, request, slug):
+        """
+        method for generating a like for a particular article
+        """
+        article = find_article(slug)
+        liked = LikeArticles.like_article(request.user, article, slug, 1)
+        if not liked:
+            return Response({
+                'message': 'you have reverted your' \
+                    ' like for the article: {}'.format(slug)
+            }, status=status.HTTP_202_ACCEPTED)
+        return Response({
+            'message': 'you liked the article: {}'.format(slug),
+            'article': ArticleSerializer(article).data
+        },
+        status=status.HTTP_201_CREATED)
+
+class DislikeArticleView(APIView):
+    """
+    Class for POST view allowing authenticated users to dislike articles
+    """
+    permission_classes = (IsAuthenticated,)
+    def post(self, request, slug):
+        """
+        method for generating a dislike for a particular article
+        """
+        article = find_article(slug)
+        disliked = LikeArticles.dislike_article(request.user, article, slug, -1)
+        if not disliked:
+            return Response({
+                'message': 'you have reverted your' \
+                    ' dislike for the article: {}'.format(slug)
+            }, status=status.HTTP_202_ACCEPTED)
+        return Response({
+            'message': 'you disliked the article: {}'.format(slug),
+            'article': ArticleSerializer(article).data
+        },
+        status=status.HTTP_201_CREATED)
