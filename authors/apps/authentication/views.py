@@ -7,7 +7,7 @@ from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-import json
+
 from .renderers import UserJSONRenderer
 from .serializers import (
     LoginSerializer, RegistrationSerializer, UserSerializer, 
@@ -21,11 +21,8 @@ from .backends import JWTAuthentication
 
 class RegistrationAPIView(APIView):
     # Allow any user (authenticated or not) to hit this endpoint.
-<<<<<<< HEAD
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
-=======
->>>>>>> parent of 0a7a620... Revert "Fix: Return list of all users"
     serializer_class = RegistrationSerializer
 
     def post(self, request):
@@ -63,20 +60,6 @@ class RegistrationAPIView(APIView):
         return Response(serializer.validated_data,
                         status=status.HTTP_201_CREATED)
 
-<<<<<<< HEAD
-=======
-    def get(self, request):
-        permission_classes = (IsAuthenticated,)
-        users = User.objects.all()
-        serializer = UserSerializer(users, many=True)
-        if len(serializer.data) == 0:
-            return Response(
-                {"message": "No user available"}
-            )
-            
-        return Response({"users": serializer.data})
-
->>>>>>> parent of 0a7a620... Revert "Fix: Return list of all users"
 
 class LoginAPIView(APIView):
     permission_classes = (AllowAny,)
