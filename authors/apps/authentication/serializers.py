@@ -198,6 +198,7 @@ class PasswordResetSerializer(serializers.ModelSerializer):
                 'read_only': True
             }
         }
+
 class SetUpdatedPasswordSerializer(serializers.Serializer):
     """
     serializer for handling PUT view for resetting account password
@@ -211,8 +212,3 @@ class SetUpdatedPasswordSerializer(serializers.Serializer):
         )],
         write_only=True
     )
-
-    # class Meta:
-    #     model = User
-    #     fields = ('password',)
-    
