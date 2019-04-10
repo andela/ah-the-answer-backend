@@ -10,14 +10,14 @@ from ..authentication.models import User
 from ..profiles.models import Profile
 from .models import Follows
 
-from .serializers import FollowersSerializer, FollowingSerializer
+from .serializers import FollowingSerializer
 
 
 class ManageFollowers(APIView):
     """Contains views related to a user's followers. This includes methods
     that allow users to follow and unfollow each other, as well as return a
     list of all user followers. Only authenticated users may
-    access the views."""
+    access this view."""
     permission_classes = (IsAuthenticated,)
 
     def post(self, request, user_to_follow):
@@ -25,8 +25,8 @@ class ManageFollowers(APIView):
         user is trying to follow themselves. It also checks if the user to be
         followed is an existing user, as well as if they have already been
         followed."""
-        check_user = self.request.user
-        if check_user.username == user_to_follow:
+        current_user = self.request.user
+        if current_user.username == user_to_follow:
             return Response({'error': 'User is attempting to '
                             'follow themselves. This is not allowed.'},
                             status=status.HTTP_400_BAD_REQUEST)
@@ -36,11 +36,11 @@ class ManageFollowers(APIView):
                                  'choose another user.'},
                                 status=status.HTTP_400_BAD_REQUEST)
         if Follows.objects.filter(followed_user=user_to_follow).filter(
-                                 follower_id=check_user.pk).exists():
+                                 follower_id=current_user.pk).exists():
                 return Response({'error': 'User already followed.'},
                                 status=status.HTTP_400_BAD_REQUEST)
         new_follow = Follows(followed_user=user_to_follow,
-                             follower=check_user)
+                             follower=current_user)
         new_follow.save()
         return Response({'success': 'Now following {}.'.format(
                         user_to_follow)}, status=status.HTTP_201_CREATED)
@@ -56,18 +56,18 @@ class ManageFollowers(APIView):
         """Removes a previously followed user from a user's list of followers.
         Checks if user attempts to delete followers unrelated to them. It then
         confirms if the given user actually follows the given follower."""
-        check_user = self.request.user
-        if check_user.username != user:
+        current_user = self.request.user
+        if current_user.username != user:
             return Response({'error': 'Incorrect user logged in. '
                             'Check username in the URL.'},
                             status=status.HTTP_400_BAD_REQUEST)
         if not Follows.objects.filter(followed_user=followed_user).filter(
-                                     follower_id=check_user.pk).exists():
+                                     follower_id=current_user.pk).exists():
             return Response({"error": 'You do not follow {}. Unfollow failed.'
                             .format(followed_user)},
                             status=status.HTTP_400_BAD_REQUEST)
         Follows.objects.filter(followed_user=followed_user).filter(
-                               follower_id=check_user.pk).delete()
+                               follower_id=current_user.pk).delete()
         return Response({"success": '{} has been unfollowed.'.format(
                         followed_user)}, status=status.HTTP_200_OK)
 
@@ -80,8 +80,8 @@ class ManageFollowings(APIView):
 
     def get(self, request, user):
         """Returns a list of other users that the current user follows."""
-        check_user = self.request.user
-        followed_users_list = Follows.objects.filter(follower_id=check_user.pk)
+        current_user = self.request.user
+        followed_users_list = Follows.objects.filter(follower_id=current_user.pk)
         serializer = FollowingSerializer(followed_users_list, many=True)
         return Response({"followed_users": serializer.data},
                         status=status.HTTP_400_BAD_REQUEST)
@@ -94,14 +94,14 @@ class UserStats(APIView):
     def get(self, request, user):
         """Returns a count of a user's followers and follows."""
         try:
-            check_user = User.objects.get(username=user)
+            current_user = User.objects.get(username=user)
         except:
             return Response({"error": "This given username does not have an "
                             "Author's Haven account."},
                             status=status.HTTP_400_BAD_REQUEST)
         user_profile = Profile.objects.get(user__username=user)
         number_users_followed = Follows.objects.filter(
-                              follower_id=check_user.pk).count()
+                              follower_id=current_user.pk).count()
         number_of_followers = Follows.objects.filter(
                             followed_user=user).count()
         user_profile.number_of_followings = number_users_followed
