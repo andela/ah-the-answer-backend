@@ -20,7 +20,7 @@ class ProfilesListAPIview(APIView):
     def get(self, request):
         profiles = Profile.objects.all()
         serializer = ProfileSerializer(profiles, many=True)
-        if len(serializer.data) == 0:
+        if not profiles:
             return Response(
                 {"message": "No profile available"}
             )
