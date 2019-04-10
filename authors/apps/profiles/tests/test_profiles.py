@@ -47,6 +47,7 @@ class TestModelCase(TestCase):
         protected views contained in this test series. Lastly, two mock profile
         sets for a user are made: the first being valid,
         the second being invalid."""
+        self.test_client = APIClient()
         self.client = APIClient()
         self.user = self.client.post(
             reverse('authentication:user-signup'),
@@ -294,3 +295,23 @@ class TestModelCase(TestCase):
         new_client = APIClient()
         res = new_client.put('/api/profile/username/avatar/', format="json")
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_authenticated_user_can_get_all_profiles(self):
+        response = self.client.get(
+            reverse(
+                'profiles:profile-all',
+            ),
+            format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_a_non_authenticated_user_cannot_get_all_profiles(self):
+        response = self.test_client.get(
+            reverse(
+                'profiles:profile-all',
+            ),
+            format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD)
