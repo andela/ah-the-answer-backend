@@ -50,7 +50,7 @@ class ArticleImage(models.Model):
 class ReviewsModel(models.Model):
     article = models.ForeignKey(Article, related_name='article_review',
                                 on_delete=models.CASCADE)
-    review_body = models.TextField()
+    review_body = models.TextField(blank=True)
     rating_value = models.IntegerField(default=0)
     reviewed_by = models.ForeignKey(
         User, related_name='rating', on_delete=models.CASCADE)
