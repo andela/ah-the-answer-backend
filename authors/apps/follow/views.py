@@ -7,6 +7,7 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from ..authentication.models import User
+from ..profiles.models import Profile
 from .models import Follows
 
 from .serializers import FollowersSerializer, FollowingSerializer
@@ -88,14 +89,18 @@ class UserStats(APIView):
     followers and follows of a given user."""
     def get(self, request, user):
         """Returns a count of a user's followers and follows."""
-        if User.objects.filter(username=user).exists():
-            amount_follows = Follows.objects.filter(
+        user_profile = Profile.objects.get(user__username=user)
+        if not User.objects.filter(username=user).exists():
+            return Response({"error": "This given username does not have an "
+                            "Author's Haven account."},
+                            status=status.HTTP_400_BAD_REQUEST)
+        amount_followings = Follows.objects.filter(
                               following_user=user).count()
-            amount_followers = Follows.objects.filter(
-                                followed_user=user).count()
-            return Response({"success": [{"follows": amount_follows},
-                            {"followers": amount_followers}]},
-                            status=status.HTTP_200_OK)
-        return Response({"error": "This given username does not have an "
-                        "Author's Haven account."},
-                        status=status.HTTP_400_BAD_REQUEST)
+        amount_followers = Follows.objects.filter(
+                            followed_user=user).count()
+        user_profile.number_of_followings = amount_followings
+        user_profile.number_of_followers = amount_followers
+        user_profile.save()
+        return Response({"success": [{"follows": amount_followings},
+                        {"followers": amount_followers}]},
+                        status=status.HTTP_200_OK)
