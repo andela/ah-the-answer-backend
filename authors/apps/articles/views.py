@@ -20,6 +20,14 @@ def find_article(slug):
             "message": "The article requested does not exist"
         })
 
+def find_article_title(slug):
+    """
+    function returns title of article
+    """
+    title = Article.objects.filter(
+        slug=slug
+    ).values('title')
+    return title[0]['title']
 
 class ArticleView(APIView):
     """Class that contains the method that retrieves all articles and creates an article"""
@@ -138,13 +146,14 @@ class LikeArticleView(APIView):
         """
         article = find_article(slug)
         liked = LikeArticles.like_article(request.user, article, slug, 1)
+        article_title = find_article_title(slug)
         if not liked:
             return Response({
                 'message': 'you have reverted your' \
-                    ' like for the article: {}'.format(slug)
+                    ' like for the article: {}'.format(article_title)
             }, status=status.HTTP_202_ACCEPTED)
         return Response({
-            'message': 'you liked the article: {}'.format(slug),
+            'message': 'you liked the article: {}'.format(article_title),
             'article': ArticleSerializer(article).data
         },
         status=status.HTTP_201_CREATED)
@@ -159,14 +168,15 @@ class DislikeArticleView(APIView):
         method for generating a dislike for a particular article
         """
         article = find_article(slug)
+        article_title = find_article_title(slug)
         disliked = LikeArticles.dislike_article(request.user, article, slug, -1)
         if not disliked:
             return Response({
                 'message': 'you have reverted your' \
-                    ' dislike for the article: {}'.format(slug)
+                    ' dislike for the article: {}'.format(article_title)
             }, status=status.HTTP_202_ACCEPTED)
         return Response({
-            'message': 'you disliked the article: {}'.format(slug),
+            'message': 'you disliked the article: {}'.format(article_title),
             'article': ArticleSerializer(article).data
         },
         status=status.HTTP_201_CREATED)
