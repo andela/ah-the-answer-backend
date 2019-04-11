@@ -25,4 +25,11 @@ urlpatterns = [
                          namespace='profile')),
     path('api/', include(('authors.apps.articles.urls', 'authors.apps.articles'),
                          namespace='articles')),
+    path(
+        'api/',
+        include(
+            ('authors.apps.comments.urls', 'authors.apps.comments'),
+            namespace="comments"
+        )
+    )
 ]
