@@ -1,11 +1,8 @@
 {
-  "addons": [
-  ],
-  "buildpacks": [
-
-  ],
   "env": {
-      "DATABASE_URL": "postgres://mgvbxxlnipjbgo:d596a3511c94f015739f9a05a0cd9aa7cd8bc746888687ca2857ba88c2c8b165@ec2-184-72-238-22.compute-1.amazonaws.com:5432/d50gd3h6pih4bm",
+      "DATABASE_URL": {
+        "required": true
+      },
       "SECRET_KEY": {
         "required": true
       },
@@ -45,15 +42,26 @@
       "EMAIL_USE_TLS": {
         "required": true
       },
+      "CLOUDINARY_API_KEY": {
+        "required": true
+      },
+      "CLOUDINARY_API_SECRET": {
+        "required": true
+      },
+      "CLOUDINARY_NAME": {
+        "required": true
+      },
+      "CLOUDINARY_URL": {
+        "required": true
+      },
       "DOMAIN": {
+        "required": true
+      },
+      "URL": {
         "required": true
       }
       
   },
-  "formation": {
-  },
   "name": "ah-the-answer-backend",
-  "scripts": {
-  },
   "stack": "heroku-18"
 }
