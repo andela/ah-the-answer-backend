@@ -31,7 +31,7 @@ class ArticleSerializer(serializers.ModelSerializer):
 
     def get_dislike_count(self, obj):
         """method returns the sum of dislikes for an article"""
-        return obj.liked.filter(dislikes=-1).count()
+        return obj.liked.filter(likes=0).count()
 
     class Meta:
         model = Article
