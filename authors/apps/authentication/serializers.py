@@ -279,8 +279,7 @@ class GoogleAuthSerializer(serializers.ModelSerializer):
 
         authenticated_user = User.objects.get(
             email=decoded_user_data.get('email'))
-        return authenticated_user.get_token
-
+        return authenticated_user.username
 
 class FacebookAuthSerializer(serializers.ModelSerializer):
     """
@@ -328,7 +327,7 @@ class FacebookAuthSerializer(serializers.ModelSerializer):
 
         authenticated_user = User.objects.get(
             email=facebook_user_data.get('email'))
-        return authenticated_user.get_token
+        return authenticated_user.username
 
 
 class TwitterAuthSerializer(serializers.ModelSerializer):
@@ -366,7 +365,7 @@ class TwitterAuthSerializer(serializers.ModelSerializer):
         if not user.exists():
             user_obj = {
                 'social_id': twitter_user_data.get('id_str'),
-                'username': twitter_user_data.get('screen_name'),
+                'username': twitter_user_data.get('email'),
                 'email': twitter_user_data.get('email'),
                 'password': randint(10000000, 20000000)
             }
@@ -376,4 +375,4 @@ class TwitterAuthSerializer(serializers.ModelSerializer):
 
         authenticated_user = User.objects.get(
             email=twitter_user_data.get('email'))
-        return authenticated_user.get_token
+        return authenticated_user.username

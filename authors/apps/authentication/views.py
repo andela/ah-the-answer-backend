@@ -201,8 +201,10 @@ class GoogleAuthView(GenericAPIView):
             'access_token': request.data.get('access_token', {})
             })
         serializer.is_valid(raise_exception=True)
+        user = User.objects.get(email=serializer.data['access_token'])
         return Response({
-            "token": serializer.data['access_token']},
+            "username": user.username,
+            "token": user.get_token},
             status=status.HTTP_200_OK)
 
 
@@ -218,8 +220,11 @@ class FacebookAuthAPIView(GenericAPIView):
         serializer = self.serializer_class(data={
             'access_token': request.data.get('access_token', {})})
         serializer.is_valid(raise_exception=True)
-        res = {"token": serializer.data['access_token']}
-        return Response(res, status=status.HTTP_200_OK)
+        user = User.objects.get(email=serializer.data['access_token'])
+        return Response({
+            "username": user.username,
+            "token": user.get_token},
+            status=status.HTTP_200_OK)
 
 
 class TwitterAuthAPIView(GenericAPIView):
@@ -234,5 +239,8 @@ class TwitterAuthAPIView(GenericAPIView):
         token = request.data.get('access_token', {})
         serializer = self.serializer_class(data={'access_token': token})
         serializer.is_valid(raise_exception=True)
-        res = {"token": serializer.data['access_token']}
-        return Response(res, status=status.HTTP_200_OK)
+        user = User.objects.get(email=serializer.data['access_token'])
+        return Response({
+            "username": user.username,
+            "token": user.get_token},
+            status=status.HTTP_200_OK)
