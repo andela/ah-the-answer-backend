@@ -176,7 +176,7 @@ class SocialAuthTest(TestCase):
             "id_str": "102723377587866"}
         with patch(
                 'authors.apps.authentication.validators'
-                '.TwitterValidate.validate_twitter_token') as \
+                '.OAuth1Session.get') as \
                 mock_twitter_validate:
             mock_twitter_validate.return_value = \
                 twitter_user_info_valid_response
@@ -186,7 +186,7 @@ class SocialAuthTest(TestCase):
     def test_twitter_validate_returns_none_on_invalid_token(self):
         with patch(
                 'authors.apps.authentication.validators'
-                '.TwitterValidate.validate_twitter_token') as \
+                '.OAuth1Session.get') as \
                 mock_twitter_validate:
             mock_twitter_validate.return_value = None
             self.assertIsNone(mock_twitter_validate('INVALID twitter token'))
@@ -194,7 +194,7 @@ class SocialAuthTest(TestCase):
     def test_twitter_login_invalid_token(self):
         with patch(
                 'authors.apps.authentication.validators'
-                '.TwitterValidate.validate_twitter_token') as \
+                '.OAuth1Session.get') as \
                 mock_twitter_validate:
             mock_twitter_validate.return_value = None
             res = self.client.post(
