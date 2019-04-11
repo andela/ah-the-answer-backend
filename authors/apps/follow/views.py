@@ -45,22 +45,19 @@ class ManageFollowers(APIView):
         return Response({'success': 'Now following {}.'.format(
                         user_to_follow)}, status=status.HTTP_201_CREATED)
 
-    def get(self, request, user):
+    def get(self, request):
         """Returns a list of followers for a given user."""
-        follower_list = Follows.objects.filter(followed_user=user)
+        current_user = self.request.user
+        follower_list = Follows.objects.filter(followed_user=current_user.username)
         queries = [i.follower.username for i in follower_list]
         return Response({"followers": queries},
                         status=status.HTTP_200_OK)
 
-    def delete(self, request, user, followed_user):
+    def delete(self, request, followed_user):
         """Removes a previously followed user from a user's list of followers.
         Checks if user attempts to delete followers unrelated to them. It then
         confirms if the given user actually follows the given follower."""
         current_user = self.request.user
-        if current_user.username != user:
-            return Response({'error': 'Incorrect user logged in. '
-                            'Check username in the URL.'},
-                            status=status.HTTP_400_BAD_REQUEST)
         if not Follows.objects.filter(followed_user=followed_user).filter(
                                      follower_id=current_user.pk).exists():
             return Response({"error": 'You do not follow {}. Unfollow failed.'
@@ -78,7 +75,7 @@ class ManageFollowings(APIView):
     access the view."""
     permission_classes = (IsAuthenticated,)
 
-    def get(self, request, user):
+    def get(self, request):
         """Returns a list of other users that the current user follows."""
         current_user = self.request.user
         followed_users_list = Follows.objects.filter(follower_id=current_user.pk)
