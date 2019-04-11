@@ -117,6 +117,32 @@ class TestValidation(TestCase):
         self.assertEqual(self.comment.status_code, status.HTTP_201_CREATED)
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
+    def test_update_non_existent_comment(self):
+        res = self.client.delete(
+            reverse(
+                'comments:details',
+                kwargs={
+                    "slug": self.article.slug,
+                    'pk': self.comment_id
+                }
+            ),
+            format="json"
+        )
+
+        res_after = self.client.put(
+            reverse(
+                'comments:details',
+                kwargs={
+                    "slug": self.article.slug,
+                    'pk': self.comment_id
+                }
+            ),
+            format="json"
+        )
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res_after.status_code, status.HTTP_404_NOT_FOUND)
+
     def test_delete_comment_invalid_user(self):
         """
         Test that a comment is updated successfully
