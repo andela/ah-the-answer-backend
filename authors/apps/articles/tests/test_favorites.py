@@ -126,7 +126,6 @@ class FavoriteTestCase(TestCase):
         self.assertEqual(res.data['message'],
                          "Removed from favorites")
 
-
     def test_user_cannot_remove_from_favorite_if_not_in_favourites(self):
         self.client.post(
             reverse('articles:create-list'),
@@ -146,7 +145,7 @@ class FavoriteTestCase(TestCase):
                     }),
             format='json'
         )
-        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(res.data['message'],
                          "The article requested does not exist in your favorites")
 
@@ -158,11 +157,5 @@ class FavoriteTestCase(TestCase):
                     }),
             format='json'
         )
-        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(res.data['message'],
                          "The article requested does not exist")
-
-
-    def test_find_favorite_method_returns_exception(self):
-        self.assertRaises(FavoriteModel.DoesNotExist,
-                          find_favorite('adfdfacfdf'))
