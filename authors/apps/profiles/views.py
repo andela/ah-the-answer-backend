@@ -13,6 +13,20 @@ from ..authentication.models import User
 from .serializers import ProfileSerializer
 
 
+class ProfilesListAPIview(APIView):
+    """This class allows authenticated users to get all profiles"""
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        profiles = Profile.objects.all()
+        serializer = ProfileSerializer(profiles, many=True)
+        if not profiles:
+            return Response(
+                {"message": "No profile available"}
+            )
+        return Response({"profiles": serializer.data})
+
+
 class CreateRetrieveProfileView(APIView):
     """Implements two user profile related views. The 'get' view fetches a single
     profile from the database and the 'post' view creates a single user
