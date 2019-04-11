@@ -198,21 +198,6 @@ class TestCommentsAPI(TestCase):
         """
         Test that comment can be deleted
         """
-        create_res = self.client.post(
-            reverse(
-                'comments:create-list',
-                kwargs={
-                    "slug": self.article.slug
-                }
-            ),
-            data={
-                "comment": {
-                    "body": "This is a comment"
-                }
-            },
-            format="json"
-        )
-
         del_res = self.client.delete(
             reverse(
                 'comments:details',
@@ -224,7 +209,7 @@ class TestCommentsAPI(TestCase):
             format="json"
         )
 
-        self.assertEqual(create_res.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(self.comment.status_code, status.HTTP_201_CREATED)
         self.assertEqual(del_res.status_code, status.HTTP_200_OK)
 
     def test_delete_non_existent_comment(self):
