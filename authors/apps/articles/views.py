@@ -25,6 +25,15 @@ def find_article(slug):
         raise APIException({
             "message": "The article requested does not exist"
         })
+def find_favorite(slug):
+    """Method checks if an article is available in the FavouriteModel"""
+    try:
+        return FavoriteModel.objects.get(article__slug=slug)
+    except FavoriteModel.DoesNotExist:
+        APIException.status_code = 404
+        raise APIException({
+            "message": "The article requested does not exist in your favorites"
+        })
 
 class ArticleView(APIView):
     """Class that contains the method that retrieves all articles and creates an article"""
@@ -186,6 +195,7 @@ class FavoriteView(APIView):
         :return:
         """
         article = find_article(slug)
+        find_favorite(slug)
         FavoriteModel.objects.get(article=article.id, user=request.user).delete()
         return Response({"message": "Removed from favorites"}, status=200)
 

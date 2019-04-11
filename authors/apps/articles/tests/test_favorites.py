@@ -3,6 +3,8 @@ from authors.apps.authentication.models import User
 from django.urls import reverse
 from rest_framework import test, status
 from authors.apps.articles.models import FavoriteModel, Article
+from authors.apps.articles.views import find_favorite
+from django.core.exceptions import Does
 
 
 class FavoriteTestCase(TestCase):
@@ -118,8 +120,49 @@ class FavoriteTestCase(TestCase):
                     kwargs={
                         "slug": Article.objects.get().slug
                     }),
-                    format='json'
+            format='json'
         )
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data['message'],
                          "Removed from favorites")
+
+
+def test_user_can_remove_from_favorite_if_not_in_favourites(self):
+    self.client.post(
+        reverse('articles:create-list'),
+        data={
+            "article": {
+                "title": "Test title",
+                "body": "This is a very awesome article on testing tests",
+                "description": "Written by testing tester",
+            }
+        },
+        format="json"
+    )
+    res = self.client.delete(
+        reverse('articles:favorite',
+                kwargs={
+                    "slug": Article.objects.get().slug
+                }),
+        format='json'
+    )
+    self.assertEqual(res.status_code, status.HTTP_200_OK)
+    self.assertEqual(res.data['message'],
+                     "The article requested does not exist in your favorites")
+
+def test_user_cannot_remove_from_favorite_if_not_exists(self):
+    res = self.client.delete(
+        reverse('articles:favorite',
+                kwargs={
+                    "slug": "gghvvvhvhv"
+                }),
+        format='json'
+    )
+    self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
+    self.assertEqual(res.data['message'],
+                     "The article requested does not exist")
+
+
+def test_find_favorite_method_returns_exception(self):
+    self.assertRaises(FavoriteModel.DoesNotExist,
+                      find_favorite('adfdfacfdf'))
