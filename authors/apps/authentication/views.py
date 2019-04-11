@@ -45,7 +45,8 @@ class RegistrationAPIView(APIView):
 
         token = jwt_encode(user_email)
         template_name = 'email_verification.html'
-        context = {'username': username, 'token': token, 'domain':settings.DOMAIN}
+        context = {'username': username, 'token': token, 'domain':os.getenv('DOMAIN')}
+
         html_message = render_to_string(template_name, context)
         subject = 'Please verify your email'
         response=send_verification_email(os.getenv('FROM_EMAIL'), user_email,subject,html_message)
