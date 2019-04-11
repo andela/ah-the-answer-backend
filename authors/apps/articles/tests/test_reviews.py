@@ -87,7 +87,7 @@ class ReviewTestCase(BaseSetup):
                          status.HTTP_404_NOT_FOUND)
         self.assertRaises(Exception)
 
-    def test_unautheticated_user_cant_create_review(self):
+    def test_unauthenticated_user_cant_create_review(self):
         response = self.post_article()
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -130,7 +130,7 @@ class ReviewTestCase(BaseSetup):
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_cant_edit_non_existent_review(self):
+    def test_user_cant_edit_non_existent_review(self):
         self.test_user_can_delete_review()
         response = self.client2.delete(reverse('articles:alter-review', kwargs={
             "slug": Article.objects.get().slug, 'username': User.objects.filter(username="Pete").first()
@@ -139,7 +139,7 @@ class ReviewTestCase(BaseSetup):
                          status.HTTP_404_NOT_FOUND)
         self.assertRaises(Exception)
 
-    def test_cant_review_non_existent_article(self):
+    def test_user_cant_review_non_existent_article(self):
         response = self.client2.post(
             reverse('articles:review', kwargs={
                 "slug": "fake_article"
