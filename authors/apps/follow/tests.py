@@ -146,15 +146,6 @@ class TestFollowViews(TestCase):
                          'Unfollow failed.')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    # def test_user_attempts_to_unfollow_as_another_user(self):
-    #     self.token_1 = self.login_1.data['token']
-    #     self.client_1.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token_1)
-    #     response = self.client_1.delete(reverse('follow:unfollow-user',
-    #                                     args=['Mary', 'Bob']), format="json")
-    #     self.assertEqual(response.data['error'], 'Incorrect user logged in.'
-    #                      ' Check username in the URL.')
-    #     self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
     def test_get_user_stats(self):
         self.token_1 = self.login_1.data['token']
         self.client_1.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token_1)
