@@ -34,9 +34,8 @@ class RegistrationAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         user_email = serializer.validated_data['email']
         username= serializer.validated_data['username']
-        username = serializer.validated_data['username']
 
-      
+
         token = jwt_encode(user_email)
         template_name = 'email_verification.html'
         context = {'username': username, 'token': token, 'domain':os.getenv('DOMAIN')}
@@ -56,9 +55,6 @@ class RegistrationAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
                   )
 
-        message = {
-            'message': 'Your account has been succesfully created. Check your email to verify your account'
-        }
         serializer.save()
         serializer.validated_data.pop('password')
         return Response(
