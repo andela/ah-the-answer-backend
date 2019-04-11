@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Article, ArticleImage
+from .models import Article, ArticleImage, FavoriteModel
 from ..authentication.serializers import UserSerializer
 
 
@@ -42,3 +42,13 @@ class ArticleImageSerializer(serializers.ModelSerializer):
         model = ArticleImage
         fields = "__all__"
         read_only_fields = ["date_created"]
+
+
+class FavoriteSerializer(serializers.ModelSerializer):
+    article = ArticleSerializer()
+    user = UserSerializer()
+
+    class Meta:
+        model = FavoriteModel
+        fields = '__all__'
+        read_only_fields = ['date_modified', 'date_created']

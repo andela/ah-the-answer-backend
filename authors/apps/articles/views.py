@@ -3,8 +3,9 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import APIException
 
-from .models import Article, ArticleImage
-from .serializers import ArticleSerializer, ArticleImageSerializer
+from .models import Article, ArticleImage, FavoriteModel
+from .serializers import (ArticleSerializer, ArticleImageSerializer,
+                          FavoriteSerializer)
 from .permissions import ReadOnly
 from authors.apps.authentication.models import User
 import cloudinary
@@ -126,3 +127,54 @@ class ArticleImageView(APIView):
             'article').filter(article__slug=slug)
         serializer = ArticleImageSerializer(images, many=True)
         return Response({"images": serializer.data})
+
+
+class FavoriteView(APIView):
+    """This views handles the logic for creating and updating
+    records of a user's favorite articles
+    """
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request, slug):
+        """
+        To favorite an article users only need to hit this endpoint
+        /api/article/<slug>/favorite without any body
+        :param request:
+        :param slug:
+        :return: A success message of the article marked as favorite
+        """
+        article = find_article(slug)
+        try :
+            fav = FavoriteModel(user=request.user, article=article, favorite=True)
+            fav.save()
+        except:
+            return Response({"message": "Added to favorites"})
+        return Response({"article": FavoriteSerializer(fav).data,
+                         "message": "Added to favorites"})
+
+    def delete(self, request, slug):
+        """
+        When a user unmarks an article from being favorite, the record is
+        deleted from the favorite model
+        :param request:
+        :param slug:
+        :return:
+        """
+        article = find_article(slug)
+        FavoriteModel.objects.get(article=article.id, user=request.user).delete()
+        return Response({"message": "Removed from favorites"})
+
+
+class FavoriteListView(APIView):
+    """Lists all the articles that a user has marked as favorite"""
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        """
+        Gets all articles for that user that they have marked as favorite
+        :param request:
+        :return:
+        """
+        favs = FavoriteModel.objects.get(user=request.user)
+        return Response({"articles": FavoriteSerializer(favs).data,
+                         "count": FavoriteModel.objects.all().count()})
