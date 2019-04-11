@@ -2,12 +2,14 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import APIException
+from django.db.models import Q
 
 from .models import Article, ArticleImage, FavoriteModel
 from .serializers import (ArticleSerializer, ArticleImageSerializer,
                           FavoriteSerializer)
 from .permissions import ReadOnly
 from authors.apps.authentication.models import User
+from .filters import ArticleFilter
 import cloudinary
 
 
@@ -25,12 +27,32 @@ def find_article(slug):
 class ArticleView(APIView):
     """Class that contains the method that retrieves all articles and creates an article"""
     permission_classes = (IsAuthenticated | ReadOnly,)
+    filter_fields = ('author', 'title',)
 
     def get(self, request):
         """Method to get all articles"""
+
+        # Functionality to search articles by description, author and title
+        if request.GET.get('search'):
+            search_parameter = request.GET.get('search')
+
+            searched_articles = Article.objects.filter(Q(
+                title__icontains=search_parameter) | Q(description__icontains=search_parameter) | Q(author__username__icontains=search_parameter))
+            search_serializer = ArticleSerializer(
+                searched_articles, many=True)
+            return Response({"articles": search_serializer.data})
+
+        # Functionality to filter articles by author and title
         articles = Article.objects.all()
-        serializer = ArticleSerializer(articles, many=True)
-        return Response({"articles": serializer.data})
+        article_filter = ArticleFilter()
+        filtered_articles = article_filter.filter_queryset(
+            request, articles, self)
+
+        if filtered_articles.exists():
+            serializer = ArticleSerializer(filtered_articles, many=True)
+            return Response({"articles": serializer.data}, status=200)
+        else:
+            return Response({"message":"No article found","articles": []}, status=200)
 
     def post(self, request):
         """Method to create an article"""
@@ -42,9 +64,9 @@ class ArticleView(APIView):
             article_saved = serializer.save(author=self.request.user)
 
         return Response({
-                "success": "Article '{}' created successfully".format(article_saved.title),
-                "article": serializer.data
-            }, status=201)
+            "success": "Article '{}' created successfully".format(article_saved.title),
+            "article": serializer.data
+        }, status=201)
 
 
 class RetrieveArticleView(APIView):
