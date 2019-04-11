@@ -1,6 +1,8 @@
 from django.utils.text import slugify
 import secrets
 import readtime
+from decimal import Decimal, ROUND_HALF_UP
+import json
 
 
 def generate_slug(article_title):
@@ -20,6 +22,15 @@ def is_article_owner(author, reviewer):
         return True
 
 
+def is_review_owner(username, article):
+    from .models import ReviewsModel
+
+    reviewer = ReviewsModel.objects.get(article=article,
+                                        reviewed_by__username=username)
+    if reviewer:
+        return True
+
+
 def has_reviewed(article, reviewer):
     from .models import ReviewsModel
 
@@ -27,3 +38,8 @@ def has_reviewed(article, reviewer):
                                         reviewed_by=reviewer).count()
     if count > 0:
         return True
+
+
+def round_average(average):
+    average = Decimal(average).quantize(0, ROUND_HALF_UP)
+    return int(average)

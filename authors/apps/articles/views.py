@@ -4,7 +4,6 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import APIException
 import cloudinary
-import math
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 
@@ -13,10 +12,9 @@ from .models import Article, ArticleImage, ReviewsModel
 from .serializers import ArticleSerializer, ArticleImageSerializer, ReviewsSerializer
 from .permissions import ReadOnly
 from authors.apps.authentication.models import User
-from .utils import is_article_owner, has_reviewed
+from .utils import is_article_owner, has_reviewed, is_review_owner, round_average
 from .filters import ArticleFilter
 import cloudinary
-
 
 
 def find_article(slug):
@@ -58,7 +56,7 @@ class ArticleView(APIView):
             serializer = ArticleSerializer(filtered_articles, many=True)
             return Response({"articles": serializer.data}, status=200)
         else:
-            return Response({"message":"No article found","articles": []}, status=200)
+            return Response({"message": "No article found", "articles": []}, status=200)
 
     def post(self, request):
         """Method to create an article"""
@@ -162,7 +160,7 @@ class ReviewView(APIView):
 
     def post(self, request, slug):
         saved_article = find_article(slug)
-        if is_article_owner(saved_article.author.pk, self.request.user.pk):
+        if saved_article.author.pk == self.request.user.pk:
             APIException.status_code = status.HTTP_400_BAD_REQUEST
             raise APIException(
                 {"message": "You cannot review your own article"})
@@ -192,20 +190,24 @@ class ReviewView(APIView):
             serializer = ReviewsSerializer(reviews, many=True)
             return Response(
                 {
-                    "Average Rating": math.trunc(average_rating.get('rating_value__avg')),
+                    "Average Rating": round_average(average_rating.get('rating_value__avg')),
+
                     "reviews": serializer.data},
             )
-        except TypeError:
-            APIException.status_code = status.HTTP_404_NOT_FOUND
+        # except TypeError:
+        #     APIException.status_code = status.HTTP_404_NOT_FOUND
+        #     raise APIException(
+        #         {"errors": "There are no reviews for that article"})
+        except Exception as e:
             raise APIException(
-                {"errors": "There are no reviews for that article"})
+                {"errors": e})
 
-    def put(self, request, slug):
+    def put(self, request, slug, username):
         try:
             saved_article = find_article(slug)
             review = ReviewsModel.objects.get(
-                article=saved_article, reviewed_by=self.request.user.pk)
-            if review:
+                article=saved_article, reviewed_by__username=username)
+            if review and is_review_owner(username, saved_article):
                 data = request.data.get('review')
                 serializer = ReviewsSerializer(
                     instance=review, data=data, partial=True)
@@ -216,7 +218,7 @@ class ReviewView(APIView):
                          "Review": serializer.data
                          }, status=200)
             raise APIException(
-                {"message": "You are unathorized to edit that review"})
+                {"message": "You are Unauthorized to edit that review"})
         except ObjectDoesNotExist:
             APIException.status_code = status.HTTP_404_NOT_FOUND
             raise APIException(
@@ -225,16 +227,16 @@ class ReviewView(APIView):
             APIException.status_code = status.HTTP_400_BAD_REQUEST
             raise APIException({"errors": e.detail})
 
-    def delete(self, request, slug):
+    def delete(self, request, slug, username):
         try:
             saved_article = find_article(slug)
             review = ReviewsModel.objects.get(
                 article=saved_article, reviewed_by=self.request.user.pk)
-            if review:
+            if review and is_review_owner(username, saved_article):
                 review.delete()
                 return Response({"message": "Review for '{}' has been deleted.".format(slug)}, status=200)
             raise APIException(
-                {"message": "You are unathorized to delete that review"})
+                {"message": "You are Unauthorized to delete that review"})
         except ObjectDoesNotExist:
             APIException.status_code = status.HTTP_404_NOT_FOUND
             raise APIException(
