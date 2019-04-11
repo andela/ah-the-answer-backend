@@ -69,8 +69,6 @@ class FavoriteTestCase(TestCase):
                     })
         )
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
-        # self.assertEqual(res.data['message'],
-        #                  "The article requested does not exist")
 
     def test_user_get_all_favorites(self):
         self.client.post(
