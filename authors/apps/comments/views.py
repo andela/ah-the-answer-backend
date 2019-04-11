@@ -63,12 +63,11 @@ class CommentsDetail(views.APIView):
             )
 
     def put(self, request, slug, pk):
-        comment = Comment.objects.get(id=pk)
-        serializer = CommentSerializer(comment)
-
-        update_body = request.data['comment']['body'].strip()
-
         try:
+            comment = Comment.objects.get(id=pk)
+            serializer = CommentSerializer(comment)
+            update_body = request.data['comment']['body'].strip()
+
             self.validate_user(comment.author, self.request.user)
             comment.body = update_body
             comment.save()
@@ -79,6 +78,13 @@ class CommentsDetail(views.APIView):
                     "comment": serializer.data
                 },
                 status.HTTP_200_OK
+            )
+        except ObjectDoesNotExist:
+            return response.Response(
+                {
+                    "errors": "The record does not exist in the database"
+                },
+                status.HTTP_404_NOT_FOUND
             )
         except exceptions.ValidationError:
             return response.Response(
