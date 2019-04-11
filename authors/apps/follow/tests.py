@@ -123,7 +123,8 @@ class TestFollowViews(TestCase):
                            format="json")
         self.token_2 = self.login_2.data['token']
         self.client_2.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token_2)
-        response = self.client_2.get(reverse('follow:list-followers'), format="json")
+        response = self.client_2.get(reverse('follow:list-followers'),
+                                     format="json")
         self.assertEqual(response.data['followers'][0],
                          'Bob')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -133,8 +134,10 @@ class TestFollowViews(TestCase):
         self.client_1.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token_1)
         self.client_1.post(reverse('follow:follow-user', args=['Mary']),
                            format="json")
-        self.client_1.delete(reverse('follow:unfollow-user', args=['Mary']), format="json")
-        response = self.client_1.get(reverse('follow:list-followings'), format="json")
+        self.client_1.delete(reverse('follow:unfollow-user', args=['Mary']),
+                             format="json")
+        response = self.client_1.get(reverse('follow:list-followings'),
+                                     format="json")
         self.assertEqual(response.data['followed_users'], [])
 
     def test_user_attempts_to_unfollow_unfollowed_user(self):
