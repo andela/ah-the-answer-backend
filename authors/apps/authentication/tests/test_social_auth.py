@@ -156,14 +156,14 @@ class SocialAuthTest(TestCase):
     def test_twitter_validate_token_is_called(self):
         with patch(
                 'authors.apps.authentication.validators'
-                '.twitter.Api') as mock_twitter_validate:
+                '.OAuth1Session.get') as mock_twitter_validate:
             TwitterValidate.validate_twitter_token('access token')
             self.assertTrue(mock_twitter_validate.called)
 
     def test_verify_twitter_auth_raises_exception_when_token_is_invalid(self):
         with patch(
                 'authors.apps.authentication.validators'
-                '.twitter.Api') as mock_twitter_validate:
+                '.OAuth1Session.get') as mock_twitter_validate:
             TwitterValidate.validate_twitter_token(
                 'access_token1 access_token2')
             mock_twitter_validate.side_effect = ValueError
@@ -176,7 +176,7 @@ class SocialAuthTest(TestCase):
             "id_str": "102723377587866"}
         with patch(
                 'authors.apps.authentication.validators'
-                '.TwitterValidate.validate_twitter_token') as \
+                '.OAuth1Session.get') as \
                 mock_twitter_validate:
             mock_twitter_validate.return_value = \
                 twitter_user_info_valid_response
@@ -186,7 +186,7 @@ class SocialAuthTest(TestCase):
     def test_twitter_validate_returns_none_on_invalid_token(self):
         with patch(
                 'authors.apps.authentication.validators'
-                '.TwitterValidate.validate_twitter_token') as \
+                '.OAuth1Session.get') as \
                 mock_twitter_validate:
             mock_twitter_validate.return_value = None
             self.assertIsNone(mock_twitter_validate('INVALID twitter token'))
@@ -194,7 +194,7 @@ class SocialAuthTest(TestCase):
     def test_twitter_login_invalid_token(self):
         with patch(
                 'authors.apps.authentication.validators'
-                '.TwitterValidate.validate_twitter_token') as \
+                '.OAuth1Session.get') as \
                 mock_twitter_validate:
             mock_twitter_validate.return_value = None
             res = self.client.post(
