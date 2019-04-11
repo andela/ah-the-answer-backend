@@ -273,15 +273,9 @@ class GoogleAuthSerializer(serializers.ModelSerializer):
                 'password': randint(10000000, 20000000),
 
             }
-
-            try:
-                new_user = User.objects.create_user(**user_obj)
-                new_user.is_verified = True
-                new_user.save()
-            except:
-                raise serializers.ValidationError(
-                    'Failed to register the user. Email already exists in '
-                    'the database')
+            new_user = User.objects.create_user(**user_obj)
+            new_user.is_verified = True
+            new_user.save()
 
         authenticated_user = User.objects.get(
             email=decoded_user_data.get('email'))
@@ -328,14 +322,9 @@ class FacebookAuthSerializer(serializers.ModelSerializer):
                 'email': facebook_user_data.get('email'),
                 'password': randint(10000000, 20000000)
             }
-            try:
-                new_user = User.objects.create_user(**user_obj)
-                new_user.is_verified = True
-                new_user.save()
-            except:
-                raise serializers.ValidationError(
-                    'Failed to register the user. Email already exists in '
-                    'the database')
+            new_user = User.objects.create_user(**user_obj)
+            new_user.is_verified = True
+            new_user.save()
 
         authenticated_user = User.objects.get(
             email=facebook_user_data.get('email'))
@@ -373,24 +362,18 @@ class TwitterAuthSerializer(serializers.ModelSerializer):
                 'Token is not valid or has expired. Please get a new one.'
             )
 
-        user = User.objects.filter(social_id=twitter_user_data.get('id_str'))
+        user = User.objects.filter(email=twitter_user_data.get('email'))
         if not user.exists():
             user_obj = {
                 'social_id': twitter_user_data.get('id_str'),
                 'username': twitter_user_data.get('screen_name'),
-                'email': '{}@{}'.format(
-                    twitter_user_data.get('screen_name'),'twitter.com'),
+                'email': twitter_user_data.get('email'),
                 'password': randint(10000000, 20000000)
             }
-            try:
-                new_user = User.objects.create_user(**user_obj)
-                new_user.is_verified = True
-                new_user.save()
-            except:
-                raise serializers.ValidationError(
-                    'Failed to register the user. Email already exists in '
-                    'the database')
+            new_user = User.objects.create_user(**user_obj)
+            new_user.is_verified = True
+            new_user.save()
 
         authenticated_user = User.objects.get(
-            social_id=twitter_user_data.get('id_str'))
+            email=twitter_user_data.get('email'))
         return authenticated_user.get_token

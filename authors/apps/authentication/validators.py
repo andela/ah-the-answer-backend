@@ -1,9 +1,11 @@
 import os
+import json
+
 from google.oauth2 import id_token
 from google.auth.transport import requests
 
 import facebook
-import twitter
+from requests_oauthlib import OAuth1Session
 
 
 class GoogleValidate:
@@ -70,21 +72,19 @@ class TwitterValidate:
 
     @staticmethod
     def validate_twitter_token(access_tokens):
-
+        verify_url = 'https://api.twitter.com/1.1/account/verify_credentials' \
+                     '.json'
         access_token_key, access_token_secret = TwitterValidate.extract_tokens(
             access_tokens)
-
         try:
-            consumer_key = os.getenv('SOCIAL_AUTH_TWITTER_KEY')
-            consumer_secret = os.getenv('SOCIAL_AUTH_TWITTER_SECRET')
-            api = twitter.Api(
-                consumer_key=consumer_key,
-                consumer_secret=consumer_secret,
-                access_token_key=access_token_key,
-                access_token_secret=access_token_secret
-            )
-            user_data_from_twitter = api.VerifyCredentials(include_email=True)
-            return user_data_from_twitter.__dict__
-
+            twitter = OAuth1Session(
+                client_key=os.getenv('SOCIAL_AUTH_TWITTER_KEY'),
+                client_secret=os.getenv('SOCIAL_AUTH_TWITTER_SECRET'),
+                resource_owner_key=access_token_key,
+                resource_owner_secret=access_token_secret)
+            raw_data_from_twitter = twitter.get(
+                verify_url + '?include_email=true')
+            user_data_from_twitter = json.loads(raw_data_from_twitter.text)
         except:
             return None
+        return user_data_from_twitter
