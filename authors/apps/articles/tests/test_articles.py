@@ -3,6 +3,7 @@ from authors.apps.authentication.models import User
 from django.urls import reverse
 from rest_framework import test, status
 from authors.apps.articles.models import Article
+from authors.apps.articles.filters import ArticleFilter
 
 
 class TestArticle(TestCase):
@@ -413,6 +414,42 @@ class TestArticle(TestCase):
         )
         self.assertEquals(res.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertRaises(Exception)
+
+    def test_user_can_search_articles(self):
+        response = self.client.get("/api/articles/?search=raywire", format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_user_can_filter_articles_by_title(self):
+        self.client.post(
+            reverse('articles:create-list'),
+            data={
+                "article": {
+                    "title": "Test title",
+                    "body": "This is a very awesome article on testing tests",
+                    "description": "Written by testing tester",
+                }
+            },
+            format="json"
+        )        
+        response = self.client.get("/api/articles/?title=Test title", format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data['articles'])
+
+    def test_user_can_filter_articles_by_author(self):
+        self.client.post(
+            reverse('articles:create-list'),
+            data={
+                "article": {
+                    "title": "Test title",
+                    "body": "This is a very awesome article on testing tests",
+                    "description": "Written by testing tester",
+                }
+            },
+            format="json"
+        )        
+        response = self.client.get("/api/articles/?author=Test", format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data['articles'])
 
     def tearDown(self):
         Article.objects.all().delete()
