@@ -156,14 +156,14 @@ class SocialAuthTest(TestCase):
     def test_twitter_validate_token_is_called(self):
         with patch(
                 'authors.apps.authentication.validators'
-                '.twitter.Api') as mock_twitter_validate:
+                '.OAuth1Session.get') as mock_twitter_validate:
             TwitterValidate.validate_twitter_token('access token')
             self.assertTrue(mock_twitter_validate.called)
 
     def test_verify_twitter_auth_raises_exception_when_token_is_invalid(self):
         with patch(
                 'authors.apps.authentication.validators'
-                '.twitter.Api') as mock_twitter_validate:
+                '.OAuth1Session.get') as mock_twitter_validate:
             TwitterValidate.validate_twitter_token(
                 'access_token1 access_token2')
             mock_twitter_validate.side_effect = ValueError
@@ -203,3 +203,20 @@ class SocialAuthTest(TestCase):
             self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
             self.assertEqual(json.loads(res.content), {"errors": {
                 "access_token": ["Invalid token please try again"]}})
+
+    def test_twitter_user_with_attached_email_already_exists_in_db(self):
+        self.create_user('Dick ', 'dick32424@twitter.com',
+                         'pwd!@#42go')
+        with patch(
+                'authors.apps.authentication.validators'
+                '.TwitterValidate.validate_twitter_token') as \
+                mock_google_validate:
+            mock_google_validate.return_value = {
+                "name": "Dick", "email": "dick32424@twitter.com",
+                "id_str": "102723377587866", "screen_name": "fadfdf"}
+            res = self.client.post(
+                '/api/users/twitter/',
+                {"access_token": "valid token for twitter"},
+                format='json')
+            self.assertEqual(res.status_code, status.HTTP_200_OK)
+            self.assertIn("token", json.loads(res.content)['user'])
