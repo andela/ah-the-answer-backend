@@ -82,6 +82,16 @@ class SocialAuthTest(TestCase):
             self.assertEqual(res.status_code, status.HTTP_200_OK)
             self.assertIn("token", json.loads(res.content)['user'])
 
+    def test_facebook_auth_raises_exception_when_token_is_invalid(self):
+        with patch(
+                'authors.apps.authentication.validators'
+                '.facebook.GraphAPI') as mock_facebook_validate:
+            FacebookValidate.validate_facebook_token('token')
+            mock_facebook_validate.side_effect = ValueError
+            self.assertRaises(ValueError, mock_facebook_validate)
+            self.assertIsNone(
+                FacebookValidate.validate_facebook_token('token'))
+
     # GOOGLE
 
     def test_google_validate_token_is_called(self):
@@ -152,6 +162,17 @@ class SocialAuthTest(TestCase):
             self.assertEqual(res.status_code, status.HTTP_200_OK)
             self.assertIn("token", json.loads(res.content)['user'])
 
+    def test_google_auth_raises_exception_when_token_is_invalid(self):
+        with patch(
+                'authors.apps.authentication.validators'
+                '.id_token.verify_oauth2_token') as mock_google_validate:
+            GoogleValidate.validate_google_token('token')
+            mock_google_validate.side_effect = ValueError
+            self.assertRaises(ValueError, mock_google_validate)
+            self.assertIsNone(
+                GoogleValidate.validate_google_token('token'))
+
+
     # TWITTER
     def test_twitter_validate_token_is_called(self):
         with patch(
@@ -220,3 +241,12 @@ class SocialAuthTest(TestCase):
                 format='json')
             self.assertEqual(res.status_code, status.HTTP_200_OK)
             self.assertIn("token", json.loads(res.content)['user'])
+
+    def test_twitter_auth_raises_exception_when_token_is_invalid(self):
+        with patch(
+                'authors.apps.authentication.validators'
+                '.OAuth1Session.get') as mock_twitter_validate:
+            mock_twitter_validate.side_effect = ValueError
+            self.assertRaises(ValueError, mock_twitter_validate)
+            self.assertIsNone(
+                TwitterValidate.validate_twitter_token('token'))

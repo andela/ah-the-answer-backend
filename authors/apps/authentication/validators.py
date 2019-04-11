@@ -86,5 +86,5 @@ class TwitterValidate:
                 verify_url + '?include_email=true')
             user_data_from_twitter = json.loads(raw_data_from_twitter.text)
         except:
-            return None
+            user_data_from_twitter = None
         return user_data_from_twitter
