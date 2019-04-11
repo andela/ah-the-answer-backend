@@ -4,7 +4,7 @@ from django.urls import reverse
 from rest_framework import test, status
 from authors.apps.articles.models import FavoriteModel, Article
 from authors.apps.articles.views import find_favorite
-from django.core.exceptions import Does
+
 
 
 class FavoriteTestCase(TestCase):
