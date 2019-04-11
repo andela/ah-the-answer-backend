@@ -150,7 +150,8 @@ class LikeArticleView(APIView):
         if not liked:
             return Response({
                 'message': 'you have reverted your' \
-                    ' like for the article: {}'.format(article_title)
+                    ' like for the article: {}'.format(article_title),
+                'article': ArticleSerializer(article).data  
             }, status=status.HTTP_202_ACCEPTED)
         return Response({
             'message': 'you liked the article: {}'.format(article_title),
@@ -173,7 +174,8 @@ class DislikeArticleView(APIView):
         if not disliked:
             return Response({
                 'message': 'you have reverted your' \
-                    ' dislike for the article: {}'.format(article_title)
+                    ' dislike for the article: {}'.format(article_title),
+                'article': ArticleSerializer(article).data
             }, status=status.HTTP_202_ACCEPTED)
         return Response({
             'message': 'you disliked the article: {}'.format(article_title),
