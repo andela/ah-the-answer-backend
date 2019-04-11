@@ -170,7 +170,7 @@ class LikeArticleView(APIView):
         method for generating a like for a particular article
         """
         article = find_article(slug)
-        liked = LikeArticles.like_article(request.user, article, slug, 1)
+        liked = LikeArticles.react_to_article(request.user, article, slug, 1)
         article_title = find_article_title(slug)
         if not liked:
             return Response({
@@ -195,7 +195,7 @@ class DislikeArticleView(APIView):
         """
         article = find_article(slug)
         article_title = find_article_title(slug)
-        disliked = LikeArticles.dislike_article(request.user, article, slug, -1)
+        disliked = LikeArticles.react_to_article(request.user, article, slug, 0)
         if not disliked:
             return Response({
                 'message': 'you have reverted your' \
