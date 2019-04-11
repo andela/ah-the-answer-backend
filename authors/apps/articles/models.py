@@ -61,65 +61,40 @@ class LikeArticles(models.Model):
         on_delete=models.CASCADE
     )
     likes = models.IntegerField(null=True)
-    dislikes = models.IntegerField(null=True)
     created_on = models.DateTimeField(auto_now=True)
     class Meta:
         ordering = ('created_on',)
 
     @staticmethod
-    def dislike_article(user, article, slug, value):
+    def react_to_article(user, article, slug, value):
         """
-        method handles the data queries for disliking article
+        method handles the logic for liking or disliking 
+        an article
         """
-        dislikes = LikeArticles.objects.filter(
+        user_reaction = LikeArticles.objects.filter(
             user=user,
-            article=slug).values(
-                'dislikes', 'likes'
-            )
-        if len(dislikes) == 0:
-            LikeArticles.objects.create(
-                user=user,
-                article=article,
-                dislikes=value
-            )
-            return True   
-        elif dislikes[0]['dislikes'] == value:
-            LikeArticles.objects.filter(
-                user=user,
-                article=slug).delete()
-            return False
-        LikeArticles.objects.filter(
-            user=user,
-            article=slug).delete()
-        LikeArticles.objects.create(
-            user=user,
-            article=article,
-            dislikes=value
-        )
-        return True
-    
-    @staticmethod
-    def like_article(user, article, slug, value):
-        """
-        method handles logic for liking articles
-        """
-        likes = LikeArticles.objects.filter(
-            user=user,
-            article=slug).values(
-                'dislikes', 'likes'
-            )
-        if len(likes) == 0:
+            article=slug
+            ).values('likes',)
+        # if the 'likes' field in the model is empty, a new instance
+        # is created with the user's reaction to an article
+        if len(user_reaction) == 0:
             LikeArticles.objects.create(
                 user=user,
                 article=article,
                 likes=value
             )
-            return True   
-        elif likes[0]['likes'] == value:
+            return True
+        # if the 'likes' field has a character matching the value, the 
+        # model takes it that the user wants to revert their reaction
+        # to that particular article   
+        elif user_reaction[0]['likes'] == value:
             LikeArticles.objects.filter(
                 user=user,
                 article=slug).delete()
             return False
+        # if 'likes' field is not empty and the character doesn't match
+        # the value provided, that row is deleted and a new instance is 
+        # created with the new reaction to the article
         LikeArticles.objects.filter(
             user=user,
             article=slug).delete()
@@ -129,5 +104,3 @@ class LikeArticles(models.Model):
             likes=value
         )
         return True
-
-   
