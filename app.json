@@ -44,6 +44,9 @@
       },
       "EMAIL_USE_TLS": {
         "required": true
+      },
+      "DOMAIN": {
+        "required": true
       }
       
   },
