@@ -150,7 +150,7 @@ class FavoriteView(APIView):
         except:
             return Response({"message": "Added to favorites"})
         return Response({"article": FavoriteSerializer(fav).data,
-                         "message": "Added to favorites"})
+                         "message": "Added to favorites"}, status=201)
 
     def delete(self, request, slug):
         """
@@ -162,7 +162,7 @@ class FavoriteView(APIView):
         """
         article = find_article(slug)
         FavoriteModel.objects.get(article=article.id, user=request.user).delete()
-        return Response({"message": "Removed from favorites"})
+        return Response({"message": "Removed from favorites"}, status=200)
 
 
 class FavoriteListView(APIView):
@@ -175,6 +175,6 @@ class FavoriteListView(APIView):
         :param request:
         :return:
         """
-        favs = FavoriteModel.objects.get(user=request.user)
-        return Response({"articles": FavoriteSerializer(favs).data,
-                         "count": FavoriteModel.objects.all().count()})
+        favs = FavoriteModel.objects.filter(user=request.user)
+        return Response({"articles": FavoriteSerializer(favs, many=True).data,
+                         "count": favs.count()}, status=200)
