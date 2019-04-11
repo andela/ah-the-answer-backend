@@ -194,13 +194,13 @@ class ReviewView(APIView):
 
                     "reviews": serializer.data},
             )
-        # except TypeError:
-        #     APIException.status_code = status.HTTP_404_NOT_FOUND
-        #     raise APIException(
-        #         {"errors": "There are no reviews for that article"})
+        except TypeError:
+            APIException.status_code = status.HTTP_404_NOT_FOUND
+            raise APIException(
+                {"errors": "There are no reviews for that article"})
         except Exception as e:
             raise APIException(
-                {"errors": e})
+                {"errors": e.detail})
 
     def put(self, request, slug, username):
         try:
