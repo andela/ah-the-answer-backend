@@ -209,7 +209,7 @@ class ReviewView(APIView):
             saved_article = find_article(slug)
             review = ReviewsModel.objects.get(
                 article=saved_article, reviewed_by__username=username)
-            if review and is_review_owner(self.request.user.pk, saved_article):
+            if review and self.request.user.username == username:
                 data = request.data.get('review')
                 serializer = ReviewsSerializer(
                     instance=review, data=data, partial=True)
@@ -239,7 +239,7 @@ class ReviewView(APIView):
             saved_article = find_article(slug)
             review = ReviewsModel.objects.get(
                 article=saved_article, reviewed_by=self.request.user.pk)
-            if review and is_review_owner(self.request.user.pk, saved_article):
+            if review and self.request.user.username == username:
                 review.delete()
                 return Response({"message": "Review for '{}' has been deleted.".format(slug)}, status=200)
             raise APIException(
