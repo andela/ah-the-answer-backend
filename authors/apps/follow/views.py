@@ -42,6 +42,11 @@ class ManageFollowers(APIView):
         new_follow = Follows(followed_user=user_to_follow,
                              follower=current_user)
         new_follow.save()
+        user_profile = Profile.objects.get(user__username=current_user.username)
+        number_users_followed = Follows.objects.filter(
+                              follower_id=current_user.pk).count()
+        user_profile.number_of_followings = number_users_followed
+        user_profile.save()
         return Response({'success': 'Now following {}.'.format(
                         user_to_follow)}, status=status.HTTP_201_CREATED)
 
@@ -65,6 +70,11 @@ class ManageFollowers(APIView):
                             status=status.HTTP_400_BAD_REQUEST)
         Follows.objects.filter(followed_user=followed_user).filter(
                                follower_id=current_user.pk).delete()
+        user_profile = Profile.objects.get(user__username=current_user.username)
+        number_users_followed = Follows.objects.filter(
+                              follower_id=current_user.pk).count()
+        user_profile.number_of_followings = number_users_followed
+        user_profile.save()
         return Response({"success": '{} has been unfollowed.'.format(
                         followed_user)}, status=status.HTTP_200_OK)
 
