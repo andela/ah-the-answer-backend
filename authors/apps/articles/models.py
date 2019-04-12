@@ -62,3 +62,63 @@ class ReviewsModel(models.Model):
         avg = ReviewsModel.objects.filter(
             article=article).aggregate(Avg('rating_value'))
         return avg
+class LikeArticles(models.Model):
+    """
+    Class handles model for recording like/dislike, user, and article
+    """
+    user = models.ForeignKey(
+        User,
+        related_name='liked_by',
+        on_delete=models.CASCADE
+    )
+    article = models.ForeignKey(
+        Article,
+        to_field='slug',
+        related_name='liked',
+        db_column='article',
+        on_delete=models.CASCADE
+    )
+    likes = models.IntegerField(null=True)
+    created_on = models.DateTimeField(auto_now=True)
+    class Meta:
+        ordering = ('created_on',)
+
+    @staticmethod
+    def react_to_article(user, article, slug, value):
+        """
+        method handles the logic for liking or disliking 
+        an article
+        """
+        user_reaction = LikeArticles.objects.filter(
+            user=user,
+            article=slug
+            ).values('likes',)
+        # if the 'likes' field in the model is empty, a new instance
+        # is created with the user's reaction to an article
+        if len(user_reaction) == 0:
+            LikeArticles.objects.create(
+                user=user,
+                article=article,
+                likes=value
+            )
+            return True
+        # if the 'likes' field has a character matching the value, the 
+        # model takes it that the user wants to revert their reaction
+        # to that particular article   
+        elif user_reaction[0]['likes'] == value:
+            LikeArticles.objects.filter(
+                user=user,
+                article=slug).delete()
+            return False
+        # if 'likes' field is not empty and the character doesn't match
+        # the value provided, that row is deleted and a new instance is 
+        # created with the new reaction to the article
+        LikeArticles.objects.filter(
+            user=user,
+            article=slug).delete()
+        LikeArticles.objects.create(
+            user=user,
+            article=article,
+            likes=value
+        )
+        return True
