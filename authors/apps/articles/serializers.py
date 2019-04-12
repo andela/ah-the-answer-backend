@@ -26,7 +26,7 @@ class ArticleSerializer(serializers.ModelSerializer):
             'is_published', instance.is_published)
         instance.save()
         return instance
-    
+
     def get_like_count(self, obj):
         """method returns number of likes for an article"""
         return obj.liked.filter(likes=1).count()
@@ -72,8 +72,6 @@ class ReviewsSerializer(serializers.ModelSerializer):
         read_only_fields = ('average_rating', 'date_created', 'date_modified',
                             'article', 'reviewed_by', 'reviewer_username', 'avg_rating')
 
-    def create(self, validated_data):
-        return ReviewsModel.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
 
