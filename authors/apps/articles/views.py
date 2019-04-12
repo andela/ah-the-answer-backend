@@ -202,8 +202,10 @@ class ReviewView(APIView):
             raise APIException(
                 {"errors": e.detail})
 
-    def put(self, request, slug, username):
+    def put(self, request, slug, username=None):
         try:
+            if username is None:
+                raise TypeError
             saved_article = find_article(slug)
             review = ReviewsModel.objects.get(
                 article=saved_article, reviewed_by__username=username)
@@ -223,12 +225,17 @@ class ReviewView(APIView):
             APIException.status_code = status.HTTP_404_NOT_FOUND
             raise APIException(
                 {"errors": "That Review does not exist"})
+        except TypeError:
+            APIException.status_code = status.HTTP_400_BAD_REQUEST
+            raise APIException({"errors": "Invalid Url"})
         except Exception as e:
             APIException.status_code = status.HTTP_400_BAD_REQUEST
             raise APIException({"errors": e.detail})
 
-    def delete(self, request, slug, username):
+    def delete(self, request, slug, username=None):
         try:
+            if username is None:
+                raise TypeError
             saved_article = find_article(slug)
             review = ReviewsModel.objects.get(
                 article=saved_article, reviewed_by=self.request.user.pk)
@@ -241,6 +248,9 @@ class ReviewView(APIView):
             APIException.status_code = status.HTTP_404_NOT_FOUND
             raise APIException(
                 {"errors": "That Review does not exist"})
+        except TypeError:
+            APIException.status_code = status.HTTP_400_BAD_REQUEST
+            raise APIException({"errors": "Invalid Url"})
         except Exception as e:
             APIException.status_code = status.HTTP_400_BAD_REQUEST
             raise APIException({"errors": e.detail})
