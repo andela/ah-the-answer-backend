@@ -279,7 +279,7 @@ class GoogleAuthSerializer(serializers.ModelSerializer):
 
         authenticated_user = User.objects.get(
             email=decoded_user_data.get('email'))
-        return authenticated_user.username
+        return authenticated_user.email
 
 class FacebookAuthSerializer(serializers.ModelSerializer):
     """
@@ -327,7 +327,7 @@ class FacebookAuthSerializer(serializers.ModelSerializer):
 
         authenticated_user = User.objects.get(
             email=facebook_user_data.get('email'))
-        return authenticated_user.username
+        return authenticated_user.email
 
 
 class TwitterAuthSerializer(serializers.ModelSerializer):
@@ -375,4 +375,4 @@ class TwitterAuthSerializer(serializers.ModelSerializer):
 
         authenticated_user = User.objects.get(
             email=twitter_user_data.get('email'))
-        return authenticated_user.username
+        return authenticated_user.email
