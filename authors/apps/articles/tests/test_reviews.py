@@ -155,3 +155,20 @@ class ReviewTestCase(BaseSetup):
         self.assertEqual(response.status_code,
                          status.HTTP_404_NOT_FOUND)
         self.assertRaises(Exception)
+    
+    def test_malformed_url(self):
+        response = self.post_article()
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.client.put(
+            reverse('articles:alter-review', kwargs={
+                "slug": Article.objects.get().slug, "username": "None"
+            }),
+            data={
+                "review": {
+                    "review_body": "I really liked the article",
+                    "rating_value": 5
+                }
+            },
+            format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
