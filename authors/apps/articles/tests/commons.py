@@ -19,6 +19,7 @@ class BaseSetup(TestCase):
         """
         self.client = APIClient()
         self.client2 = APIClient()
+        self.client3 = APIClient()
         self.user = self.client.post(
             reverse('authentication:user-signup'),
             data={
@@ -41,12 +42,26 @@ class BaseSetup(TestCase):
             },
             format="json"
         )
+        self.user3 = self.client3.post(
+            reverse('authentication:user-signup'),
+            data={
+                "user": {
+                    "email": "jane@mail.com",
+                    "username": "Jane",
+                    "password": "Jane12345"
+                }
+            },
+            format="json"
+        )
         test_user = User.objects.get(username="Bob")
         test_user.is_verified = True
         test_user.save()
         test_user2 = User.objects.get(username="Pete")
         test_user2.is_verified = True
         test_user2.save()
+        test_user3 = User.objects.get(username="Jane")
+        test_user3.is_verified = True
+        test_user3.save()
         self.login = self.client.post(
             reverse('authentication:user-login'),
             data={
@@ -67,10 +82,22 @@ class BaseSetup(TestCase):
             },
             format="json"
         )
+        self.login3 = self.client3.post(
+            reverse('authentication:user-login'),
+            data={
+                "user": {
+                    "email": "jane@mail.com",
+                    "password": "Jane12345"
+                }
+            },
+            format="json"
+        )
         self.token = self.login.data['token']
         self.token2 = self.login2.data['token']
+        self.token3 = self.login3.data['token']
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token)
         self.client2.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token2)
+        self.client3.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token3)
 
     def post_article(self):
         return self.client.post(
@@ -87,6 +114,20 @@ class BaseSetup(TestCase):
 
     def post_review(self):
         return self.client2.post(
+            reverse('articles:review', kwargs={
+                "slug": Article.objects.get().slug
+            }),
+            data={
+                "review": {
+                    "review_body": "I really liked the article",
+                    "rating_value": 5
+                }
+            },
+            format="json"
+        )
+
+    def post_review2(self):
+        return self.client3.post(
             reverse('articles:review', kwargs={
                 "slug": Article.objects.get().slug
             }),

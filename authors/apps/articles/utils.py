@@ -2,7 +2,6 @@ from django.utils.text import slugify
 import secrets
 import readtime
 from decimal import Decimal, ROUND_HALF_UP
-import json
 
 
 def generate_slug(article_title):
@@ -21,14 +20,6 @@ def is_article_owner(author, reviewer):
     if author == reviewer:
         return True
 
-
-def is_review_owner(user, article):
-    from .models import ReviewsModel
-
-    reviewer = ReviewsModel.objects.get(article=article,
-                                        reviewed_by=user)
-    if reviewer:
-        return True
 
 
 def has_reviewed(article, reviewer):

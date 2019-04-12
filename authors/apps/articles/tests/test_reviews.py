@@ -33,7 +33,6 @@ class ReviewTestCase(BaseSetup):
         response = self.post_article()
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         response = self.post_review()
-        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_user_can_get_reviews(self):
@@ -155,7 +154,7 @@ class ReviewTestCase(BaseSetup):
         self.assertEqual(response.status_code,
                          status.HTTP_404_NOT_FOUND)
         self.assertRaises(Exception)
-    
+
     def test_malformed_url(self):
         response = self.post_article()
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -172,3 +171,41 @@ class ReviewTestCase(BaseSetup):
             format="json"
         )
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_reviewer_cannot_double_review(self):
+        response = self.post_article()
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.post_review()
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response_duplicate = self.post_review()
+        self.assertEqual(response_duplicate.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_user_cant_get_inexistent_review(self):
+        response = self.post_article()
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.client2.get(
+            reverse('articles:review', kwargs={
+                "slug": Article.objects.get().slug
+            }),
+            format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_user_cant_edit_anothers_review(self):
+        response = self.post_article()
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.post_review()
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response2 = self.post_review2()
+        self.assertEqual(response2.status_code, status.HTTP_201_CREATED)
+        edit_response = self.client2.put(reverse('articles:alter-review', kwargs={
+            "slug": Article.objects.get().slug, 'username': "Jane"
+        }), data={
+            "review": {
+                "review_body": "I did not liked the article",
+                "rating_value": 3
+            }
+        },
+            format="json")
+        self.assertEqual(edit_response.status_code, status.HTTP_403_FORBIDDEN)

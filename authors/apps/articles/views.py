@@ -14,7 +14,7 @@ from rest_framework import status
 from .models import Article, ArticleImage, LikeArticles
 from .permissions import ReadOnly
 from authors.apps.authentication.models import User
-from .utils import is_article_owner, has_reviewed, is_review_owner, round_average
+from .utils import is_article_owner, has_reviewed, round_average
 from .filters import ArticleFilter
 
 
@@ -166,6 +166,7 @@ class ReviewView(APIView):
                 {"message": "You cannot review your own article"})
 
         if has_reviewed(saved_article, self.request.user):
+            APIException.status_code = status.HTTP_403_FORBIDDEN
             raise APIException(
                 {"message": "You have already reviewed this article"})
         review = request.data.get('review')
@@ -198,9 +199,9 @@ class ReviewView(APIView):
             APIException.status_code = status.HTTP_404_NOT_FOUND
             raise APIException(
                 {"errors": "There are no reviews for that article"})
-        except Exception as e:
-            raise APIException(
-                {"errors": e.detail})
+        # except Exception as e:
+        #     raise APIException(
+        #         {"errors": e.detail})
 
     def put(self, request, slug, username=None):
         try:
@@ -219,8 +220,10 @@ class ReviewView(APIView):
                         {"message": "Review for '{}' has been updated.".format(slug),
                          "Review": serializer.data
                          }, status=200)
-            raise APIException(
-                {"message": "You are Unauthorized to edit that review"})
+            return Response(
+                {"message": "You are Unauthorized to edit that review"},
+                status= 403
+                )
         except ObjectDoesNotExist:
             APIException.status_code = status.HTTP_404_NOT_FOUND
             raise APIException(
