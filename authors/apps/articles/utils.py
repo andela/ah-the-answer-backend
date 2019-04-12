@@ -22,11 +22,11 @@ def is_article_owner(author, reviewer):
         return True
 
 
-def is_review_owner(username, article):
+def is_review_owner(user, article):
     from .models import ReviewsModel
 
     reviewer = ReviewsModel.objects.get(article=article,
-                                        reviewed_by__username=username)
+                                        reviewed_by=user)
     if reviewer:
         return True
 
