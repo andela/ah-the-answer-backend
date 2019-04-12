@@ -199,9 +199,6 @@ class ReviewView(APIView):
             APIException.status_code = status.HTTP_404_NOT_FOUND
             raise APIException(
                 {"errors": "There are no reviews for that article"})
-        # except Exception as e:
-        #     raise APIException(
-        #         {"errors": e.detail})
 
     def put(self, request, slug, username=None):
         try:
