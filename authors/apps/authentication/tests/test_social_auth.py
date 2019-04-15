@@ -1,6 +1,5 @@
 from django.test import TestCase
 from rest_framework import test, status
-from django.urls import reverse
 from unittest.mock import Mock, patch
 from ..validators import FacebookValidate, GoogleValidate, TwitterValidate
 import json
@@ -18,25 +17,6 @@ class SocialAuthTest(TestCase):
         }, format='json')
 
     # FACEBOOK
-    def test_user_signup_page_redirects_to_facebook(self):
-        """
-            Ensures that the redirects are found, basically tests
-            that the configurations are functional
-        """
-        res = self.client.get(
-            reverse('social:begin', kwargs={'backend': 'facebook'}))
-        self.assertEqual(res.status_code, status.HTTP_302_FOUND)
-
-    # Github
-    def test_user_signup_page_redirects_to_github(self):
-        """
-            Ensures that the redirects are found, basically tests
-            that the configurations are functional
-        """
-        res = self.client.get(
-            reverse('social:begin', kwargs={'backend': 'github'}))
-        self.assertEqual(res.status_code, status.HTTP_302_FOUND)
-
     def test_facebook_validate_token_is_called(self):
         with patch(
                 'authors.apps.authentication.validators.facebook.GraphAPI') \
@@ -111,7 +91,6 @@ class SocialAuthTest(TestCase):
             self.assertRaises(ValueError, mock_facebook_validate)
             self.assertIsNone(
                 FacebookValidate.validate_facebook_token('token'))
-
 
     # GOOGLE
 
