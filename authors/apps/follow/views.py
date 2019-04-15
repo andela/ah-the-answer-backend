@@ -42,18 +42,28 @@ class ManageFollowers(APIView):
         new_follow = Follows(followed_user=user_to_follow,
                              follower=current_user)
         new_follow.save()
-        user_profile = Profile.objects.get(user__username=current_user.username)
+
+        user_profile = Profile.objects.get(
+                       user__username=current_user.username)
         number_users_followed = Follows.objects.filter(
                               follower_id=current_user.pk).count()
         user_profile.number_of_followings = number_users_followed
         user_profile.save()
+
+        followed_user_profile = Profile.objects.get(
+                                user__username=user_to_follow)
+        number_followers = Follows.objects.filter(
+                              followed_user=user_to_follow).count()
+        followed_user_profile.number_of_followers = number_followers
+        followed_user_profile.save()
         return Response({'success': 'Now following {}.'.format(
                         user_to_follow)}, status=status.HTTP_201_CREATED)
 
     def get(self, request):
         """Returns a list of followers for a given user."""
         current_user = self.request.user
-        follower_list = Follows.objects.filter(followed_user=current_user.username)
+        follower_list = Follows.objects.filter(
+                        followed_user=current_user.username)
         queries = [i.follower.username for i in follower_list]
         return Response({"followers": queries},
                         status=status.HTTP_200_OK)
@@ -70,11 +80,20 @@ class ManageFollowers(APIView):
                             status=status.HTTP_400_BAD_REQUEST)
         Follows.objects.filter(followed_user=followed_user).filter(
                                follower_id=current_user.pk).delete()
-        user_profile = Profile.objects.get(user__username=current_user.username)
+
+        user_profile = Profile.objects.get(
+                       user__username=current_user.username)
         number_users_followed = Follows.objects.filter(
                               follower_id=current_user.pk).count()
         user_profile.number_of_followings = number_users_followed
         user_profile.save()
+
+        followed_user_profile = Profile.objects.get(
+                                user__username=followed_user)
+        number_followers = Follows.objects.filter(
+                              followed_user=followed_user).count()
+        followed_user_profile.number_of_followers = number_followers
+        followed_user_profile.save()
         return Response({"success": '{} has been unfollowed.'.format(
                         followed_user)}, status=status.HTTP_200_OK)
 
