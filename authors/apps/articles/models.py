@@ -22,8 +22,7 @@ class Article(models.Model):
         return self.title
 
     def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = generate_slug(self.title)
+        self.slug = generate_slug(self.title)
         self.read_time = get_readtime(self.body)
         super(Article, self).save(*args, **kwargs)
 
@@ -75,7 +74,6 @@ class LikeArticles(models.Model):
     )
     article = models.ForeignKey(
         Article,
-        to_field='slug',
         related_name='liked',
         db_column='article',
         on_delete=models.CASCADE
@@ -86,14 +84,14 @@ class LikeArticles(models.Model):
         ordering = ('created_on',)
 
     @staticmethod
-    def react_to_article(user, article, slug, value):
+    def react_to_article(user, article, value):
         """
         method handles the logic for liking or disliking 
         an article
         """
         user_reaction = LikeArticles.objects.filter(
             user=user,
-            article=slug
+            article=article
             ).values('likes',)
         # if the 'likes' field in the model is empty, a new instance
         # is created with the user's reaction to an article
@@ -110,14 +108,14 @@ class LikeArticles(models.Model):
         elif user_reaction[0]['likes'] == value:
             LikeArticles.objects.filter(
                 user=user,
-                article=slug).delete()
+                article=article).delete()
             return False
         # if 'likes' field is not empty and the character doesn't match
         # the value provided, that row is deleted and a new instance is 
         # created with the new reaction to the article
         LikeArticles.objects.filter(
             user=user,
-            article=slug).delete()
+            article=article).delete()
         LikeArticles.objects.create(
             user=user,
             article=article,

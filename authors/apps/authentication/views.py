@@ -1,3 +1,5 @@
+from rest_framework import status, serializers
+from rest_framework.generics import RetrieveUpdateAPIView, GenericAPIView
 import os
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
@@ -10,13 +12,16 @@ from rest_framework.views import APIView
 
 from .renderers import UserJSONRenderer
 from .serializers import (
-    LoginSerializer, RegistrationSerializer, UserSerializer, 
-    PasswordResetSerializer, SetUpdatedPasswordSerializer
+    LoginSerializer, RegistrationSerializer, UserSerializer,
+    PasswordResetSerializer, SetUpdatedPasswordSerializer,
+    GoogleAuthSerializer, FacebookAuthSerializer,
+    TwitterAuthSerializer
 )
 from authors.apps.authentication.jwt_generator import jwt_encode, jwt_decode
 from authors.apps.core.utils import send_verification_email
 from .models import User
 from .backends import JWTAuthentication
+from .jwt_generator import jwt_decode
 
 
 class RegistrationAPIView(APIView):
@@ -27,6 +32,7 @@ class RegistrationAPIView(APIView):
 
     def post(self, request):
         user = request.data.get('user', {})
+
         # The create serializer, validate serializer, save serializer pattern
         # below is common and you will see it a lot throughout this course and
         # your own work later on. Get familiar with it.
@@ -42,11 +48,8 @@ class RegistrationAPIView(APIView):
 
         html_message = render_to_string(template_name, context)
         subject = 'Please verify your email'
-        response = send_verification_email(
-            os.getenv('FROM_EMAIL'),
-            user_email, subject, html_message
-            )
-        
+        response=send_verification_email(os.getenv('FROM_EMAIL'), user_email,subject,html_message)
+
         if not response:
             return Response(
                 {
@@ -105,6 +108,7 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
 class EmailVerificationView(APIView):
     """This view handles request for verifying email adresses"""
     permission_classes = (AllowAny,)
@@ -143,12 +147,15 @@ class EmailVerificationView(APIView):
         return Response(
             {'Success': 'Your email has been verified'}
         )
-      
+
+
 class PasswordResetAPIView(APIView):
     """
-    This view handles the request for the password reset  link to be sent to the email
+    This view handles the request for the password reset  link to be sent to
+    the email
     """
     permission_classes = (AllowAny,)
+
     def post(self, request):
         """POST request for the password reset functionality"""
         serializer = PasswordResetSerializer(data=request.data)
@@ -157,11 +164,13 @@ class PasswordResetAPIView(APIView):
             'message': sent_email
         }, status=status.HTTP_202_ACCEPTED)
 
+
 class SetUpdatedPasswordAPIView(APIView):
     """
     this view handles PUT request for setting new login password
     """
     permission_classes = (AllowAny,)
+
     def put(self, request, reset_token):
         serializer = SetUpdatedPasswordSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
@@ -173,3 +182,61 @@ class SetUpdatedPasswordAPIView(APIView):
                 {'message': output},
                 status=status.HTTP_202_ACCEPTED
             )
+
+
+class GoogleAuthView(GenericAPIView):
+    """
+        Google authentication view access view
+    """
+    permission_classes = (AllowAny,)
+    renderer_classes = (UserJSONRenderer,)
+    serializer_class = GoogleAuthSerializer
+
+    def post(self, request):
+        serializer = GoogleAuthSerializer(data={
+            'access_token': request.data.get('access_token', {})
+            })
+        serializer.is_valid(raise_exception=True)
+        user = User.objects.get(email=serializer.data['access_token'])
+        return Response({
+            "username": user.username,
+            "token": user.get_token},
+            status=status.HTTP_200_OK)
+
+
+class FacebookAuthAPIView(GenericAPIView):
+    """
+        Facebook authentication view access view
+    """
+    permission_classes = (AllowAny,)
+    renderer_classes = (UserJSONRenderer,)
+    serializer_class = FacebookAuthSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data={
+            'access_token': request.data.get('access_token', {})})
+        serializer.is_valid(raise_exception=True)
+        user = User.objects.get(email=serializer.data['access_token'])
+        return Response({
+            "username": user.username,
+            "token": user.get_token},
+            status=status.HTTP_200_OK)
+
+
+class TwitterAuthAPIView(GenericAPIView):
+    """
+        Twitter authentication view access view
+    """
+    permission_classes = (AllowAny,)
+    renderer_classes = (UserJSONRenderer,)
+    serializer_class = TwitterAuthSerializer
+
+    def post(self, request):
+        token = request.data.get('access_token', {})
+        serializer = self.serializer_class(data={'access_token': token})
+        serializer.is_valid(raise_exception=True)
+        user = User.objects.get(email=serializer.data['access_token'])
+        return Response({
+            "username": user.username,
+            "token": user.get_token},
+            status=status.HTTP_200_OK)
