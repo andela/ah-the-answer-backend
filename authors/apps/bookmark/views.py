@@ -15,24 +15,30 @@ class CreateRetrieveBookmark(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request, article_title):
-        
         user = self.request.user
+        username = user.username
         try:
             article = Article.objects.get(title=article_title)
             article_id = article.pk
         except:
             return Response({"error": "No article with that title found."},
-                            status=status.HTTP_404_FILE_NOT_FOUND)
-        if Bookmark.objects.filter(article_title=article_title).filter(
-                                   article_id=article_id).exists():
-            return Response({"error": "You already have a bookmark for this "
-                            "article."})
+                            status=status.HTTP_404_NOT_FOUND)
+        bookmark = Bookmark.objects.filter(article_title=article_title).filter(
+                                           article_id=article_id)
+        if bookmark.exists() and not bookmark[0].user.filter(username=username).exists():
+            bookmark[0].user.add(user)
+            return Response({"success": "Bookmark for article '{}'created.".format(article_title)}, status=status.HTTP_201_CREATED)
+        elif bookmark.exists() and bookmark[0].user.filter(username=username).exists():
+            return Response({"error": "Article bookmark for this "
+                            "user already exists."},
+                            status=status.HTTP_400_BAD_REQUEST)
         else:
-            bookmark = Bookmark(article_title=article_title,
-                                article_id=article_id, user=user)
-            bookmark.save()
-            return Response({"success": "Bookmark for article '{}'created".format(article_title)})
-        
+            new_bookmark = Bookmark(article_title=article_title,
+                                    article_id=article_id)
+            new_bookmark.save()
+            new_bookmark.user.add(user)
+            return Response({"success": "Bookmark for article '{}'created.".format(article_title)})
+    
 
         
 

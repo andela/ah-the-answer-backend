@@ -13,7 +13,7 @@ class TestCreateBookmark(TestCase):
     """Tests the whether a whether a user can create a new bookmark """
 
     def setUp(self):
-        """Create, authenticate and log in a user."""
+        """Create, authenticate and log a first user."""
         self.client_1 = APIClient()
         self.user_1 = self.client_1.post(
             reverse('authentication:user-signup'),
@@ -41,10 +41,37 @@ class TestCreateBookmark(TestCase):
         )
         self.token_1 = self.login_1.data['token']
         self.client_1.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token_1)
+
+        """Create, authenticate and log a second user."""
+        self.client_2 = APIClient()
+        self.user_2 = self.client_2.post(
+            reverse('authentication:user-signup'),
+            data={
+                "user": {
+                    "email": "mail@demo.com",
+                    "username": "Mary",
+                    "password": "abc123ok"
+                }
+            },
+            format="json"
+        )
+        test_user_2 = User.objects.get(username='Mary')
+        test_user_2.is_verified = True
+        test_user_2.save()
+        self.login_2 = self.client_2.post(
+            reverse('authentication:user-login'),
+            data={
+                "user": {
+                    "email": "mail@demo.com",
+                    "password": "abc123ok"
+                }
+            },
+            format="json"
+        )
         self.user_article_1 = {
             "article":
             {
-             "title": "Titles Are For Turtles.",
+             "title": "Titles Are For Turtles",
              "body": "Turtle shells galore.",
              "description": "Describes Turtles.",
              "is_published": True
@@ -55,33 +82,46 @@ class TestCreateBookmark(TestCase):
         """Test if the 'create bookmark' view is able to successfully
         create a new article bookmark."""
         title = 'Titles Are For Turtles'
-        self.client.post(reverse('articles:create-list'),
-                         self.user_article_1, format="json")
-        response = client.post(reverse('bookmark:bookmark-create'), args=title,
-                               format='json')
+        self.client_1.post(reverse('articles:create-list'),
+                           self.user_article_1, format="json")
+        response = self.client_1.post(reverse('bookmark:bookmark-create',
+                                      args=[title]), format='json')
         self.assertEqual(response.data['success'],
-                         "Bookmark for article 'Titles Are For Turtles' "
+                         "Bookmark for article 'Titles Are For Turtles'"
                          "created.")
-    
-    def test_user_attempts_to_repeat_a_bookmark(self):
-        """Test if a user is able to create a bookmark."""
+
+    def test_another_user_creates_bookmark(self):
+        """Test if a two users can create the same bookmark."""
         title = 'Titles Are For Turtles'
-        self.client.post(reverse('articles:create-list'),
-                         self.user_article_1, format="json")
-        self.client.post(reverse('bookmark:bookmark-create'), args=title,
-                         format='json')
-        response = client.post(reverse('bookmark:bookmark-create'), args=title,
-                               format='json')
+        self.client_1.post(reverse('articles:create-list'),
+                           self.user_article_1, format="json")
+        self.client_1.post(reverse('bookmark:bookmark-create',
+                                   args=[title]), format='json')
+        self.token_2 = self.login_2.data['token']
+        self.client_2.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token_2)
+        response = self.client_2.post(reverse('bookmark:bookmark-create',
+                                      args=[title]), format='json')
+        self.assertEqual(response.data['success'],
+                         "Bookmark for article 'Titles Are For Turtles'"
+                         "created.")
+        
+    def test_user_attempts_to_repeat_a_bookmark(self):
+        """Test if a user is able to create the same bookmark twice."""
+        title = 'Titles Are For Turtles'
+        self.client_1.post(reverse('articles:create-list'),
+                           self.user_article_1, format="json")
+        self.client_1.post(reverse('bookmark:bookmark-create', args=[title]),
+                           format='json')
+        response = self.client_1.post(reverse('bookmark:bookmark-create',
+                                      args=[title]), format='json')
         self.assertEqual(response.data['error'],
-                         "You already have a bookmark for this "
-                         "article.")
-    
+                         "Article bookmark for this user already exists.")
+
     def test_user_attempts_to_bookmark_nonexistent_article(self):
-        """Test if the 'create bookmark' view is able to successfully
-        create a new article bookmark."""
+        """Test if a user can create a bookmark for a nonexistent article."""
         title = 'Quantum Physics For Dummies'
-        self.client.post(reverse('articles:create-list'),
-                         self.user_article_1, format="json")
-        response = client.post(reverse('bookmark:bookmark-create'), args=title,
-                               format='json')
+        self.client_1.post(reverse('articles:create-list'),
+                           self.user_article_1, format="json")
+        response = self.client_1.post(reverse('bookmark:bookmark-create',
+                                      args=[title]), format='json')
         self.assertEqual(response.data['error'], "No article with that title found.")
