@@ -3,11 +3,10 @@ from authors import settings
 
 
 class Bookmark(models.Model):
-    article_title = modles.Charfield(max_length=100)
+    article_title = models.CharField(max_length=100)
     article_id = models.IntegerField()
     user = models.ManyToManyField(
-           settings.AUTH_USER_MODEL,
-           on_delete=models.CASCADE
+           settings.AUTH_USER_MODEL
     )
 
     def __str__(self):

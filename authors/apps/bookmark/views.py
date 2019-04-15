@@ -21,17 +21,17 @@ class CreateRetrieveBookmark(APIView):
             article = Article.objects.get(title=article_title)
             article_id = article.pk
         except:
-            return Response("error": "No article with that title found.",
+            return Response({"error": "No article with that title found."},
                             status=status.HTTP_404_FILE_NOT_FOUND)
         if Bookmark.objects.filter(article_title=article_title).filter(
                                    article_id=article_id).exists():
-            return Response("error": "You already have a bookmark for this
-                            "article.")
+            return Response({"error": "You already have a bookmark for this "
+                            "article."})
         else:
             bookmark = Bookmark(article_title=article_title,
                                 article_id=article_id, user=user)
             bookmark.save()
-            return Response("success": "Bookmark for article '{}'created".format(article_title))
+            return Response({"success": "Bookmark for article '{}'created".format(article_title)})
         
 
         
