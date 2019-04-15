@@ -446,7 +446,7 @@ class TestArticle(TestCase):
     def test_image_upload_successful(self):
         """
         This test case tests that an authenticated
-        user can update their own profile avatar
+        user can upload image for their article
         """
         self.client.post(
             reverse('articles:create-list'),
@@ -474,7 +474,7 @@ class TestArticle(TestCase):
     def test_invalid_image_upload(self):
         """
         This test case tests that an authenticated
-        user can update their own profile avatar
+        user can't upload invalid image for their article
         """
         self.client.post(
             reverse('articles:create-list'),
