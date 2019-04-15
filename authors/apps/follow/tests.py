@@ -145,8 +145,6 @@ class TestFollowViews(TestCase):
         self.assertEqual(response.data['followed_users'], [])
 
     def test_user_attempts_to_unfollow_unfollowed_user(self):
-        self.client_1.post(reverse('profile:profile-create'),
-                           self.user_profile_1, format="json")
         response = self.client_1.delete(reverse('follow:unfollow-user',
                                         args=['Mary']), format="json")
         self.assertEqual(response.data['error'], 'You do not follow Mary. '
