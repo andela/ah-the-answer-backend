@@ -1,5 +1,6 @@
 from django.test import TestCase
 from rest_framework import test, status
+from django.urls import reverse
 from unittest.mock import Mock, patch
 from ..validators import FacebookValidate, GoogleValidate, TwitterValidate
 import json
