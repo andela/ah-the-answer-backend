@@ -3,7 +3,12 @@ from django.core.validators import RegexValidator
 from rest_framework import serializers
 from django.core.validators import RegexValidator
 from rest_framework.validators import UniqueValidator
+from random import randint
 from .models import User
+
+from .validators import (
+    GoogleValidate, FacebookValidate,
+    TwitterValidate)
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
@@ -45,9 +50,9 @@ class RegistrationSerializer(serializers.ModelSerializer):
                     'invalid': 'Please enter a valid email address'
                 },
                 'validators': [
-                    UniqueValidator(
-                        queryset=User.objects.all(),
-                        message='A user with this email already exists')
+                    UniqueValidator(queryset=User.objects.all(),
+                                    message='A user with this email already '
+                                            'exists')
                 ]
             },
 
@@ -57,9 +62,9 @@ class RegistrationSerializer(serializers.ModelSerializer):
                     'blank': 'Username field cannot be empty'
                 },
                 'validators': [
-                    UniqueValidator(
-                        queryset=User.objects.all(),
-                        message='A user with this username already exists')
+                    UniqueValidator(queryset=User.objects.all(),
+                                    message='A user with this username '
+                                            'already exists')
                 ]
             }
         }
@@ -188,11 +193,13 @@ class UserSerializer(serializers.ModelSerializer):
 
         return instance
 
+
 class PasswordResetSerializer(serializers.ModelSerializer):
     """
     serializer for the password reset functionaility view
     """
     email = serializers.EmailField(required=True)
+
     class Meta:
         model = User
         fields = ('email',)
@@ -201,6 +208,8 @@ class PasswordResetSerializer(serializers.ModelSerializer):
                 'read_only': True
             }
         }
+
+
 class SetUpdatedPasswordSerializer(serializers.Serializer):
     """
     serializer for handling PUT view for resetting account password
@@ -210,7 +219,160 @@ class SetUpdatedPasswordSerializer(serializers.Serializer):
         min_length=8,
         validators=[RegexValidator(
             regex="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$",
-            message="Please ensure your password contains at least one letter and one numeral"
+            message="Please ensure your password contains at least one "
+                    "letter and one numeral"
         )],
         write_only=True
     )
+
+    # class Meta:
+    #     model = User
+    #     fields = ('password',)
+
+
+class GoogleAuthSerializer(serializers.ModelSerializer):
+    """
+    Handles serialization and deserialization
+    of the request data of google social access_tokens
+    """
+    access_token = serializers.CharField()
+
+    class Meta:
+        model = User
+        fields = ['access_token']
+
+    def validate_access_token(self, access_token):
+        """
+        Validate access_token, decode the access_token  and finally retrieve
+        user info to grant access to that user.
+        It also associates a user with a matching email to that email.
+        """
+
+        decoded_user_data = GoogleValidate.validate_google_token(
+            access_token)
+
+        if decoded_user_data is None:
+            raise serializers.ValidationError(
+                'Invalid token please try again'
+            )
+
+        if 'sub' not in decoded_user_data:
+            raise serializers.ValidationError(
+                'Token is not valid or has expired. Please get a new one.'
+            )
+
+        user = User.objects.filter(
+            email=decoded_user_data.get('email'))
+
+
+        if not user.exists():
+            user_obj = {
+                'social_id': decoded_user_data.get('sub'),
+                'username': decoded_user_data.get('email'),
+                'email': decoded_user_data.get('email'),
+                'password': randint(10000000, 20000000),
+
+            }
+            new_user = User.objects.create_user(**user_obj)
+            new_user.is_verified = True
+            new_user.save()
+
+        authenticated_user = User.objects.get(
+            email=decoded_user_data.get('email'))
+        return authenticated_user.email
+
+class FacebookAuthSerializer(serializers.ModelSerializer):
+    """
+        Validate access_token, decode the access_token  and finally retrieve
+        user info to grant access to that user.
+        It also associates a user with a matching email to that email.
+    """
+    access_token = serializers.CharField()
+
+    class Meta:
+        model = User
+        fields = ['access_token']
+
+    def validate_access_token(self, access_token):
+        """
+        Validate auth_token, decode the auth_token,and finally retrieve user
+        info to grant access to that user.
+        It also associates a user with a matching email to that email.
+        """
+
+        facebook_user_data = FacebookValidate.validate_facebook_token(
+            access_token)
+
+        if facebook_user_data is None:
+            raise serializers.ValidationError(
+                'Invalid token please try again'
+            )
+
+        if 'id' not in facebook_user_data:
+            raise serializers.ValidationError(
+                'Token is not valid or has expired. Please get a new one.'
+            )
+
+        user = User.objects.filter(email=facebook_user_data.get('email'))
+        if not user.exists():
+            user_obj = {
+                'social_id': facebook_user_data.get('id'),
+                'username': facebook_user_data.get('email'),
+                'email': facebook_user_data.get('email'),
+                'password': randint(10000000, 20000000)
+            }
+            new_user = User.objects.create_user(**user_obj)
+            new_user.is_verified = True
+            new_user.save()
+
+        authenticated_user = User.objects.get(
+            email=facebook_user_data.get('email'))
+        return authenticated_user.email
+
+
+class TwitterAuthSerializer(serializers.ModelSerializer):
+    """
+        Validate access_token, decode the access_token  and finally retrieve
+        user info to grant access to that user.
+        Currently access to twitter email is not available so we are building
+        our own from the unique twitter username.
+    """
+    access_token = serializers.CharField()
+
+    class Meta:
+        model = User
+        fields = ['access_token']
+
+    def validate_access_token(self, access_token):
+        """
+            Validate auth_token, decode the auth_token, retrieve user info and
+            create the user/get the user and grant them the access token that
+            they need to access other pages.
+        """
+        twitter_user_data = TwitterValidate.validate_twitter_token(
+            access_token)
+        if twitter_user_data is None:
+            raise serializers.ValidationError(
+                'Invalid token please try again'
+            )
+
+        if 'id_str' not in twitter_user_data:
+            raise serializers.ValidationError(
+                'Token is not valid or has expired. Please get a new one.'
+            )
+
+        user = User.objects.filter(email=twitter_user_data.get('email'))
+        if not user.exists():
+            user_obj = {
+                'social_id': twitter_user_data.get('id_str'),
+                'username': twitter_user_data.get('email'),
+                'email': twitter_user_data.get('email'),
+                'password': randint(10000000, 20000000)
+            }
+            new_user = User.objects.create_user(**user_obj)
+            new_user.is_verified = True
+            new_user.save()
+
+        authenticated_user = User.objects.get(
+            email=twitter_user_data.get('email'))
+        return authenticated_user.email
