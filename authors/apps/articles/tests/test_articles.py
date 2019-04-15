@@ -254,9 +254,37 @@ class TestArticle(TestCase):
             },
             format="json"
         )
-        self.client.logout()
-        self.client.login(username='tester1', password='tester1234')
-        response = self.client.put(
+
+        self.client_2 = test.APIClient()
+        self.user_2 = self.client_2.post(
+            reverse('authentication:user-signup'),
+            data={
+                "user": {
+                    "email": "test2@mail.com",
+                    "username": "Test2",
+                    "password": "test1234"
+                }
+            },
+            format="json"
+        )
+
+        test_user_2 = User.objects.get(username='Test2')
+        test_user_2.is_verified = True
+        test_user_2.save()
+        self.login_2 = self.client_2.post(
+            reverse('authentication:user-login'),
+            data={
+                "user": {
+                    "email": "test2@mail.com",
+                    "password": "test1234"
+                }
+            },
+            format="json"
+        )
+
+        self.client_2.credentials(
+            HTTP_AUTHORIZATION='Bearer ' + self.login_2.data['token'])      
+        response = self.client_2.put(
             reverse(
                 'articles:details',
                 kwargs={
@@ -273,6 +301,7 @@ class TestArticle(TestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.data['message'], 'Only the owner can edit this article.')
 
     # END OF UPDATE TESTS
 
@@ -314,7 +343,7 @@ class TestArticle(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_delete_not_authorized(self):
+    def test_delete_not_authenticated(self):
         self.client.post(
             reverse('articles:create-list'),
             data={
@@ -339,6 +368,62 @@ class TestArticle(TestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_delete_not_authorized(self):
+        self.client.post(
+            reverse('articles:create-list'),
+            data={
+                "article": {
+                    "title": "Test title",
+                    "body": "This is a very awesome article on testing tests",
+                    "description": "Written by testing tester",
+                }
+            },
+            format="json"
+        )
+
+        self.client_3 = test.APIClient()
+        self.user_3 = self.client_3.post(
+            reverse('authentication:user-signup'),
+            data={
+                "user": {
+                    "email": "test3@mail.com",
+                    "username": "Test3",
+                    "password": "test1234"
+                }
+            },
+            format="json"
+        )
+
+        test_user_3 = User.objects.get(username='Test3')
+        test_user_3.is_verified = True
+        test_user_3.save()
+        self.login_3 = self.client_3.post(
+            reverse('authentication:user-login'),
+            data={
+                "user": {
+                    "email": "test3@mail.com",
+                    "password": "test1234"
+                }
+            },
+            format="json"
+        )
+
+        self.client_3.credentials(
+            HTTP_AUTHORIZATION='Bearer ' + self.login_3.data['token'])
+
+        response = self.client_3.delete(
+            reverse(
+                'articles:details',
+                kwargs={
+                    "slug": Article.objects.get().slug
+                }
+            ),
+            format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.data['message'], 'Only the owner can delete this article.')
 
     # END OF DELETE TESTS
 
