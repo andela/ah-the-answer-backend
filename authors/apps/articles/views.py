@@ -45,6 +45,8 @@ class ArticleView(APIView):
 
         # Functionality to filter articles by author and title
         articles = Article.objects.all()
+        for article in articles:
+            article.tags = list(article.tags.names())
         article_filter = ArticleFilter()
         filtered_articles = article_filter.filter_queryset(
             request, articles, self)
@@ -81,6 +83,7 @@ class RetrieveArticleView(APIView):
     def get(self, request, slug):
         """Method to get a specific article"""
         article = find_article(slug)
+        article.tags = list(article.tags.names())
         serializer = ArticleSerializer(article, many=False)
         return Response({"article": serializer.data})
 
