@@ -1,6 +1,7 @@
 from django.test import TestCase
 from django.test import Client
 from django.urls import reverse
+
 from rest_framework import test, status
 from rest_framework.test import APIClient
 
@@ -10,10 +11,10 @@ from authors.apps.authentication.models import User
 
 
 class TestCreateBookmark(TestCase):
-    """Tests the whether a whether a user can create a new bookmark """
-
+    """Test suite that evaluates the outputs of the view that creates
+    bookmarks under various conditions. """
     def setUp(self):
-        """Create, authenticate and log a first user."""
+        """Create, authenticate and login a first user."""
         self.client_1 = APIClient()
         self.user_1 = self.client_1.post(
             reverse('authentication:user-signup'),
@@ -42,7 +43,7 @@ class TestCreateBookmark(TestCase):
         self.token_1 = self.login_1.data['token']
         self.client_1.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token_1)
 
-        """Create, authenticate and log a second user."""
+        """Create, authenticate and login a second user."""
         self.client_2 = APIClient()
         self.user_2 = self.client_2.post(
             reverse('authentication:user-signup'),
@@ -104,7 +105,7 @@ class TestCreateBookmark(TestCase):
         self.assertEqual(response.data['success'],
                          "Bookmark for article 'Titles Are For Turtles'"
                          "created.")
-        
+
     def test_user_attempts_to_repeat_a_bookmark(self):
         """Test if a user is able to create the same bookmark twice."""
         title = 'Titles Are For Turtles'
@@ -124,12 +125,13 @@ class TestCreateBookmark(TestCase):
                            self.user_article_1, format="json")
         response = self.client_1.post(reverse('bookmark:bookmark-create',
                                       args=[title]), format='json')
-        self.assertEqual(response.data['error'], "No article with that title found.")
+        self.assertEqual(response.data['error'], "No article with "
+                                                 "that title found.")
 
 
 class TestRetrieveBookmarks(TestCase):
-    """Tests related to users fetching a bookmark."""
-
+    """Tests suite that evaluates the outputs of
+    the view that retrieves user bookmarks."""
     def setUp(self):
         self.client_1 = APIClient()
         self.user_1 = self.client_1.post(
@@ -191,8 +193,10 @@ class TestRetrieveBookmarks(TestCase):
                            self.user_article_2, format="json")
         self.client_1.post(reverse('articles:create-list'),
                            self.user_article_3, format="json")
-        
+
     def test_user_fetches_bookmarks(self):
+        """Test if a user can create several articles
+        and bookmarks then fetch their bookmarks."""
         title_1 = "Titles Are For Turtles"
         title_2 = "Babies And Bananas"
         title_3 = "Tigers And Tamarinds."
@@ -202,14 +206,15 @@ class TestRetrieveBookmarks(TestCase):
                                    args=[title_2]), format='json')
         self.client_1.post(reverse('bookmark:bookmark-create',
                                    args=[title_3]), format='json')
-        response = self.client_1.get(reverse('bookmark:bookmark-list'), format="json")
+        response = self.client_1.get(reverse('bookmark:bookmark-list'),
+                                     format="json")
         self.assertEqual(len(response.data['success']), 3)
         self.assertEqual(response.data['success'][0], title_1)
         self.assertEqual(response.data['success'][1], title_2)
         self.assertEqual(response.data['success'][2], title_3)
 
     def test_attempt_to_fetch_empty_bookmarks(self):
-        response = self.client_1.get(reverse('bookmark:bookmark-list'), format="json")
+        """Test if a user can fetch their empty bookmark list."""
+        response = self.client_1.get(reverse('bookmark:bookmark-list'),
+                                     format="json")
         self.assertEqual(len(response.data['success']), 0)
-
-

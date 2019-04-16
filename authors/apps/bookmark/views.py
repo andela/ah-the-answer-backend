@@ -9,12 +9,16 @@ from ..bookmark.models import Bookmark
 from ..authentication.models import User
 
 
-class CreateRetrieveBookmark(APIView):
+class CreateBookmark(APIView):
     """This class allows contains views that allow a user to
-    create a bookmark as well as retrieve all of their bookmarked articles."""
+    create a bookmark."""
     permission_classes = (IsAuthenticated,)
 
     def post(self, request, article_title):
+        """The method accepts an article title argument as a string
+        from the URL. Method creates a bookmark object for an
+        existing article. It then creates a relationship between the current
+        user object and the article bookmark."""
         user = self.request.user
         username = user.username
         try:
@@ -37,26 +41,17 @@ class CreateRetrieveBookmark(APIView):
                                     article_id=article_id)
             new_bookmark.save()
             new_bookmark.user.add(user)
-            return Response({"success": "Bookmark for article '{}'created.".format(article_title)})
+            return Response({"success": "Bookmark for article '{}'created.".format(article_title)}, 
+                            status=status.HTTP_201_CREATED)
 
 
 class RetrieveBookmarks(APIView):
+    """The method returns a list of article titles
+    associated with the logged-in user."""
     permission_classes = (IsAuthenticated,)
 
     def get(self, request):
         user = self.request.user
         bookmark_list = user.bookmark_set.all()
         bookmarks = [i.article_title for i in bookmark_list]
-        return Response({"success": bookmarks})
-
-    
-
-        
-
-        
-
-
-
-
-
-
+        return Response({"success": bookmarks}, status=status.HTTP_200_OK)
