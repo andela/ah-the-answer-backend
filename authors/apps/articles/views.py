@@ -49,7 +49,7 @@ class ArticleView(APIView):
         filtered_articles = article_filter.filter_queryset(
             request, articles, self)
 
-        if filtered_articles.exists():
+        if filtered_articles:
             serializer = ArticleSerializer(filtered_articles, many=True)
             return Response({"articles": serializer.data}, status=200)
         else:
