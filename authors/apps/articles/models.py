@@ -3,12 +3,14 @@ from cloudinary.models import CloudinaryField
 from ..authentication.models import User
 from django.utils.text import slugify
 from .utils import generate_slug, get_readtime
+from taggit.managers import TaggableManager
 
 
 class Article(models.Model):
     title = models.CharField(max_length=100, blank=False)
     body = models.TextField(blank=False, null=False)
     description = models.CharField(max_length=128, null=True)
+    tags = TaggableManager(blank=True)
     is_published = models.BooleanField(default=False)
     date_created = models.DateTimeField(auto_now_add=True)
     date_modified = models.DateTimeField(auto_now=True)
