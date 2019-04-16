@@ -4,7 +4,7 @@ from django.urls import reverse
 from authors.apps.authentication.models import User
 
 
-class TestArticle(TestCase):
+class TestArticlePagination(TestCase):
     def setUp(self):
         self.client = test.APIClient()
         self.user = self.client.post(
