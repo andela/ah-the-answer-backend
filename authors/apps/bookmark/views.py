@@ -42,10 +42,12 @@ class CreateRetrieveBookmark(APIView):
 
 class RetrieveBookmarks(APIView):
     permission_classes = (IsAuthenticated,)
-    
+
     def get(self, request):
         user = self.request.user
-        user.bookmark_set.all()
+        bookmark_list = user.bookmark_set.all()
+        bookmarks = [i.article_title for i in bookmark_list]
+        return Response({"success": bookmarks})
 
     
 

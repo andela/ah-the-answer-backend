@@ -167,11 +167,49 @@ class TestRetrieveBookmarks(TestCase):
              "is_published": True
             }
         }
-        
-    def test_user_fetches_bookmarks(self):
+        self.user_article_2 = {
+            "article":
+            {
+             "title": "Babies And Bananas",
+             "body": "Baby Tings.",
+             "description": "Describes Babies.",
+             "is_published": True
+            }
+        }
+        self.user_article_3 = {
+            "article":
+            {
+             "title": "Tigers And Tamarinds.",
+             "body": "Fancy Tigers Are Fancy.",
+             "description": "Tiger Stuff.",
+             "is_published": True
+            }
+        }
         self.client_1.post(reverse('articles:create-list'),
                            self.user_article_1, format="json")
-        response = self.client_1.post(reverse('bookmark:bookmark-list'), format="json")
-        self.assertEqual(response.data['error'], "No article with that title found.")
+        self.client_1.post(reverse('articles:create-list'),
+                           self.user_article_2, format="json")
+        self.client_1.post(reverse('articles:create-list'),
+                           self.user_article_3, format="json")
+        
+    def test_user_fetches_bookmarks(self):
+        title_1 = "Titles Are For Turtles"
+        title_2 = "Babies And Bananas"
+        title_3 = "Tigers And Tamarinds."
+        self.client_1.post(reverse('bookmark:bookmark-create',
+                                   args=[title_1]), format='json')
+        self.client_1.post(reverse('bookmark:bookmark-create',
+                                   args=[title_2]), format='json')
+        self.client_1.post(reverse('bookmark:bookmark-create',
+                                   args=[title_3]), format='json')
+        response = self.client_1.get(reverse('bookmark:bookmark-list'), format="json")
+        self.assertEqual(len(response.data['success']), 3)
+        self.assertEqual(response.data['success'][0], title_1)
+        self.assertEqual(response.data['success'][1], title_2)
+        self.assertEqual(response.data['success'][2], title_3)
+
+    def test_attempt_to_fetch_empty_bookmarks(self):
+        response = self.client_1.get(reverse('bookmark:bookmark-list'), format="json")
+        self.assertEqual(len(response.data['success']), 0)
 
 
