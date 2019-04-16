@@ -38,6 +38,15 @@ class CreateRetrieveBookmark(APIView):
             new_bookmark.save()
             new_bookmark.user.add(user)
             return Response({"success": "Bookmark for article '{}'created.".format(article_title)})
+
+
+class RetrieveBookmarks(APIView):
+    permission_classes = (IsAuthenticated,)
+    
+    def get(self, request):
+        user = self.request.user
+        user.bookmark_set.all()
+
     
 
         
