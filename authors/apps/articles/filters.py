@@ -20,4 +20,3 @@ class ArticleFilter(DjangoFilterBackend):
 
         articles = paginator.get_page(1)
         return articles
-        
