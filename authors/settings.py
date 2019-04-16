@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'django_inlinecss',
     'cloudinary',
     'django_filters',
+    'taggit',
 
     'authors.apps.authentication',
     'authors.apps.core',
