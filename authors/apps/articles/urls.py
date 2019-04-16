@@ -6,7 +6,7 @@ from .views import (
     ArticleImageView,
     LikeArticleView,
     DislikeArticleView,
-    SocialShareArticleView
+    SocialShareArticleView,
 )
 
 app_name = "articles"
@@ -18,5 +18,6 @@ urlpatterns = [
     path('articles/<slug>/image/', ArticleImageView.as_view(), name="add-image"),
     path('articles/<slug>/like/', LikeArticleView.as_view(), name="like-article"),
     path('articles/<slug>/dislike/', DislikeArticleView.as_view(), name="dislike-article"),
-    path("articles/<slug>/share/<provider>/", SocialShareArticleView.as_view() , name="share-article")
+    path("articles/<slug>/share/<provider>/",
+         SocialShareArticleView.as_view(), name="share-article"),
 ]

@@ -198,27 +198,29 @@ class DislikeArticleView(APIView):
         },
         status=status.HTTP_201_CREATED)
 
+
 class SocialShareArticleView(APIView):
     permission_classes = (IsAuthenticated | ReadOnly,)
+
     def get(self, request, slug, provider):
         shared_article = find_article(slug)
-        context = {'request':request}
+        context = {'request': request}
 
         uri = request.build_absolute_uri()
 
-        #Remove the share/provider/ after the absolute uri
+        # Remove the share/provider/ after the absolute uri
         article_uri = uri.rsplit('share/', 1)[0]
         share_link = generate_share_url(
             context, provider, shared_article, article_uri)
 
         if share_link:
             return Response({
-                "share":{
+                "share": {
                     "provider": provider,
                     "link": share_link
                 }
             })
         return Response({
-            "message": "Please select a valid provider - twitter,"\
-                 " facebook, email, telegram, linkedin, reddit"
+            "message": "Please select a valid provider - twitter, "
+                       "facebook, email, telegram, linkedin, reddit"
         })

@@ -63,7 +63,8 @@ class TestArticle(TestCase):
         )
         response = self.client.get(
             reverse('articles:share-article', kwargs={
-                    'slug': article_response.data['article']['slug'], 'provider': 'facebook'}),
+                    'slug': article_response.data['article']['slug'],
+                    'provider': 'facebook'}),
             format="json"
         )
 
@@ -83,7 +84,8 @@ class TestArticle(TestCase):
         )
         response = self.client.get(
             reverse('articles:share-article', kwargs={
-                    'slug': article_response.data['article']['slug'], 'provider': 'twitter'}),
+                    'slug': article_response.data['article']['slug'],
+                    'provider': 'twitter'}),
             format="json"
         )
 
@@ -103,7 +105,8 @@ class TestArticle(TestCase):
         )
         response = self.client.get(
             reverse('articles:share-article', kwargs={
-                    'slug': article_response.data['article']['slug'], 'provider': 'reddit'}),
+                    'slug': article_response.data['article']['slug'],
+                    'provider': 'reddit'}),
             format="json"
         )
 
@@ -123,7 +126,8 @@ class TestArticle(TestCase):
         )
         response = self.client.get(
             reverse('articles:share-article', kwargs={
-                    'slug': article_response.data['article']['slug'], 'provider': 'telegram'}),
+                    'slug': article_response.data['article']['slug'],
+                    'provider': 'telegram'}),
             format="json"
         )
 
@@ -143,7 +147,8 @@ class TestArticle(TestCase):
         )
         response = self.client.get(
             reverse('articles:share-article', kwargs={
-                    'slug': article_response.data['article']['slug'], 'provider': 'linkedin'}),
+                    'slug': article_response.data['article']['slug'],
+                    'provider': 'linkedin'}),
             format="json"
         )
 
@@ -163,7 +168,8 @@ class TestArticle(TestCase):
         )
         response = self.client.get(
             reverse('articles:share-article', kwargs={
-                    'slug': article_response.data['article']['slug'], 'provider': 'email'}),
+                    'slug': article_response.data['article']['slug'],
+                    'provider': 'email'}),
             format="json"
         )
 
@@ -183,14 +189,16 @@ class TestArticle(TestCase):
         )
         response = self.client.get(
             reverse('articles:share-article', kwargs={
-                    'slug': article_response.data['article']['slug'], 'provider': 'facebok'}),
+                    'slug': article_response.data['article']['slug'],
+                    'provider': 'facebok'}),
             format="json"
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['message'],
-                         'Please select a valid provider -'\
-                             ' twitter, facebook, email, telegram, linkedin, reddit')
+                         'Please select a valid provider - '
+                         'twitter, facebook, email, telegram, '
+                         'linkedin, reddit')
 
     def tearDown(self):
         Article.objects.all().delete()
