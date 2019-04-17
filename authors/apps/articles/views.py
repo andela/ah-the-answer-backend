@@ -32,13 +32,20 @@ class ArticleView(APIView):
 
     def get(self, request):
         """Method to get all articles"""
-
         # Functionality to search articles by description, author and title
         if request.GET.get('search'):
             search_parameter = request.GET.get('search')
 
             searched_articles = Article.objects.filter(Q(
                 title__icontains=search_parameter) | Q(description__icontains=search_parameter) | Q(author__username__icontains=search_parameter))
+            # filter the model for tags by converting query parameters into a list and 
+            # comparing that query list with list of tags in every instance of the object
+            if not searched_articles:
+                tag_list = search_parameter.split(",")
+                searched_articles = Article.objects.filter(
+                    tags__name__in=tag_list
+                )
+                searched_articles.distinct()
             search_serializer = ArticleSerializer(
                 searched_articles, many=True)
             return Response({"articles": search_serializer.data})
