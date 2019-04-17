@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'cloudinary',
     'django_filters',
     'taggit',
+    'taggit_serializer',
 
     'authors.apps.authentication',
     'authors.apps.core',
