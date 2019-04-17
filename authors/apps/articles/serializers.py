@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Article, ArticleImage, ReviewsModel
+from .models import Article, ArticleImage, FavoriteModel, ReviewsModel
 from ..authentication.serializers import UserSerializer
 from django.core.validators import MaxValueValidator, MinValueValidator
 
@@ -57,6 +57,7 @@ class ArticleImageSerializer(serializers.ModelSerializer):
         read_only_fields = ["date_created"]
 
 
+
 class ReviewsSerializer(serializers.ModelSerializer):
     rating_value = serializers.IntegerField(validators=[MaxValueValidator(5),
                                                    MinValueValidator(0)])
@@ -83,3 +84,13 @@ class ReviewsSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
+
+class FavoriteSerializer(serializers.ModelSerializer):
+    article = ArticleSerializer()
+    user = UserSerializer()
+
+    class Meta:
+        model = FavoriteModel
+        fields = '__all__'
+        read_only_fields = ['date_modified', 'date_created']
+
