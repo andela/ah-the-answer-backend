@@ -52,7 +52,7 @@ def linkedin_share_url(context, article_uri, title):
 def reddit_share_url(context, article_uri, title):
     return social_share.post_to_reddit(
         context,
-        title='title',
+        title=title,
         obj_or_url=article_uri
     )['reddit_url']
 
