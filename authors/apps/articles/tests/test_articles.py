@@ -49,6 +49,7 @@ class TestArticle(TestCase):
                     "title": "Test title",
                     "body": "This is a very awesome article on testing tests",
                     "description": "Written by testing tester",
+                    "tags": ["religion", "nature", "film"]
                 }
             },
             format="json"
@@ -90,6 +91,23 @@ class TestArticle(TestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertTrue(response.data['errors']['title'])
 
+    def test_create_with_invalid_tags_field(self):
+        response = self.client.post(
+            reverse('articles:create-list'),
+            data={
+                "article": {
+                    "title": "the house in the hill",
+                    "body": "the hill was grassy with a single house at the apex",
+                    "description": "a hill story",
+                    "tags": "0"
+                }
+            },
+            format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertTrue(response.data['errors']['tags'])
+
     # END OF CREATE TESTS
 
     # RETRIEVE TESTS
@@ -124,6 +142,7 @@ class TestArticle(TestCase):
                     "title": "Test title",
                     "body": "This is a very awesome article on testing tests",
                     "description": "Written by testing tester",
+                    "tags": ["religion", "nature", "film"]
                 }
             },
             format="json"
@@ -167,6 +186,7 @@ class TestArticle(TestCase):
                     "title": "Test title",
                     "body": "This is a very awesome article on testing tests",
                     "description": "Written by testing tester",
+                    "tags": ["religion", "nature", "film"]
                 }
             },
             format="json"
@@ -182,6 +202,7 @@ class TestArticle(TestCase):
                 "article": {
                     "title": "Test title updated",
                     "description": "Written by updater",
+                    "tags": ["study", "cosmos", "physics"]
                 }
             },
             format="json"
@@ -219,6 +240,7 @@ class TestArticle(TestCase):
                     "title": "Test title",
                     "body": "This is a very awesome article on testing tests",
                     "description": "Written by testing tester",
+                    "tags": ["religion", "nature", "film"]
                 }
             },
             format="json"
@@ -250,6 +272,7 @@ class TestArticle(TestCase):
                     "title": "Test title",
                     "body": "This is a very awesome article on testing tests",
                     "description": "Written by testing tester",
+                    "tags": ["religion", "nature", "film"]
                 }
             },
             format="json"
@@ -295,6 +318,7 @@ class TestArticle(TestCase):
                 "article": {
                     "title": "Test title updated",
                     "description": "Written by updater",
+                    "tags": ["religion", "nature", "film"]
                 }
             },
             format="json"
@@ -314,6 +338,7 @@ class TestArticle(TestCase):
                     "title": "Test title",
                     "body": "This is a very awesome article on testing tests",
                     "description": "Written by testing tester",
+                    "tags": ["religion", "nature", "film"]
                 }
             },
             format="json"
@@ -351,6 +376,7 @@ class TestArticle(TestCase):
                     "title": "Test title",
                     "body": "This is a very awesome article on testing tests",
                     "description": "Written by testing tester",
+                    "tags": ["religion", "nature", "film"]
                 }
             },
             format="json"
@@ -377,6 +403,7 @@ class TestArticle(TestCase):
                     "title": "Test title",
                     "body": "This is a very awesome article on testing tests",
                     "description": "Written by testing tester",
+                    "tags": ["religion", "nature", "film"]
                 }
             },
             format="json"
@@ -439,6 +466,7 @@ class TestArticle(TestCase):
                     "title": "Test title",
                     "body": "This is a very awesome article on testing tests",
                     "description": "Written by testing tester",
+                    "tags": ["religion", "nature", "film"]
                 }
             },
             format="json"
@@ -455,6 +483,7 @@ class TestArticle(TestCase):
                     "title": "Test title",
                     "body": "This is a very awesome article on testing tests",
                     "description": "Written by testing tester",
+                    "tags": ["religion", "nature", "film"]
                 }
             },
             format="json"
