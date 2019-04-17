@@ -16,7 +16,7 @@ before_script:
  - python manage.py makemigrations --settings=authors.settings
  - python manage.py migrate --settings=authors.settings
 script:
-  - python manage.py test
+  - python manage.py test --settings=authors.settings
 after_success:
  - coveralls
 after_script:
