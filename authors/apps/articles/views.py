@@ -342,20 +342,23 @@ class SocialShareArticleView(APIView):
 
         # Remove the share/provider/ after the absolute uri
         article_uri = uri.rsplit('share/', 1)[0]
-        share_link = generate_share_url(
-            context, provider, shared_article, article_uri)
+        try:
+            share_link = generate_share_url(
+                context, provider, shared_article, article_uri)
 
-        if share_link:
+            if share_link:
+                return Response({
+                    "share": {
+                        "provider": provider,
+                        "link": share_link
+                    }
+                })
+        except KeyError:
             return Response({
-                "share": {
-                    "provider": provider,
-                    "link": share_link
-                }
-            })
-        return Response({
-            "message": "Please select a valid provider - twitter, "
-                       "facebook, email, telegram, linkedin, reddit"
-        }, status=200)
+                "message": "Please select a valid provider - twitter, "
+                           "facebook, email, telegram, linkedin, reddit"
+            }, status=200)
+
 
 
 class FavoriteView(APIView):
