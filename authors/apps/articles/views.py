@@ -251,8 +251,7 @@ class SocialShareArticleView(APIView):
         return Response({
             "message": "Please select a valid provider - twitter, "
                        "facebook, email, telegram, linkedin, reddit"
-        })
-            status=status.HTTP_201_CREATED)
+        }, status=200)
 
 
 class FavoriteView(APIView):
