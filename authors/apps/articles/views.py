@@ -45,13 +45,12 @@ class ArticleView(APIView):
 
         # Functionality to filter articles by author and title
         articles = Article.objects.all()
-        for article in articles:
-            article.tags = list(article.tags.names())
         article_filter = ArticleFilter()
         filtered_articles = article_filter.filter_queryset(
             request, articles, self)
-
         if filtered_articles.exists():
+            for article in filtered_articles:
+                article.tags = list(article.tags.names())
             serializer = ArticleSerializer(filtered_articles, many=True)
             return Response({"articles": serializer.data}, status=200)
         else:
@@ -90,7 +89,6 @@ class RetrieveArticleView(APIView):
     def put(self, request, slug):
         """Method to update a specific article"""
         saved_article = find_article(slug)
-
         data = request.data.get('article')
         serializer = ArticleSerializer(
             instance=saved_article, data=data, partial=True)
