@@ -1,57 +1,48 @@
 from rest_framework import serializers
 from .models import Article, ArticleImage
 from ..authentication.serializers import UserSerializer
+from taggit_serializer.serializers import (
+    TagListSerializerField,
+    TaggitSerializer
+    )
 
-class TagSerializer(serializers.Field):
-    """serializer for the tag field"""
-    def to_internal_value(self, data):
-        tag_data = ArticleSerializer().validate_tags(data)
-        return tag_data
-    
-    def to_representation(self, obj):
-        if type(obj) is not list:
-            return [tag for tag in obj.all()]
-        return obj
+class TagSerializer(TagListSerializerField):
+    """
+    Class defines error messages for tags list
+    """
+    default_error_messages = {
+        'not_a_list': '"{input_type}" provided in the '
+            'tags field is not a list.',
+        'not_a_str': 'items in the tags list must be of string type',
+        'invalid_json': 'tags field must be a list containing tags'
+    }
 
-class ArticleSerializer(serializers.ModelSerializer):
+class ArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
     """Serializer to map the Article Model instance into JSON format."""
 
     author = UserSerializer(read_only=True)
     title = serializers.CharField(max_length=100)
     description = serializers.CharField(max_length=128)
     body = serializers.CharField()
-    tags = TagSerializer(default=[], required=False)
+    tags = TagSerializer()
     like_count = serializers.SerializerMethodField()
     dislike_count = serializers.SerializerMethodField()
-
-    def validate_tags(self, validated_data):
-        if type(validated_data) is not list:
-            raise serializers.ValidationError(
-                {"message": "tags should be in a list"}
-            )
-        for tag in validated_data:
-            if not isinstance(tag, str):
-                raise serializers.ValidationError(
-                    {"message": "tag should be a string"}
-                )
-            return validated_data
 
     def create(self, validated_data):
         article = Article.objects.create(**validated_data)
         tagged_article = Article.objects.get(pk=article.pk)
-        if article.tags is not None:
-            for tag in article.tags:
-                tagged_article.tags.add(tag)
-            return article
-        article.tags = []
+        for tag in article.tags:
+            tagged_article.tags.add(tag)
         return article
-
+        
     def update(self, instance, validated_data):
+        tag_list = validated_data.pop('tags', instance.tags.all())
         instance.title = validated_data.get('title', instance.title)
         instance.description = validated_data.get(
             'description', instance.description)
         instance.body = validated_data.get('body', instance.body)
         instance.is_published = validated_data.get('is_published', instance.is_published)
+        instance.tags.set(*tag_list)
         instance.save()
         return instance
     
