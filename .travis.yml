@@ -14,14 +14,8 @@ install:
 before_script: 
  - psql -c "CREATE DATABASE authors_haven;" -U postgres
 script:
-  - python manage.py makemigrations authentication --settings=authors.settings
-  - python manage.py migrate authentication --settings=authors.settings
-  - python manage.py makemigrations profiles --settings=authors.settings
-  - python manage.py migrate profiles --settings=authors.settings
-  - python manage.py makemigrations articles --settings=authors.settings
-  - python manage.py migrate articles --settings=authors.settings
-  - python manage.py makemigrations follow --settings=authors.settings
-  - python manage.py migrate follow --settings=authors.settings
+  - python manage.py makemigrations --settings=authors.settings
+  - python manage.py migrate --settings=authors.settings
   - python manage.py test
 after_success:
  - coveralls
