@@ -22,7 +22,7 @@ before_script:
  - python manage.py makemigrations follow --settings=authors.settings
  - python manage.py migrate follow --settings=authors.settings
  - python manage.py makemigrations auth
- - python manage.py migrate
+ - python manage.py migrate auth
 script:
   - python manage.py test
 after_success:
