@@ -218,3 +218,74 @@ class TestRetrieveBookmarks(TestCase):
         response = self.client_1.get(reverse('bookmark:bookmark-list'),
                                      format="json")
         self.assertEqual(len(response.data['success']), 0)
+
+
+class TestRetrieveArticle(TestCase):
+
+    def setUp(self):
+        self.client_1 = APIClient()
+        self.user_1 = self.client_1.post(
+            reverse('authentication:user-signup'),
+            data={
+                "user": {
+                    "email": "demo@mail.com",
+                    "username": "Bob",
+                    "password": "Bob12345"
+                }
+            },
+            format="json"
+        )
+        test_user_1 = User.objects.get(username='Bob')
+        test_user_1.is_verified = True
+        test_user_1.save()
+        self.login_1 = self.client_1.post(
+            reverse('authentication:user-login'),
+            data={
+                "user": {
+                    "email": "demo@mail.com",
+                    "password": "Bob12345"
+                }
+            },
+            format="json"
+        )
+        self.token_1 = self.login_1.data['token']
+        self.client_1.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token_1)
+        self.user_article = {
+            "article":
+            {
+             "title": "Titles Are For Turtles",
+             "body": "Turtle shells galore.",
+             "description": "Describes Turtles.",
+             "is_published": True
+            }
+        }
+        self.user_article_update = {
+            "article":
+            {
+             "title": "Edit Title",
+             "body": "Edited Body.",
+             "description": "Edited Description",
+             "is_published": True
+            }
+        }
+        self.client_1.post(reverse('articles:create-list'),
+                           self.user_article, format="json")
+
+    def test_retrieve_article_from_bookmark(self):
+        title = "Titles Are For Turtles"
+        self.client_1.post(reverse('bookmark:bookmark-create', args=[title]), format='json')
+        response = self.client_1.get(reverse('bookmark:bookmark-create', args=[title]), format='json')
+        fetch_id = Bookmark.objects.get(article_title=title).article_id
+        self.assertEqual(response.data['success'][0]['id'], fetch_id)
+    
+    def test_user_fetches_nonexistent_bookmark(self):
+        title = "Titles Are For Turtles"
+        response = self.client_1.get(reverse('bookmark:bookmark-create', args=[title]), format='json')
+        self.assertEqual(response.data['error'], "No bookmark for that article found.")
+    
+    
+
+        
+
+
+

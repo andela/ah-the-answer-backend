@@ -44,6 +44,14 @@ class CreateBookmark(APIView):
             return Response({"success": "Bookmark for article '{}'created.".format(article_title)}, 
                             status=status.HTTP_201_CREATED)
 
+    def get(self, request, article_title):
+        try:
+            fetch_id = Bookmark.objects.get(article_title=article_title).article_id
+        except:
+            return Response({"error": "No bookmark for that article found."}, status=status.HTTP_404_NOT_FOUND)
+        article = Article.objects.filter(id=fetch_id).values()
+        return Response({"success": article}, status=status.HTTP_200_OK)
+
 
 class RetrieveBookmarks(APIView):
     """The method returns a list of article titles
