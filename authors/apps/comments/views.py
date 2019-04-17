@@ -201,7 +201,7 @@ class DislikeCommentView(views.APIView):
         if not disliked:
             return response.Response({
                 'message':
-                    'Your dislike has been reverted for comment:'.format(
+                    'Your dislike has been reverted for comment: {}'.format(
                         target_comment.id),
                 'comment': CommentSerializer(target_comment).data,
                 'likes': LikeDislikeComment.get_count_like(target_comment),
