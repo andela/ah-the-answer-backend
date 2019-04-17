@@ -1,6 +1,7 @@
 from django.urls import path
-from .views import CommentsCreateList, CommentsDetail
-
+from .views import (
+    CommentsCreateList, CommentsDetail, LikeCommentView, DislikeCommentView
+)
 
 urlpatterns = [
     path(
@@ -13,4 +14,10 @@ urlpatterns = [
         CommentsDetail.as_view(),
         name="details"
     ),
+    path('articles/<slug:slug>/comments/<int:pk>/like/',
+         LikeCommentView.as_view(),
+         name="like"),
+    path('articles/<slug:slug>/comments/<int:pk>/dislike/',
+         DislikeCommentView.as_view(),
+         name="dislike")
 ]
