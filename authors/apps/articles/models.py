@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Avg
 from cloudinary.models import CloudinaryField
 from ..authentication.models import User
 from django.utils.text import slugify
@@ -29,6 +30,7 @@ class Article(models.Model):
     class Meta:
         ordering = ('-date_created',)
 
+
 class ArticleImage(models.Model):
     article = models.ForeignKey(
         Article,
@@ -43,6 +45,22 @@ class ArticleImage(models.Model):
     class Meta:
         ordering = ('-date_created',)
 
+
+class ReviewsModel(models.Model):
+    article = models.ForeignKey(Article, related_name='article_review',
+                                on_delete=models.CASCADE)
+    review_body = models.TextField(blank=True)
+    rating_value = models.IntegerField(default=0)
+    reviewed_by = models.ForeignKey(
+        User, related_name='rating', on_delete=models.CASCADE)
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_modified = models.DateTimeField(auto_now=True)
+
+    @staticmethod
+    def average_rating(article):
+        avg = ReviewsModel.objects.filter(
+            article=article).aggregate(Avg('rating_value'))
+        return avg
 class LikeArticles(models.Model):
     """
     Class handles model for recording like/dislike, user, and article
@@ -103,7 +121,6 @@ class LikeArticles(models.Model):
         )
         return True
 
-
 class FavoriteModel(models.Model):
     """Model keeps records of all articles that a user has marked as
      favorite"""
@@ -121,3 +138,4 @@ class FavoriteModel(models.Model):
 
     def __str__(self):
         return '{}-{}'.format(self.user.username, self.article.title)
+
