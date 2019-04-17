@@ -453,6 +453,79 @@ class TestArticle(TestCase):
         self.assertEqual(response.data['message'], 'Only the owner can delete this article.')
 
     # END OF DELETE TESTS
+    @property
+    def temporary_image(self):
+        """
+        Creates a dummy, temporary image for testing purposes
+        Returns a new temporary image file
+        """
+        import tempfile
+        from PIL import Image
+
+        image = Image.new('RGB', (100, 100))
+        tmp_file = tempfile.NamedTemporaryFile(suffix='.jpg')
+        image.save(tmp_file, 'jpeg')
+        # important because after save(),
+        # the fp is already at the end of the file
+        tmp_file.seek(0)  # retrieves the created temp file
+        return tmp_file
+
+    def test_image_upload_successful(self):
+        """
+        This test case tests that an authenticated
+        user can upload image for their article
+        """
+        self.client.post(
+            reverse('articles:create-list'),
+            data={
+                "article": {
+                    "title": "Test title",
+                    "body": "This is a very awesome article on testing tests",
+                    "description": "Written by testing tester",
+                }
+            },
+            format="json"
+        )
+        res = self.client.post(
+            reverse('articles:add-image',
+                    kwargs={
+                        "slug": Article.objects.get().slug
+                    }),
+            data={
+                "file": self.temporary_image
+            },
+            format='multipart'
+        )
+        self.assertEquals(res.status_code, status.HTTP_200_OK)
+
+    def test_invalid_image_upload(self):
+        """
+        This test case tests that an authenticated
+        user can't upload invalid image for their article
+        """
+        self.client.post(
+            reverse('articles:create-list'),
+            data={
+                "article": {
+                    "title": "Test title",
+                    "body": "This is a very awesome article on testing tests",
+                    "description": "Written by testing tester",
+                }
+            },
+            format="json"
+        )
+        res = self.client.post(
+            reverse('articles:add-image',
+                    kwargs={
+                        "slug": Article.objects.get().slug
+                    }),
+            data={
+                "file": "self.temporary_image"
+            },
+            format='multipart'
+        )
+        self.assertEquals(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertRaises(Exception)
 
     def test_user_can_search_articles(self):
         response = self.client.get("/api/articles/?search=raywire", format="json")
