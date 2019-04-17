@@ -458,6 +458,10 @@ class TestArticle(TestCase):
         response = self.client.get("/api/articles/?search=raywire", format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_user_can_search_articles_by_tags(self):
+        response = self.client.get("/api/articles/?search=religion,nature", format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
     def test_user_can_filter_articles_by_title(self):
         self.client.post(
             reverse('articles:create-list'),
