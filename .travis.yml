@@ -13,9 +13,23 @@ install:
  - pip install -r requirements.txt
 before_script: 
  - psql -c "CREATE DATABASE authors_haven;" -U postgres
+ - python manage.py makemigrations authentication
+ - python manage.py migrate authentication
+ - python manage.py makemigrations profiles
+ - python manage.py migrate profiles
+ - python manage.py makemigrations articles
+ - python manage.py migrate articles
+ - python manage.py makemigrations follow
+ - python manage.py migrate follow
+ - python manage.py makemigrations comments
+ - python manage.py migrate comments
+
 script:
- - python manage.py test
+  - python manage.py test
+  
+    
 after_success:
  - coveralls
 after_script:
   - "sh -e /etc/init.d/xvfb stop"
+  

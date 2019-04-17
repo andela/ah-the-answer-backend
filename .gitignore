@@ -101,3 +101,7 @@ db.sqlite3
 
 Pipfile
 Pipfile.lock
+
+# migrations
+**/migrations/
+
