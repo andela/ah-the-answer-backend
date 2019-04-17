@@ -18,7 +18,7 @@ script:
   - python manage.py migrate authentication --settings=authors.local-settings
   - python manage.py makemigrations profiles --settings=authors.local-settings
   - python manage.py migrate profiles --settings=authors.local-settings
-  - python manage.py makemigrations article --settings=authors.local-settings
+  - python manage.py makemigrations articles --settings=authors.local-settings
   - python manage.py migrate article --settings=authors.local-settings
   - python manage.py test --settings=authors.local-settings
   
