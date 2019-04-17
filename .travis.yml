@@ -20,6 +20,7 @@ script:
   - python manage.py migrate profiles --settings=authors.settings
   - python manage.py makemigrations articles --settings=authors.settings
   - python manage.py migrate articles --settings=authors.settings
+  - python manage.py migrate follow --settings=authors.settings
 after_success:
  - coveralls
 after_script:
