@@ -21,6 +21,8 @@ before_script:
  - python manage.py migrate articles
  - python manage.py makemigrations follow
  - python manage.py migrate follow
+ - python manage.py makemigrations comments
+ - python manage.py migrate comments
 
 script:
   - python manage.py test
