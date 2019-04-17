@@ -14,9 +14,6 @@ install:
 before_script: 
  - psql -c "CREATE DATABASE authors_haven;" -U postgres
 script:
- - python manage.py makemigrations
- - python manage.py migrate
- - python manage.py migrate contenttypes
  - python manage.py test
 after_success:
  - coveralls
