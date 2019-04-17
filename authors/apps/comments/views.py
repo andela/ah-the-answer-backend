@@ -5,6 +5,22 @@ from .serializers import CommentSerializer
 from authors.apps.comments.models import Comment, LikeDislikeComment
 from authors.apps.articles.models import Article
 from authors.apps.articles.permissions import ReadOnly
+from rest_framework.exceptions import APIException
+
+
+def find_comment(comment_id):
+    """
+    Confirms that a comment exists
+    :param comment_id: the comment id
+    :return:
+    """
+    try:
+        return Comment.objects.get(pk=comment_id)
+    except Comment.DoesNotExist:
+        APIException.status_code = 404
+        raise APIException({
+            "message": "The comment does not exist"
+        })
 
 
 class CommentsCreateList(views.APIView):
@@ -142,7 +158,7 @@ class LikeCommentView(views.APIView):
         :param pk: the comment id
         :return: response with liked comment
         """
-        target_comment = Comment.objects.get(pk=pk)
+        target_comment = find_comment(pk)
         liked = LikeDislikeComment.react_to_comment(
             request.user, target_comment, 1)
         if not liked:
@@ -179,13 +195,13 @@ class DislikeCommentView(views.APIView):
         :param pk: primary key of the comment
         :return:
         """
-        target_comment = Comment.objects.get(pk=pk)
+        target_comment = find_comment(pk)
         disliked = LikeDislikeComment.react_to_comment(
             request.user, target_comment, 0)
         if not disliked:
             return response.Response({
                 'message':
-                    'Your dislike has been reverted for comment'.format(
+                    'Your dislike has been reverted for comment:'.format(
                         target_comment.id),
                 'comment': CommentSerializer(target_comment).data,
                 'likes': LikeDislikeComment.get_count_like(target_comment),
