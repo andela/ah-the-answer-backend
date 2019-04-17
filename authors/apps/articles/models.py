@@ -102,3 +102,22 @@ class LikeArticles(models.Model):
             likes=value
         )
         return True
+
+
+class FavoriteModel(models.Model):
+    """Model keeps records of all articles that a user has marked as
+     favorite"""
+    user = models.ForeignKey(User, related_name='favorite',
+                             on_delete=models.CASCADE)
+    article = models.ForeignKey(Article, related_name='favorite',
+                                on_delete=models.CASCADE)
+    favorite = models.BooleanField(default=False)
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_modified = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ('-date_created',)
+        unique_together = ('user', 'article',)
+
+    def __str__(self):
+        return '{}-{}'.format(self.user.username, self.article.title)
