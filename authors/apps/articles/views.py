@@ -17,7 +17,6 @@ from authors.apps.authentication.models import User
 from .utils import is_article_owner, has_reviewed, round_average
 from .filters import ArticleFilter
 from .utils import generate_share_url
-import cloudinary
 
 
 def find_article(slug):
@@ -358,7 +357,6 @@ class SocialShareArticleView(APIView):
                 "message": "Please select a valid provider - twitter, "
                            "facebook, email, telegram, linkedin, reddit"
             }, status=200)
-
 
 
 class FavoriteView(APIView):
