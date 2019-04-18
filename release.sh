@@ -13,4 +13,4 @@ python manage.py makemigrations comments
 python manage.py migrate comments
 python manage.py migrate
 python manage.py syncdb
-echo "Done"
+echo "Execution complete"
