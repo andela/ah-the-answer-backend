@@ -33,5 +33,12 @@ urlpatterns = [
             ('authors.apps.comments.urls', 'authors.apps.comments'),
             namespace="comments"
         )
+    ),
+    path(
+        'api/',
+        include(
+            ('authors.apps.notify.urls', 'authors.apps.notify'),
+            namespace="notifications"
+        )
     )
 ]

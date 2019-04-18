@@ -93,3 +93,9 @@ class FavoriteSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['date_modified', 'date_created']
 
+
+class CommentInlineSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Article
+        fields = ('slug', )

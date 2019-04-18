@@ -1,4 +1,5 @@
 from collections import OrderedDict
+import os
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
@@ -21,6 +22,9 @@ from authors.apps.authentication.models import User
 from .utils import is_article_owner, has_reviewed, round_average
 from .filters import ArticleFilter
 from .utils import generate_share_url
+from authors.apps.notify.views import NotificationsView
+
+
 
 def find_article(slug):
     """Method to check if an article exists"""
@@ -105,6 +109,14 @@ class ArticleView(APIView):
         serializer = ArticleSerializer(data=article)
         if serializer.is_valid(raise_exception=True):
             article_saved = serializer.save(author=self.request.user)
+            NotificationsView.send_notification(
+                "@{0} has posted a new article at {1}".format(
+                    self.request.user.username,
+                    os.getenv('DOMAIN') + '/api/articles/' + serializer.data.get('slug') + '/'
+                ),
+                serializer.data,
+                'new-article'
+            )
 
         return Response({
             "success": "Article '{}' created successfully".format(
