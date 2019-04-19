@@ -103,5 +103,6 @@ Pipfile
 Pipfile.lock
 
 # migrations
-**/migrations/
+**/migrations/**
 
+!**/migrations/__init__.py
