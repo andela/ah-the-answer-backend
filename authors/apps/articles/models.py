@@ -40,6 +40,8 @@ class ArticleImage(models.Model):
         blank=False, null=True)
     public_id = models.CharField(
         max_length=30, blank=False, null=True)
+    width = models.IntegerField(default=0)
+    height = models.IntegerField(default=0)
     date_created = models.DateTimeField(
         auto_now=True)
 

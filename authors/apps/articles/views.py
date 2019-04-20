@@ -53,7 +53,7 @@ def find_image(id, slug):
 def get_images(slug):
     """Method to get all images for an article"""
     return ArticleImage.objects.select_related(
-        'article').filter(article__slug=slug)    
+        'article').filter(article__slug=slug)
 
 
 class ArticleView(APIView):
@@ -190,9 +190,14 @@ class ArticleImageView(APIView):
                 })
             image_url = response.get('secure_url')
             public_id = response.get('public_id')
+            height = response.get('height')
+            width = response.get('width')
 
             serializer = ArticleImageSerializer(
-                data={"image_url": image_url, "public_id": public_id}
+                data={
+                    "image_url": image_url, "public_id": public_id,
+                    "height": height, "width": width
+                }
             )
             if serializer.is_valid(raise_exception=True):
                 serializer.save(article=article)
@@ -200,7 +205,7 @@ class ArticleImageView(APIView):
             response = {
                 "message": "Image for article `{}` uploaded successfully."
                 .format(slug),
-                "image_url": image_url
+                "image_url": image_url, "height": height, "width": width
             }
             return Response(response, status=200)
 
