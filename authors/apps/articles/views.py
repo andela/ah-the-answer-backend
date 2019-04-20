@@ -199,7 +199,8 @@ class ArticleImageView(APIView):
 
             response = {
                 "message": "Image for article `{}` uploaded successfully."
-                .format(slug)
+                .format(slug),
+                "image_url": image_url
             }
             return Response(response, status=200)
 
