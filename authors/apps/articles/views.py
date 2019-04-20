@@ -1,8 +1,10 @@
+from collections import OrderedDict
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import APIException
+from rest_framework.pagination import LimitOffsetPagination
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 import cloudinary
@@ -46,6 +48,7 @@ class ArticleView(APIView):
     creates an article"""
     permission_classes = (IsAuthenticated | ReadOnly,)
     filter_fields = ('author', 'title',)
+    pagination_class = LimitOffsetPagination
 
     def get(self, request):
         """Method to get all articles"""
@@ -67,10 +70,16 @@ class ArticleView(APIView):
         article_filter = ArticleFilter()
         filtered_articles = article_filter.filter_queryset(
             request, articles, self)
+        paginator = self.pagination_class()
+        page = paginator.paginate_queryset(filtered_articles, request)
+        if filtered_articles:
+            serializer = ArticleSerializer(page, many=True)
+            page_results = paginator.get_paginated_response(serializer.data)
 
-        if filtered_articles.exists():
-            serializer = ArticleSerializer(filtered_articles, many=True)
-            return Response({"articles": serializer.data}, status=200)
+            # rename key 'results' to 'articles'
+            response = OrderedDict([('articles', v) if k == 'results' else (k, v) for k, v in page_results.data.items()])
+
+            return Response(response, status=200)
         else:
             return Response({"message": "No article found", "articles": []},
                             status=200)
@@ -411,4 +420,3 @@ class FavoriteListView(APIView):
         favs = FavoriteModel.objects.filter(user=request.user)
         return Response({"articles": FavoriteSerializer(favs, many=True).data,
                          "count": favs.count()}, status=200)
-
