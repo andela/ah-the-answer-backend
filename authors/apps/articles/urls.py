@@ -7,6 +7,7 @@ from .views import (
     ArticleImageDetailView,
     LikeArticleView,
     DislikeArticleView,
+    SocialShareArticleView,
     ReviewView,
     FavoriteView,
     FavoriteListView
@@ -28,5 +29,7 @@ urlpatterns = [
     path('articles/<slug>/reviews/<str:username>', ReviewView.as_view(), name="alter-review"),
     path('articles/<slug>/favorite/', FavoriteView.as_view(), name="favorite"),
     path('articles/<slug>/like/', LikeArticleView.as_view(), name="like-article"),
-    path('articles/<slug>/dislike/', DislikeArticleView.as_view(), name="dislike-article")
+    path('articles/<slug>/dislike/', DislikeArticleView.as_view(), name="dislike-article"),
+    path("articles/<slug>/share/<provider>/",
+         SocialShareArticleView.as_view(), name="share-article"),
 ]
