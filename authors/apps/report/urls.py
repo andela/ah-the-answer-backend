@@ -7,6 +7,6 @@ from .views import (
 app_name = "reports"
 
 urlpatterns = [
-    path('articles/<slug>/reports/', CreateListReportsAPIView.as_view(),
+    path('report/', CreateListReportsAPIView.as_view(),
          name="report-create")
 ]
