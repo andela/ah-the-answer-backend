@@ -103,17 +103,60 @@ class TestReportViews(TestCase):
         self.user_report = {
             "report":
             {
-                "reporter": "mail@demo.com"
-                "article_id": "1"
-                "violation": "Graphic Content"
+                "reporter": "mail@demo.com",
+                "violation": "Graphic Content",
                 "reportDetails": "Offensive Images"
             }
         }
         self.client_1.post(reverse('articles:create-list'),
                            self.user_article_1, format="json")
-        response = self.client_1.post(reverse('report:report-create'),
+        response = self.client_1.post(reverse('report:report-create', args=[1]),
                                       self.user_report, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data['success'], "Your report for article 'Inappropriate Title' has been logged.")
+        self.assertEqual(response.data['success'], "Logged Graphic Content "
+                                                   "report for article "
+                                                   "Inappropriate Title.")
+    
+    def test_get_all_reports_for_article(self):
+        self.user_report_1 = {
+            "report":
+            {
+                "reporter": "mail@demo.com",
+                "article_id": 2,
+                "violation": "Graphic Content",
+                "reportDetails": "Offensive Images"
+            }
+        }
+        self.user_report_2 = {
+            "report":
+            {
+                "reporter": "Jane@demo.com",
+                "article_id": 2,
+                "violation": "Spam",
+                "reportDetails": "Bot messages"
+            }
+        }
+        self.user_report_3 = {
+            "report":
+            {
+                "reporter": "Jacob@demo.com",
+                "article_id": 2,
+                "violation": "Harrassment",
+                "reportDetails": "Bot messages"
+            }
+        }
+        self.client_1.post(reverse('articles:create-list'),
+                           self.user_article_1, format="json")
+        self.client_1.post(reverse('report:report-create', args=[2]),
+                           self.user_report_1, format='json')
+        self.client_1.post(reverse('report:report-create', args=[2]),
+                           self.user_report_2, format='json')
+        self.client_1.post(reverse('report:report-create', args=[2]),
+                           self.user_report_3, format='json')
+        response = self.client_1.get(reverse('report:report-create', args=[2]),
+                                     format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.assertEqual(len(response.data['reports']), 3)
 
 
