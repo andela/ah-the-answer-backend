@@ -3,7 +3,7 @@ from authors import settings
 from authors.apps.articles.models import Article
 
 
-class Report(model.Model):
+class Report(models.Model):
     """
     This class represents the model for Author's Haven that records user
     reports on articles.
@@ -27,10 +27,13 @@ class Report(model.Model):
     reporter = models.EmailField
     createdAt = models.DateTimeField(auto_now_add=True)
     resolvedAt = models.DateField(default=None)
-    violation = models.CharField(choices=VIOLATION_CHOICES)
+    violation = models.CharField(max_length=30, choices=VIOLATION_CHOICES)
     reportDetails = models.TextField(max_length=1000, default=None)
     isResolved = models.BooleanField(default=False)
     adminNote = models.TextField(max_length=1000, default=None)
+
+    class Meta:
+        ordering = ["createdAt"]
 
 
 
