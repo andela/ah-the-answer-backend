@@ -16,19 +16,31 @@ from .serializers import ReportSerializer
 
 class CreateListReportsAPIView(APIView):
     serializer_class = ReportSerializer
-    permission_classes = (IsAuthenticated,)
 
-    def post(self, request, slug):
+    def get_object(self, id):
+        try:
+            articleID = Article.objects.get(id=id).id
+            return articleID
+        except:
+            return Response({"error": "No article with that id found."},
+                            status=status.HTTP_404_NOT_FOUND)
+
+    def post(self, request):
+        """Method for creating report for a particular article"""
         report = request.data.get('report', {})
+        
+        article = self.get_object(report['article_id'])
+        
         serializer = self.serializer_class(data=report)
-        serializer.is_valid(raise_exception=True)
-        article = find_article(slug)
-        author = request.user
-        if article.author == author:
-            return Response({'error': 'you cannot report your own article'},
-                                        status=status.HTTP_400_BAD_REQUEST)
-        serializer.save(author=author, article=article)
-        return Response(
-            serializer.data,
-            status=status.HTTP_201_CREATED 
-        )
+        if serializer.is_valid(raise_exception=True):
+            profile_saved = serializer.save(article_id=article)
+            return Response(
+                {
+                    "success": "Created"
+                },
+                status=status.HTTP_201_CREATED
+            )
+    
+    def get(self, request):
+        """Method to retrieve reports for a particular report"""
+        report
