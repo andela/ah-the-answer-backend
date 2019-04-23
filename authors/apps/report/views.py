@@ -13,34 +13,56 @@ from authors.apps.articles.views import find_article
 
 from .serializers import ReportSerializer
 
+def find_object(article_id):
+    try:
+        articleID = Article.objects.get(id=article_id)
+        return articleID
+    except:
+        return Response({"error": "No article with that id found."},
+                        status=status.HTTP_404_NOT_FOUND)
+
 
 class CreateListReportsAPIView(APIView):
     serializer_class = ReportSerializer
 
-    def get_object(self, id):
-        try:
-            articleID = Article.objects.get(id=id).id
-            return articleID
-        except:
-            return Response({"error": "No article with that id found."},
-                            status=status.HTTP_404_NOT_FOUND)
-
-    def post(self, request):
+    def post(self, request, id):
         """Method for creating report for a particular article"""
         report = request.data.get('report', {})
-        
-        article = self.get_object(report['article_id'])
-        
-        serializer = self.serializer_class(data=report)
-        if serializer.is_valid(raise_exception=True):
-            profile_saved = serializer.save(article_id=article)
+        try:
+            article = Article.objects.get(id=id)
+        except:
             return Response(
                 {
-                    "success": "Created"
+                    "error": "No article with that id found."
+                },
+                status=status.HTTP_404_NOT_FOUND)
+        serializer = self.serializer_class(data=report)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save(article_id=article.id)
+            return Response(
+                {
+                    "success": "Logged {} report for article {}.".format
+                    (report['violation'], article.title)
                 },
                 status=status.HTTP_201_CREATED
             )
     
-    def get(self, request):
+    def get(self, request, id):
         """Method to retrieve reports for a particular report"""
-        report
+        article = find_object(id)
+
+        reports = Report.objects.filter(article_id=id).values(
+            'reporter', 'createdAt', 'resolvedAt', 'violation',
+            'isResolved', 'adminNote', 'reportDetails'
+        )
+        # serializer = self.serializer_class(reports, many=True)
+        #print(reports[0])
+        return Response(
+            {
+                "message": "successfully retrieved reports for article {}".format(article.title),
+                "reports": reports
+            },
+            status=status.HTTP_200_OK)
+
+
+
