@@ -50,6 +50,8 @@ INSTALLED_APPS = [
     'django_filters',
     'taggit',
     'taggit_serializer',
+    'django_social_share',
+
 
     'authors.apps.authentication',
     'authors.apps.core',

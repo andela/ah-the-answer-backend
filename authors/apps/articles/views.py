@@ -9,17 +9,18 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 import cloudinary
 
-from .serializers import ArticleSerializer, ArticleImageSerializer, ReviewsSerializer
+from .serializers import (ArticleSerializer, ArticleImageSerializer,
+                          ReviewsSerializer)
 from rest_framework import status
-from .models import Article, ArticleImage, LikeArticles, FavoriteModel, ReviewsModel
+from .models import (Article, ArticleImage, LikeArticles,
+                     FavoriteModel, ReviewsModel)
 from .serializers import (ArticleSerializer, ArticleImageSerializer,
                           FavoriteSerializer)
 from .permissions import ReadOnly
 from authors.apps.authentication.models import User
 from .utils import is_article_owner, has_reviewed, round_average
 from .filters import ArticleFilter
-
-
+from .utils import generate_share_url
 
 def find_article(slug):
     """Method to check if an article exists"""
@@ -41,6 +42,18 @@ def find_favorite(slug):
         raise APIException({
             "message": "The article requested does not exist in your favorites"
         })
+
+
+def find_image(id, slug):
+    """Method to find an image by id"""
+    return ArticleImage.objects.filter(pk=id).select_related(
+                'article').filter(article__slug=slug)
+
+
+def get_images(slug):
+    """Method to get all images for an article"""
+    return ArticleImage.objects.select_related(
+        'article').filter(article__slug=slug)
 
 
 class ArticleView(APIView):
@@ -144,10 +157,13 @@ class RetrieveArticleView(APIView):
             return Response(response, status=403)
 
     def delete(self, request, slug):
-        """Method to delete a specific article"""
+        """Method to delete a specific article and all its images"""
         article = find_article(slug)
+        images = get_images(slug)
 
         if self.is_owner(article.author.id, request.user.id) is True:
+            for image in range(len(images)):
+                cloudinary.uploader.destroy(images[image].public_id)
             article.delete()
             return Response(
                 {"message": "Article `{}` has been deleted.".format(slug)},
@@ -165,38 +181,97 @@ class ArticleImageView(APIView):
     def post(self, request, slug):
         """Method to upload an image"""
         article = find_article(slug)
+        if article.author.id != request.user.id:
+            return Response({
+                "message": "Only the owner of this article can upload images."
+            }, status=403)
 
         if request.FILES:
             try:
                 response = cloudinary.uploader.upload(
                     request.FILES['file'],
-                    allowed_formats=['png', 'jpg', 'jpeg'])
+                    allowed_formats=[
+                        'png', 'jpg', 'jpeg', 'gif'
+                        ]
+                    )
             except Exception as e:
                 APIException.status_code = 400
                 raise APIException({
                     "errors": str(e)
                 })
             image_url = response.get('secure_url')
+            public_id = response.get('public_id')
+            height = response.get('height')
+            width = response.get('width')
 
-            serializer = ArticleImageSerializer(data={"image": image_url})
+            serializer = ArticleImageSerializer(
+                data={
+                    "image_url": image_url, "public_id": public_id,
+                    "height": height, "width": width
+                }
+            )
             if serializer.is_valid(raise_exception=True):
                 serializer.save(article=article)
 
-            response = {"message": "Image uploaded Successfully"}
+            response = {
+                "message": "Image for article `{}` uploaded successfully."
+                .format(slug),
+                "image_url": image_url, "height": height, "width": width
+            }
             return Response(response, status=200)
 
         else:
-            response = {"message": "Image uploaded failed."}
+            response = {
+                "message": "Please select an image."
+            }
             return Response(response, status=400)
 
     def get(self, request, slug):
         """Method to get all images of an article"""
         find_article(slug)
-        images = ArticleImage.objects.select_related(
-            'article').filter(article__slug=slug)
+        images = get_images(slug)
         serializer = ArticleImageSerializer(images, many=True)
-        return Response({"images": serializer.data})
+        return Response(
+            {
+                "images": serializer.data,
+                "imagesCount": images.count()
+            }
+        )
 
+
+class ArticleImageDetailView(APIView):
+    """Class with methods to get and delete a specific image"""
+    permission_classes = (IsAuthenticated | ReadOnly,)
+
+    def get(self, request, slug, id):
+        """Method to get a specific image by its id"""
+        find_article(slug)
+        image = find_image(id, slug)
+        image_serializer = ArticleImageSerializer(image, many=True)
+        return Response(
+            {
+                "image": image_serializer.data
+            }
+        )
+
+    def delete(self, request, slug, id):
+        """Method to delete a specific image by its id"""
+        article = find_article(slug)
+        image = find_image(id, slug)
+        if not image:
+            return Response({
+                "message": "The requested image does not exist."
+            }, status=404)
+        if article.author.id == request.user.id:
+            cloudinary.uploader.destroy(image[0].public_id)
+            image.delete()
+            return Response({
+                "message": "Image `{}` for article `{}` has been deleted."
+                .format(id, slug)
+            }, status=200)
+
+        response = {"message": "Only the owner can delete this image."}
+        return Response(response, status=403)
 
 
 class ReviewView(APIView):
@@ -348,6 +423,35 @@ class DislikeArticleView(APIView):
             'article': ArticleSerializer(article).data
         },
         status=status.HTTP_201_CREATED)
+
+
+class SocialShareArticleView(APIView):
+    permission_classes = (IsAuthenticated | ReadOnly,)
+
+    def get(self, request, slug, provider):
+        shared_article = find_article(slug)
+        context = {'request': request}
+
+        uri = request.build_absolute_uri()
+
+        # Remove the share/provider/ after the absolute uri
+        article_uri = uri.rsplit('share/', 1)[0]
+        try:
+            share_link = generate_share_url(
+                context, provider, shared_article, article_uri)
+
+            if share_link:
+                return Response({
+                    "share": {
+                        "provider": provider,
+                        "link": share_link
+                    }
+                })
+        except KeyError:
+            return Response({
+                "message": "Please select a valid provider - twitter, "
+                           "facebook, email, telegram, linkedin, reddit"
+            }, status=200)
 
 
 class FavoriteView(APIView):
