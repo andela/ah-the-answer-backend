@@ -27,6 +27,8 @@ urlpatterns = [
                          namespace='articles')),
     path('api/', include(('authors.apps.follow.urls', 'authors.apps.follow'),
                          namespace='follow')),
+    path('api/', include(('authors.apps.report.urls', 'authors.apps.report'),
+                         namespace='report')),
     path(
         'api/',
         include(
