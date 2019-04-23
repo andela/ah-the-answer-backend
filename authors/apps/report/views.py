@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
 
@@ -42,7 +43,8 @@ class CreateListReportsAPIView(APIView):
             return Response(
                 {
                     "success": "Logged {} report for article {}.".format
-                    (report['violation'], article.title)
+                    (report['violation'], article.title),
+                    "report": serializer.data
                 },
                 status=status.HTTP_201_CREATED
             )
@@ -63,7 +65,33 @@ class CreateListReportsAPIView(APIView):
                 "reports": reports
             },
             status=status.HTTP_200_OK)
-
+    
+    def put(self, request, id):
+        """
+        Updates a single report to determine its 'resolved' status.
+        """
+        try:
+            report = Report.objects.get(id=id)
+        except:
+            return Response(
+                {
+                    "error": "No report with that id found."
+                },
+                status=status.HTTP_404_NOT_FOUND)
+        update = request.data.get('resolve', {})
+        report.resolvedAt = datetime.now().strftime('%Y-%m-%d')
+        report.isResolved = True
+        report.adminNote = update['adminNote']
+        report.save(update_fields=['resolvedAt', 'adminNote', 'isResolved'])
+        return Response(
+            {
+               "success": "Report Resolved",
+               "isResolved": report.isResolved,
+               "resolvedAt": report.resolvedAt,
+               "adminNote": report.adminNote
+            },
+            status=status.HTTP_200_OK)
+        
 
 class GetAllReportsView(APIView):
 
