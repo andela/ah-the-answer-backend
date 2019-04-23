@@ -170,3 +170,38 @@ class TestReportViews(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         
         self.assertEqual(len(response.data['reports']), 3)
+    
+    def test_get_all_reports(self):
+        self.user_report_1 = {
+            "report":
+            {
+                "reporter": "Jane@demo.com",
+                "violation": "Spam",
+                "reportDetails": "Bot messages"
+            }
+        }
+        self.user_report_2 = {
+            "report":
+            {
+                "reporter": "Jacob@demo.com",
+                "violation": "Harrassment",
+                "reportDetails": "Bot messages"
+            }
+        }
+        response_1 = self.client_1.post(reverse('articles:create-list'), 
+                                        self.user_article_1, format="json")
+        response_2 = self.client_1.post(reverse('articles:create-list'), 
+                                        self.user_article_2, format="json")
+        id_1 = response_1.data['article']['id']
+        id_2 = response_2.data['article']['id']
+
+        self.client_1.post(reverse('report:report-create', args=[id_1]),
+                           self.user_report_1, format='json')
+        self.client_1.post(reverse('report:report-create', args=[id_2]),
+                           self.user_report_2, format='json')
+    
+        response = self.client_1.get(reverse('report:fetch-reports'), format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        print(response.data)
+        self.assertEqual(len(response.data['reports']), 2)
+
