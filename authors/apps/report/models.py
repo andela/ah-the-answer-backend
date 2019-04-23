@@ -24,13 +24,13 @@ class Report(models.Model):
         Article,
         on_delete=models.CASCADE
     )
-    reporter = models.EmailField
+    reporter = models.EmailField(default=None)
     createdAt = models.DateTimeField(auto_now_add=True)
-    resolvedAt = models.DateField(default=None)
+    resolvedAt = models.DateField(blank=True, null=True)
     violation = models.CharField(max_length=30, choices=VIOLATION_CHOICES)
-    reportDetails = models.TextField(max_length=1000, default=None)
+    reportDetails = models.TextField(max_length=1000, default="No Comment.")
     isResolved = models.BooleanField(default=False)
-    adminNote = models.TextField(max_length=1000, default=None)
+    adminNote = models.TextField(max_length=1000, default="No Comment.")
 
     class Meta:
         ordering = ["createdAt"]
