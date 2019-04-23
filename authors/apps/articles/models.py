@@ -23,7 +23,11 @@ class Article(models.Model):
         return self.title
 
     def save(self, *args, **kwargs):
-        self.slug = generate_slug(self.title)
+        if not self.slug:
+            self.slug = generate_slug(self.title)
+        article = Article.objects.filter(slug=self.slug).first()
+        if article and article.title != self.title:
+            self.slug = generate_slug(self.title)
         self.read_time = get_readtime(self.body)
         super(Article, self).save(*args, **kwargs)
 
@@ -121,6 +125,7 @@ class LikeArticles(models.Model):
         )
         return True
 
+
 class FavoriteModel(models.Model):
     """Model keeps records of all articles that a user has marked as
      favorite"""
@@ -139,3 +144,19 @@ class FavoriteModel(models.Model):
     def __str__(self):
         return '{}-{}'.format(self.user.username, self.article.title)
 
+
+class Highlight(models.Model):
+    """Class that has the fields for highlights made by a user"""
+    article = models.ForeignKey(Article, related_name='highlights',
+                                on_delete=models.CASCADE)
+    user = models.ForeignKey(User, related_name='highlighter',
+                             on_delete=models.CASCADE)
+    date_created = models.DateTimeField(auto_now_add=True)
+    start = models.PositiveIntegerField()
+    end = models.PositiveIntegerField()
+    section = models.TextField()
+    comment = models.TextField(blank=True, null=False, default='')
+
+    class Meta:
+        unique_together = ['user', 'article', 'start', 'end', 'comment']
+        ordering = ('-date_created',)

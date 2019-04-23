@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Article, ArticleImage, FavoriteModel, ReviewsModel
+from .models import (Article, ArticleImage, FavoriteModel,
+                     ReviewsModel, Highlight)
 from ..authentication.serializers import UserSerializer
 from django.core.validators import MaxValueValidator, MinValueValidator
 
@@ -85,6 +86,7 @@ class ReviewsSerializer(serializers.ModelSerializer):
 
         return instance
 
+
 class FavoriteSerializer(serializers.ModelSerializer):
     article = ArticleSerializer()
     user = UserSerializer()
@@ -94,3 +96,14 @@ class FavoriteSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['date_modified', 'date_created']
 
+
+class HighlightSerializer(serializers.ModelSerializer):
+    """Serializer to map the Highlight Model instance into JSON format."""
+    article = serializers.ReadOnlyField(source='article.id')
+    user = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Highlight
+        fields = ('id', 'user', 'article', 'start', 'end',
+                  'section', 'date_created', 'comment')
+        read_only_fields = ['date_created', 'section']
