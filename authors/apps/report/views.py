@@ -53,7 +53,7 @@ class CreateListReportsAPIView(APIView):
 
         reports = Report.objects.filter(article_id=id).values(
             'reporter', 'createdAt', 'resolvedAt', 'violation',
-            'isResolved', 'adminNote', 'reportDetails'
+            'isResolved', 'adminNote', 'reportDetails', 'id'
         )
         # serializer = self.serializer_class(reports, many=True)
         #print(reports[0])
@@ -65,4 +65,17 @@ class CreateListReportsAPIView(APIView):
             status=status.HTTP_200_OK)
 
 
+class GetAllReportsView(APIView):
 
+    def get(self, request):
+        """retrieve a report by id"""
+        reports = Report.objects.all().values()
+        return Response(
+            {
+                "success": "All reports retrieved.",
+                "reports": reports
+            },
+            status=status.HTTP_200_OK)
+
+    
+    
