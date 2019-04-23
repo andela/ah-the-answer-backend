@@ -3,7 +3,6 @@ from authors.apps.report.models import Report
 
 
 class ReportSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(read_only=True)
     reporter = serializers.EmailField(max_length=254)
     violation = serializers.ChoiceField(choices=['Hate Speech', 'Harrassment',
                                                  'Privacy and Reputation',
@@ -16,5 +15,5 @@ class ReportSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Report
-        fields = ['article_id', 'reporter', 'createdAt', 'resolvedAt',
-                  'violation', 'reportDetails', 'isResolved', 'adminNote']
+        fields = ['article_id', 'reporter', 'violation', 'reportDetails',
+                  'isResolved', 'adminNote']
