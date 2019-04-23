@@ -87,7 +87,7 @@ class TestReportViews(TestCase):
         self.client_2.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token_2)
 
         """
-        Define a test article.
+        Define two tests articles
         """
         self.user_article_1 = {
             "article":
@@ -95,6 +95,16 @@ class TestReportViews(TestCase):
              "title": "Inappropriate Title",
              "body": "Explicit Material",
              "description": "Illegal Information.",
+             "is_published": True
+            }
+        }
+
+        self.user_article_2 = {
+            "article":
+            {
+             "title": "Explicit Title",
+             "body": "Obscene Material",
+             "description": "Private Information",
              "is_published": True
             }
         }
@@ -145,18 +155,18 @@ class TestReportViews(TestCase):
                 "reportDetails": "Bot messages"
             }
         }
-        self.client_1.post(reverse('articles:create-list'),
-                           self.user_article_1, format="json")
-        self.client_1.post(reverse('report:report-create', args=[2]),
+        article_response = self.client_1.post(reverse('articles:create-list'),
+                                              self.user_article_1,
+                                              format="json")
+        id = article_response.data['article']['id']
+        self.client_1.post(reverse('report:report-create', args=[id]),
                            self.user_report_1, format='json')
-        self.client_1.post(reverse('report:report-create', args=[2]),
+        self.client_1.post(reverse('report:report-create', args=[id]),
                            self.user_report_2, format='json')
-        self.client_1.post(reverse('report:report-create', args=[2]),
+        self.client_1.post(reverse('report:report-create', args=[id]),
                            self.user_report_3, format='json')
-        response = self.client_1.get(reverse('report:report-create', args=[2]),
-                                     format='json')
+        response = self.client_1.get(reverse('report:report-create',
+                                     args=[id]), format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
+        
         self.assertEqual(len(response.data['reports']), 3)
-
-
