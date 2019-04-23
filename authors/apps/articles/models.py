@@ -40,9 +40,12 @@ class ArticleImage(models.Model):
         Article,
         related_name='article_images',
         on_delete=models.CASCADE)
-    image = models.TextField(
-        default="https://res.cloudinary.com/dv85uhrw5/image/upload/v1554278002/sample.jpg"
-    )
+    image_url = models.TextField(
+        blank=False, null=True)
+    public_id = models.CharField(
+        max_length=30, blank=False, null=True)
+    width = models.IntegerField(default=0)
+    height = models.IntegerField(default=0)
     date_created = models.DateTimeField(
         auto_now=True)
 
