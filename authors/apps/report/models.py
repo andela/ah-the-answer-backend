@@ -28,9 +28,9 @@ class Report(model.Model):
     createdAt = models.DateTimeField(auto_now_add=True)
     resolvedAt = models.DateField(default=None)
     violation = models.CharField(choices=VIOLATION_CHOICES)
-    reportDetails = models.TextField(default=None)
+    reportDetails = models.TextField(max_length=1000, default=None)
     isResolved = models.BooleanField(default=False)
-    adminNote = models.TextField(default=None)
+    adminNote = models.TextField(max_length=1000, default=None)
 
 
 
