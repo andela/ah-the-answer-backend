@@ -204,4 +204,33 @@ class TestReportViews(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         print(response.data)
         self.assertEqual(len(response.data['reports']), 2)
+    
+    def test_resolve_report(self):
+        self.user_report_1 = {
+            "report":
+            {
+                "reporter": "Jane@demo.com",
+                "violation": "Spam",
+                "reportDetails": "Bot messages"
+            }
+        }
+        self.admin_resolve = {
+            "resolve":
+            {
+                "adminNote": "Ban User"
+            }
+        }
+        response_1 = self.client_1.post(reverse('articles:create-list'), 
+                                        self.user_article_1, format="json")
+        id_1 = response_1.data['article']['id']
+
+        report = self.client_1.post(reverse('report:report-create', args=[id_1]),
+                                    self.user_report_1, format='json')
+        report_id = report.data['report']['id']
+        response = self.client_1.put(reverse('report:report-create', 
+                                     args=[report_id]), self.admin_resolve,
+                                     format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['isResolved'], True)
+        self.assertEqual(response.data['adminNote'], "Ban User")
 
