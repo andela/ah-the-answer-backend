@@ -214,6 +214,12 @@ class TestRetrieveBookmarks(TestCase):
         response = self.client_1.get(reverse('bookmark:bookmark-list'),
                                      format="json")
         self.assertEqual(len(response.data['success']), 0)
+    
+    def test_bookmark_object_readable_name(self):
+        self.client_1.post(reverse('bookmark:bookmark-create',
+                                   args=[self.id_1]), format='json')
+        bookmark = Bookmark.objects.get(article_title="Titles Are For Turtles")
+        self.assertEqual(bookmark.__str__(), "Titles Are For Turtles")
 
 
 class TestRetrieveArticle(TestCase):
