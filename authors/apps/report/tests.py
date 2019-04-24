@@ -1,3 +1,4 @@
+import json
 from django.test import TestCase
 from django.test import Client
 from django.urls import reverse
@@ -127,6 +128,24 @@ class TestReportViews(TestCase):
                                                    "report for article "
                                                    "Inappropriate Title.")
     
+    def test_create_report_for_invalid_article(self):
+        self.user_report = {
+            "report":
+            {
+                "reporter": "mail@demo.com",
+                "violation": "Graphic Content",
+                "reportDetails": "Offensive Images"
+            }
+        }
+        response = self.client_1.post(reverse('report:report-create', args=[31]),
+                                      self.user_report, format='json')
+        output = json.loads(response.content)
+        self.assertIn(
+            'No article with that id found.',
+            str(output))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
     def test_get_all_reports_for_article(self):
         self.user_report_1 = {
             "report":
@@ -171,6 +190,15 @@ class TestReportViews(TestCase):
         
         self.assertEqual(len(response.data['reports']), 3)
     
+    def test_get_reports_for_nonexistent_article(self):
+        response = self.client_1.get(reverse('report:report-create',
+                                     args=[48]), format='json')
+        output = json.loads(response.content)
+        self.assertIn(
+            'No article with that id found.',
+            str(output))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
     def test_get_all_reports(self):
         self.user_report_1 = {
             "report":
@@ -233,4 +261,55 @@ class TestReportViews(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['isResolved'], True)
         self.assertEqual(response.data['adminNote'], "Ban User")
+    
+    def test_update_invalid_report(self):
+        self.admin_resolve = {
+            "resolve":
+            {
+                "adminNote": "Ban User"
+            }
+        }
+        response = self.client_1.put(reverse('report:report-create', 
+                                     args=[29]), self.admin_resolve,
+                                     format='json')
+        output = json.loads(response.content)
+        self.assertIn(
+            'No report with that id found.',
+            str(output))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+    
+    def test_delete_report(self):
+        self.user_report_1 = {
+            "report":
+            {
+                "reporter": "Jane@demo.com",
+                "violation": "Spam",
+                "reportDetails": "Bot messages"
+            }
+        }
+        response_1 = self.client_1.post(reverse('articles:create-list'), 
+                                        self.user_article_1, format="json")
+        id_1 = response_1.data['article']['id']
+        report = self.client_1.post(reverse('report:report-create', args=[id_1]),
+                                    self.user_report_1, format='json')
+        report_id = report.data['report']['id']                         
+        response = self.client_1.delete(reverse('report:report-create', 
+                                     args=[report_id]),
+                                     format='json')
+        output = json.loads(response.content)
+        self.assertIn(
+            'report has been deleted',
+            str(output))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_delete_invalid_report(self):
+                       
+        response = self.client_1.delete(reverse('report:report-create', 
+                                     args=[12]),
+                                     format='json')
+        output = json.loads(response.content)
+        self.assertIn(
+            'No report with that id found.',
+            str(output))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
