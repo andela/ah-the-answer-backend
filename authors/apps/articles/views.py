@@ -52,7 +52,7 @@ def get_highlights(slug):
 
 def format_highlight(highlights, saved_article):
     """Method to update start and end index of highlight if article
-    body is updated or deleted the highlight if idtdoes not exist anymore"""
+    body is updated or to delete the highlight if it does not exist"""
     for highlight_count in range(len(highlights)):
         highlight = Highlight.objects.get(
             pk=highlights[highlight_count].pk
