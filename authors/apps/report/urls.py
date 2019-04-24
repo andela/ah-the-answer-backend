@@ -1,12 +1,12 @@
 from django.urls import path
 
 from .views import (
-    CreateListReportsAPIView
+    CreateListReportsAPIView, GetAllReportsView
 )
 
 app_name = "reports"
 
 urlpatterns = [
-    path('report/', CreateListReportsAPIView.as_view(),
-         name="report-create")
+    path('report/<int:id>', CreateListReportsAPIView.as_view(), name="report-create"),
+    path('reports/', GetAllReportsView.as_view(), name="fetch-reports")
 ]
