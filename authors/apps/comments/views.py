@@ -6,6 +6,7 @@ from authors.apps.comments.models import Comment
 from authors.apps.articles.models import Article
 from authors.apps.articles.permissions import ReadOnly
 
+from ..articles.views import find_article
 
 class CommentsCreateList(views.APIView):
     permission_classes = (permissions.IsAuthenticated | ReadOnly,)
@@ -134,6 +135,7 @@ class CommentHistoryView(views.APIView):
 
     def get(self, request, slug, pk):
         try:
+            find_article(slug)
             comment = Comment.objects.get(id=pk)
             if comment and comment.author == self.request.user:
                 serializer = CommentHistorySerializer(comment)
