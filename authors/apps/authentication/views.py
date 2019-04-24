@@ -9,6 +9,7 @@ from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from drf_yasg.utils import swagger_auto_schema
 
 from .renderers import UserJSONRenderer
 from .serializers import (
@@ -30,6 +31,8 @@ class RegistrationAPIView(APIView):
     renderer_classes = (UserJSONRenderer,)
     serializer_class = RegistrationSerializer
 
+    @swagger_auto_schema(request_body=RegistrationSerializer,
+                         responses={201: UserSerializer()})
     def post(self, request):
         user = request.data.get('user', {})
 
@@ -39,24 +42,25 @@ class RegistrationAPIView(APIView):
         serializer = self.serializer_class(data=user)
         serializer.is_valid(raise_exception=True)
         user_email = serializer.validated_data['email']
-        username= serializer.validated_data['username']
-
+        username = serializer.validated_data['username']
 
         token = jwt_encode(user_email)
         template_name = 'email_verification.html'
-        context = {'username': username, 'token': token, 'domain':os.getenv('DOMAIN')}
+        context = {'username': username, 'token': token,
+                   'domain': os.getenv('DOMAIN')}
 
         html_message = render_to_string(template_name, context)
         subject = 'Please verify your email'
-        response=send_verification_email(os.getenv('FROM_EMAIL'), user_email,subject,html_message)
+        response = send_verification_email(
+            os.getenv('FROM_EMAIL'), user_email, subject, html_message)
 
         if not response:
             return Response(
                 {
-                   'error': 'something went wrong'
+                    'error': 'something went wrong'
                 },
                 status=status.HTTP_400_BAD_REQUEST
-                  )
+            )
 
         serializer.save()
         serializer.validated_data.pop('password')
@@ -69,7 +73,8 @@ class LoginAPIView(APIView):
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
     serializer_class = LoginSerializer
-
+    @swagger_auto_schema(request_body=LoginSerializer,
+                         responses={200: LoginSerializer()})
     def post(self, request):
         user = request.data.get('user', {})
 
@@ -124,9 +129,9 @@ class EmailVerificationView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        #check if a user exists and if they are verified
-        #if a user is not found we return an error
-        #if we find a verified user , we raise an error
+        # check if a user exists and if they are verified
+        # if a user is not found we return an error
+        # if we find a verified user , we raise an error
 
         try:
             user = User.objects.get(email=email)
@@ -156,6 +161,8 @@ class PasswordResetAPIView(APIView):
     """
     permission_classes = (AllowAny,)
 
+    @swagger_auto_schema(request_body=PasswordResetSerializer,
+                         responses={202: PasswordResetSerializer()})
     def post(self, request):
         """POST request for the password reset functionality"""
         serializer = PasswordResetSerializer(data=request.data)
@@ -170,7 +177,8 @@ class SetUpdatedPasswordAPIView(APIView):
     this view handles PUT request for setting new login password
     """
     permission_classes = (AllowAny,)
-
+    @swagger_auto_schema(request_body=SetUpdatedPasswordSerializer,
+                         responses={202: SetUpdatedPasswordSerializer()})
     def put(self, request, reset_token):
         serializer = SetUpdatedPasswordSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
@@ -192,10 +200,12 @@ class GoogleAuthView(GenericAPIView):
     renderer_classes = (UserJSONRenderer,)
     serializer_class = GoogleAuthSerializer
 
+    @swagger_auto_schema(request_body=GoogleAuthSerializer,
+                         responses={200: GoogleAuthSerializer()})
     def post(self, request):
         serializer = GoogleAuthSerializer(data={
             'access_token': request.data.get('access_token', {})
-            })
+        })
         serializer.is_valid(raise_exception=True)
         user = User.objects.get(email=serializer.data['access_token'])
         return Response({
@@ -211,7 +221,8 @@ class FacebookAuthAPIView(GenericAPIView):
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
     serializer_class = FacebookAuthSerializer
-
+    @swagger_auto_schema(request_body=FacebookAuthSerializer,
+                         responses={200: FacebookAuthSerializer()})
     def post(self, request):
         serializer = self.serializer_class(data={
             'access_token': request.data.get('access_token', {})})
@@ -230,7 +241,8 @@ class TwitterAuthAPIView(GenericAPIView):
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
     serializer_class = TwitterAuthSerializer
-
+    @swagger_auto_schema(request_body=TwitterAuthSerializer,
+                         responses={200: TwitterAuthSerializer()})
     def post(self, request):
         token = request.data.get('access_token', {})
         serializer = self.serializer_class(data={'access_token': token})

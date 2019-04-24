@@ -5,6 +5,8 @@ from .serializers import CommentSerializer
 from authors.apps.comments.models import Comment
 from authors.apps.articles.models import Article
 from authors.apps.articles.permissions import ReadOnly
+from drf_yasg.utils import swagger_auto_schema
+
 
 
 class CommentsCreateList(views.APIView):
@@ -20,6 +22,8 @@ class CommentsCreateList(views.APIView):
             }
         )
 
+    @swagger_auto_schema(request_body=CommentSerializer,
+                         responses={201: CommentSerializer()})
     def post(self, request, slug):
 
         serializer = CommentSerializer(data=request.data.get('comment'))
@@ -62,6 +66,8 @@ class CommentsDetail(views.APIView):
                 status.HTTP_404_NOT_FOUND
             )
 
+    @swagger_auto_schema(request_body=CommentSerializer,
+                         responses={201: CommentSerializer()})
     def put(self, request, slug, pk):
         try:
             comment = Comment.objects.get(id=pk)

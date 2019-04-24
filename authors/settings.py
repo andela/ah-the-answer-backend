@@ -49,6 +49,8 @@ INSTALLED_APPS = [
     'cloudinary',
     'django_filters',
     'django_social_share',
+    'drf_yasg',
+
 
     'authors.apps.authentication',
     'authors.apps.core',
@@ -81,8 +83,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'social_django.context_processors.backends', 
-                'social_django.context_processors.login_redirect' 
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect'
             ],
         },
     },
@@ -169,6 +171,24 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 10
 }
+SWAGGER_SETTINGS = {
+    'SUPPORTED_SUBMIT_METHODS': [
+        'get',
+        'post',
+        'put',
+        'patch'
+    ],
+
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'in': 'header',
+            'name': 'Authorization',
+            'type': 'apiKey',
+        },
+    },
+}
+
+
 # Email configurations
 DOMAIN = os.getenv('DOMAIN')
 EMAIL_HOST = os.getenv('EMAIL_HOST', default='localhost')
