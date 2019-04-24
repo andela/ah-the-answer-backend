@@ -78,55 +78,48 @@ class TestCreateBookmark(TestCase):
              "is_published": True
             }
         }
+        article_response = self.client_1.post(reverse('articles:create-list'),
+                                              self.user_article_1,
+                                              format="json")
+        self.id_1 = article_response.data['article']['id']
 
     def test_user_creates_bookmark(self):
         """Test if the 'create bookmark' view is able to successfully
         create a new article bookmark."""
-        title = 'Titles Are For Turtles'
-        self.client_1.post(reverse('articles:create-list'),
-                           self.user_article_1, format="json")
         response = self.client_1.post(reverse('bookmark:bookmark-create',
-                                      args=[title]), format='json')
+                                      args=[self.id_1]), format='json')
         self.assertEqual(response.data['success'],
                          "Bookmark for article 'Titles Are For Turtles'"
                          "created.")
 
     def test_another_user_creates_bookmark(self):
         """Test if a two users can create the same bookmark."""
-        title = 'Titles Are For Turtles'
-        self.client_1.post(reverse('articles:create-list'),
-                           self.user_article_1, format="json")
         self.client_1.post(reverse('bookmark:bookmark-create',
-                                   args=[title]), format='json')
+                                   args=[self.id_1]), format='json')
         self.token_2 = self.login_2.data['token']
         self.client_2.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token_2)
         response = self.client_2.post(reverse('bookmark:bookmark-create',
-                                      args=[title]), format='json')
+                                      args=[self.id_1]), format='json')
         self.assertEqual(response.data['success'],
                          "Bookmark for article 'Titles Are For Turtles'"
                          "created.")
 
     def test_user_attempts_to_repeat_a_bookmark(self):
         """Test if a user is able to create the same bookmark twice."""
-        title = 'Titles Are For Turtles'
-        self.client_1.post(reverse('articles:create-list'),
-                           self.user_article_1, format="json")
-        self.client_1.post(reverse('bookmark:bookmark-create', args=[title]),
-                           format='json')
+        self.client_1.post(reverse('bookmark:bookmark-create',
+                           args=[self.id_1]), format='json')
         response = self.client_1.post(reverse('bookmark:bookmark-create',
-                                      args=[title]), format='json')
+                                      args=[self.id_1]), format='json')
         self.assertEqual(response.data['error'],
                          "Article bookmark for this user already exists.")
 
     def test_user_attempts_to_bookmark_nonexistent_article(self):
         """Test if a user can create a bookmark for a nonexistent article."""
-        title = 'Quantum Physics For Dummies'
-        self.client_1.post(reverse('articles:create-list'),
-                           self.user_article_1, format="json")
+        false_id = 999
         response = self.client_1.post(reverse('bookmark:bookmark-create',
-                                      args=[title]), format='json')
+                                      args=[false_id]), format='json')
         self.assertEqual(response.data['error'], "No article with "
-                                                 "that title found.")
+                                                 "that id found.")
 
 
 class TestRetrieveBookmarks(TestCase):
@@ -187,12 +180,15 @@ class TestRetrieveBookmarks(TestCase):
              "is_published": True
             }
         }
-        self.client_1.post(reverse('articles:create-list'),
-                           self.user_article_1, format="json")
-        self.client_1.post(reverse('articles:create-list'),
-                           self.user_article_2, format="json")
-        self.client_1.post(reverse('articles:create-list'),
-                           self.user_article_3, format="json")
+        response_1 = self.client_1.post(reverse('articles:create-list'),
+                                        self.user_article_1, format="json")
+        response_2 = self.client_1.post(reverse('articles:create-list'),
+                                        self.user_article_2, format="json")
+        response_3 = self.client_1.post(reverse('articles:create-list'),
+                                        self.user_article_3, format="json")
+        self.id_1 = response_1.data['article']['id']
+        self.id_2 = response_2.data['article']['id']
+        self.id_3 = response_3.data['article']['id']
 
     def test_user_fetches_bookmarks(self):
         """Test if a user can create several articles
@@ -201,11 +197,11 @@ class TestRetrieveBookmarks(TestCase):
         title_2 = "Babies And Bananas"
         title_3 = "Tigers And Tamarinds."
         self.client_1.post(reverse('bookmark:bookmark-create',
-                                   args=[title_1]), format='json')
+                                   args=[self.id_1]), format='json')
         self.client_1.post(reverse('bookmark:bookmark-create',
-                                   args=[title_2]), format='json')
+                                   args=[self.id_2]), format='json')
         self.client_1.post(reverse('bookmark:bookmark-create',
-                                   args=[title_3]), format='json')
+                                   args=[self.id_3]), format='json')
         response = self.client_1.get(reverse('bookmark:bookmark-list'),
                                      format="json")
         self.assertEqual(len(response.data['success']), 3)
@@ -268,24 +264,22 @@ class TestRetrieveArticle(TestCase):
              "is_published": True
             }
         }
-        self.client_1.post(reverse('articles:create-list'),
-                           self.user_article, format="json")
+        article_response = self.client_1.post(reverse('articles:create-list'),
+                                              self.user_article_update,
+                                              format="json")
+        self.id_1 = article_response.data['article']['id']
 
     def test_retrieve_article_from_bookmark(self):
         title = "Titles Are For Turtles"
-        self.client_1.post(reverse('bookmark:bookmark-create', args=[title]), format='json')
-        response = self.client_1.get(reverse('bookmark:bookmark-create', args=[title]), format='json')
-        fetch_id = Bookmark.objects.get(article_title=title).article_id
-        self.assertEqual(response.data['success'][0]['id'], fetch_id)
-    
+        self.client_1.post(reverse('bookmark:bookmark-create',
+                           args=[self.id_1]), format='json')
+        response = self.client_1.get(reverse('bookmark:bookmark-create',
+                                     args=[self.id_1]), format='json')
+        self.assertEqual(response.data['success'][0]['id'], self.id_1)
+
     def test_user_fetches_nonexistent_bookmark(self):
         title = "Titles Are For Turtles"
-        response = self.client_1.get(reverse('bookmark:bookmark-create', args=[title]), format='json')
-        self.assertEqual(response.data['error'], "No bookmark for that article found.")
-    
-    
-
-        
-
-
-
+        response = self.client_1.get(reverse('bookmark:bookmark-create',
+                                     args=[self.id_1]), format='json')
+        self.assertEqual(response.data['error'], "No bookmark for "
+                                                 "that article found.")
