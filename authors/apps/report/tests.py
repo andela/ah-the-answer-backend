@@ -137,7 +137,8 @@ class TestReportViews(TestCase):
 
     def test_create_report_for_invalid_article(self):
         """
-        Create test report
+        negative test to ensure a 404 is returned when invalid article
+        id is passed
         """
         self.user_report = {
             "report":
@@ -308,8 +309,8 @@ class TestReportViews(TestCase):
                                      args=[report_id]), self.admin_resolve,
                                      format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['isResolved'], True)
-        self.assertEqual(response.data['adminNote'], "Ban User")
+        self.assertEqual(response.data['report']['isResolved'], True)
+        self.assertEqual(response.data['report']['adminNote'], "Ban User")
 
     def test_update_invalid_report(self):
         """
