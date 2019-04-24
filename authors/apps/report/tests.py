@@ -13,7 +13,7 @@ from ..authentication.models import User
 
 class TestReportViews(TestCase):
     """
-    Tests the views contained in the 'report' app.
+    Test suite to evaluate the CRUD methods contained in the 'report' app.
     """
     def setUp(self):
 
@@ -45,7 +45,7 @@ class TestReportViews(TestCase):
             },
             format="json"
         )
-    
+
         """
         Create, authenticate and login a second user.
         """
@@ -74,7 +74,7 @@ class TestReportViews(TestCase):
             },
             format="json"
         )
-        
+
         """
         Store the login tokens.
         """
@@ -111,6 +111,9 @@ class TestReportViews(TestCase):
         }
 
     def test_create_report(self):
+        """
+        Create test report
+        """
         self.user_report = {
             "report":
             {
@@ -119,16 +122,23 @@ class TestReportViews(TestCase):
                 "reportDetails": "Offensive Images"
             }
         }
+        """
+        Post a test article and create a report for it
+        """
         self.client_1.post(reverse('articles:create-list'),
                            self.user_article_1, format="json")
-        response = self.client_1.post(reverse('report:report-create', args=[1]),
-                                      self.user_report, format='json')
+        response = self.client_1.post(reverse('report:report-create',
+                                      args=[1]), self.user_report,
+                                      format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['success'], "Logged Graphic Content "
                                                    "report for article "
                                                    "Inappropriate Title.")
-    
+
     def test_create_report_for_invalid_article(self):
+        """
+        Create test report
+        """
         self.user_report = {
             "report":
             {
@@ -137,16 +147,20 @@ class TestReportViews(TestCase):
                 "reportDetails": "Offensive Images"
             }
         }
-        response = self.client_1.post(reverse('report:report-create', args=[31]),
-                                      self.user_report, format='json')
+        """
+        Post a report for using article id that does not exist
+        """
+        response = self.client_1.post(reverse('report:report-create',
+                                      args=[31]), self.user_report,
+                                      format='json')
         output = json.loads(response.content)
-        self.assertIn(
-            'No article with that id found.',
-            str(output))
+        self.assertIn('No article with that id found.', str(output))
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-
     def test_get_all_reports_for_article(self):
+        """
+        Create 3 test reports
+        """
         self.user_report_1 = {
             "report":
             {
@@ -174,32 +188,44 @@ class TestReportViews(TestCase):
                 "reportDetails": "Bot messages"
             }
         }
+        """
+        Post a test article and then fetch its id
+        """
         article_response = self.client_1.post(reverse('articles:create-list'),
                                               self.user_article_1,
                                               format="json")
         id = article_response.data['article']['id']
+        """
+        Create 3 reports for the same article
+        """
         self.client_1.post(reverse('report:report-create', args=[id]),
                            self.user_report_1, format='json')
         self.client_1.post(reverse('report:report-create', args=[id]),
                            self.user_report_2, format='json')
         self.client_1.post(reverse('report:report-create', args=[id]),
                            self.user_report_3, format='json')
+        """
+        Fetch all the reports for the article
+        """
         response = self.client_1.get(reverse('report:report-create',
                                      args=[id]), format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        
         self.assertEqual(len(response.data['reports']), 3)
-    
+
     def test_get_reports_for_nonexistent_article(self):
+        """
+        Fetch a report using an article id that does not exist
+        """
         response = self.client_1.get(reverse('report:report-create',
                                      args=[48]), format='json')
         output = json.loads(response.content)
-        self.assertIn(
-            'No article with that id found.',
-            str(output))
+        self.assertIn('No article with that id found.', str(output))
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_get_all_reports(self):
+        """
+        Create 2 test reports
+        """
         self.user_report_1 = {
             "report":
             {
@@ -216,24 +242,35 @@ class TestReportViews(TestCase):
                 "reportDetails": "Bot messages"
             }
         }
-        response_1 = self.client_1.post(reverse('articles:create-list'), 
+        """
+        Post 2 articles to the database and then fetch their ids
+        """
+        response_1 = self.client_1.post(reverse('articles:create-list'),
                                         self.user_article_1, format="json")
-        response_2 = self.client_1.post(reverse('articles:create-list'), 
+        response_2 = self.client_1.post(reverse('articles:create-list'),
                                         self.user_article_2, format="json")
         id_1 = response_1.data['article']['id']
         id_2 = response_2.data['article']['id']
-
+        """
+        Create 2 reports
+        """
         self.client_1.post(reverse('report:report-create', args=[id_1]),
                            self.user_report_1, format='json')
         self.client_1.post(reverse('report:report-create', args=[id_2]),
                            self.user_report_2, format='json')
-    
-        response = self.client_1.get(reverse('report:fetch-reports'), format='json')
+        """
+        Fetch all reports
+        """
+        response = self.client_1.get(reverse('report:fetch-reports'),
+                                     format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         print(response.data)
         self.assertEqual(len(response.data['reports']), 2)
-    
+
     def test_resolve_report(self):
+        """
+        Create test report
+        """
         self.user_report_1 = {
             "report":
             {
@@ -242,44 +279,62 @@ class TestReportViews(TestCase):
                 "reportDetails": "Bot messages"
             }
         }
+        """
+        Create admin report resolution message
+        """
         self.admin_resolve = {
             "resolve":
             {
                 "adminNote": "Ban User"
             }
         }
-        response_1 = self.client_1.post(reverse('articles:create-list'), 
+        """
+        Post article to database and then fetch its id
+        """
+        response_1 = self.client_1.post(reverse('articles:create-list'),
                                         self.user_article_1, format="json")
         id_1 = response_1.data['article']['id']
-
-        report = self.client_1.post(reverse('report:report-create', args=[id_1]),
-                                    self.user_report_1, format='json')
+        """
+        Create test report and then fetch its id
+        """
+        report = self.client_1.post(reverse('report:report-create',
+                                    args=[id_1]), self.user_report_1,
+                                    format='json')
         report_id = report.data['report']['id']
-        response = self.client_1.put(reverse('report:report-create', 
+        """
+        Update and resolve test report
+        """
+        response = self.client_1.put(reverse('report:report-create',
                                      args=[report_id]), self.admin_resolve,
                                      format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['isResolved'], True)
         self.assertEqual(response.data['adminNote'], "Ban User")
-    
+
     def test_update_invalid_report(self):
+        """
+        Create admin report resolution message
+        """
         self.admin_resolve = {
             "resolve":
             {
                 "adminNote": "Ban User"
             }
         }
-        response = self.client_1.put(reverse('report:report-create', 
+        """
+        Attempt to update a report using a false report id
+        """
+        response = self.client_1.put(reverse('report:report-create',
                                      args=[29]), self.admin_resolve,
                                      format='json')
         output = json.loads(response.content)
-        self.assertIn(
-            'No report with that id found.',
-            str(output))
+        self.assertIn('No report with that id found.', str(output))
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    
     def test_delete_report(self):
+        """
+        Create test report
+        """
         self.user_report_1 = {
             "report":
             {
@@ -288,28 +343,36 @@ class TestReportViews(TestCase):
                 "reportDetails": "Bot messages"
             }
         }
-        response_1 = self.client_1.post(reverse('articles:create-list'), 
+        """
+        Post article to the database and fetch its id
+        """
+        response_1 = self.client_1.post(reverse('articles:create-list'),
                                         self.user_article_1, format="json")
         id_1 = response_1.data['article']['id']
-        report = self.client_1.post(reverse('report:report-create', args=[id_1]),
-                                    self.user_report_1, format='json')
-        report_id = report.data['report']['id']                         
-        response = self.client_1.delete(reverse('report:report-create', 
-                                     args=[report_id]),
-                                     format='json')
+        """
+        Create a report and then fetch its id
+        """
+        report = self.client_1.post(reverse('report:report-create',
+                                    args=[id_1]), self.user_report_1,
+                                    format='json')
+        report_id = report.data['report']['id']
+        """
+        Delete created report
+        """
+        response = self.client_1.delete(reverse('report:report-create',
+                                        args=[report_id]),
+                                        format='json')
         output = json.loads(response.content)
-        self.assertIn(
-            'report has been deleted',
-            str(output))
+        self.assertIn('report has been deleted', str(output))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_delete_invalid_report(self):
-                       
-        response = self.client_1.delete(reverse('report:report-create', 
-                                     args=[12]),
-                                     format='json')
+        """
+        Delete a report using a false report id
+        """
+        response = self.client_1.delete(reverse('report:report-create',
+                                        args=[12]),
+                                        format='json')
         output = json.loads(response.content)
-        self.assertIn(
-            'No report with that id found.',
-            str(output))
+        self.assertIn('No report with that id found.', str(output))
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
