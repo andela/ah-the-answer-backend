@@ -7,6 +7,7 @@ from .views import (
 app_name = "reports"
 
 urlpatterns = [
-    path('report/<int:id>', CreateListReportsAPIView.as_view(), name="report-create"),
+    path('report/<int:id>', CreateListReportsAPIView.as_view(),
+         name="report-create"),
     path('reports/', GetAllReportsView.as_view(), name="fetch-reports")
 ]
