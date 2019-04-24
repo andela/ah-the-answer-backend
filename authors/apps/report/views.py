@@ -14,15 +14,6 @@ from authors.apps.articles.views import find_article
 
 from .serializers import ReportSerializer
 
-def find_object(article_id):
-    try:
-        articleID = Article.objects.get(id=article_id)
-        return articleID
-    except:
-        return Response({"error": "No article with that id found."},
-                        status=status.HTTP_404_NOT_FOUND)
-
-
 class CreateListReportsAPIView(APIView):
     serializer_class = ReportSerializer
 
@@ -51,14 +42,18 @@ class CreateListReportsAPIView(APIView):
     
     def get(self, request, id):
         """Method to retrieve reports for a particular report"""
-        article = find_object(id)
-
+        try:
+            article = Article.objects.get(id=id)
+        except:
+            return Response({"error": "No article with that id found."},
+                            status=status.HTTP_404_NOT_FOUND)
         reports = Report.objects.filter(article_id=id).values(
             'reporter', 'createdAt', 'resolvedAt', 'violation',
             'isResolved', 'adminNote', 'reportDetails', 'id'
         )
         # serializer = self.serializer_class(reports, many=True)
         #print(reports[0])
+        
         return Response(
             {
                 "message": "successfully retrieved reports for article {}".format(article.title),
@@ -92,6 +87,21 @@ class CreateListReportsAPIView(APIView):
             },
             status=status.HTTP_200_OK)
         
+    def delete(self, request, id):
+        """
+        removes a report from the database
+        """
+        try:
+            report = Report.objects.get(id=id)
+        except:
+            return Response(
+                {
+                    "error": "No report with that id found."
+                },
+                status=status.HTTP_404_NOT_FOUND)
+        report.delete()
+        return Response({"message": "report has been deleted"},
+                        status=status.HTTP_200_OK)    
 
 class GetAllReportsView(APIView):
 
