@@ -47,6 +47,8 @@ class CreateListReportsAPIView(APIView):
         """
         Retrieve all reports for a specific article
         """
+        permission_classes = (IsAuthenticated,)
+
         try:
             article = Article.objects.get(id=id)
         except:
@@ -72,6 +74,8 @@ class CreateListReportsAPIView(APIView):
         Changes a single report 'isResolved' status to 'True'
         and sets the 'resolvedAt' date.
         """
+        permission_classes = (IsAuthenticated,)
+
         try:
             report = Report.objects.get(id=id)
         except:
@@ -101,6 +105,8 @@ class CreateListReportsAPIView(APIView):
         """
         Removes a single report from the database
         """
+        permission_classes = (IsAuthenticated,)
+
         try:
             report = Report.objects.get(id=id)
         except:
@@ -123,6 +129,8 @@ class GetAllReportsView(APIView):
         """
         Retrieves all reports from the database
         """
+        permission_classes = (IsAuthenticated,)
+
         reports = Report.objects.all().values()
         return Response(
             {
