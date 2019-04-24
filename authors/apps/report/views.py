@@ -85,12 +85,15 @@ class CreateListReportsAPIView(APIView):
         report.isResolved = True
         report.adminNote = update['adminNote']
         report.save(update_fields=['resolvedAt', 'adminNote', 'isResolved'])
-        return Response(
-            {
-               "success": "Report Resolved",
+        response_body = {
                "isResolved": report.isResolved,
                "resolvedAt": report.resolvedAt,
                "adminNote": report.adminNote
+            }
+        return Response(
+            {
+               "success": "Report Resolved",
+               "report": response_body
             },
             status=status.HTTP_200_OK)
 
