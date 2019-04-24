@@ -15,7 +15,7 @@ class ReportSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Report
-        fields = ['reporter', 'violation', 'reportDetails',
+        fields = ['id', 'reporter', 'violation', 'reportDetails',
                   'isResolved', 'adminNote']
     
     def create(self, validated_data):
