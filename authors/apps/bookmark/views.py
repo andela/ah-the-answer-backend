@@ -14,7 +14,7 @@ class CreateBookmark(APIView):
     create a bookmark."""
     permission_classes = (IsAuthenticated,)
 
-    def post(self, request, article_title):
+    def post(self, request, article_id):
         """The method accepts an article title argument as a string
         from the URL. Method creates a bookmark object for an
         existing article. It then creates a relationship between the current
@@ -22,31 +22,29 @@ class CreateBookmark(APIView):
         user = self.request.user
         username = user.username
         try:
-            article = Article.objects.get(title=article_title)
-            article_id = article.pk
+            article = Article.objects.get(id=article_id)
         except:
-            return Response({"error": "No article with that title found."},
+            return Response({"error": "No article with that id found."},
                             status=status.HTTP_404_NOT_FOUND)
-        bookmark = Bookmark.objects.filter(article_title=article_title).filter(
-                                           article_id=article_id)
+        bookmark = Bookmark.objects.filter(article_id=article_id)
         if bookmark.exists() and not bookmark[0].user.filter(username=username).exists():
             bookmark[0].user.add(user)
-            return Response({"success": "Bookmark for article '{}'created.".format(article_title)}, status=status.HTTP_201_CREATED)
+            return Response({"success": "Bookmark for article '{}'created.".format(article.title)}, status=status.HTTP_201_CREATED)
         elif bookmark.exists() and bookmark[0].user.filter(username=username).exists():
             return Response({"error": "Article bookmark for this "
                             "user already exists."},
                             status=status.HTTP_400_BAD_REQUEST)
         else:
-            new_bookmark = Bookmark(article_title=article_title,
+            new_bookmark = Bookmark(article_title=article.title,
                                     article_id=article_id)
             new_bookmark.save()
             new_bookmark.user.add(user)
-            return Response({"success": "Bookmark for article '{}'created.".format(article_title)}, 
+            return Response({"success": "Bookmark for article '{}'created.".format(article.title)}, 
                             status=status.HTTP_201_CREATED)
 
-    def get(self, request, article_title):
+    def get(self, request, article_id):
         try:
-            fetch_id = Bookmark.objects.get(article_title=article_title).article_id
+            fetch_id = Bookmark.objects.get(article_id=article_id).article_id
         except:
             return Response({"error": "No bookmark for that article found."}, status=status.HTTP_404_NOT_FOUND)
         article = Article.objects.filter(id=fetch_id).values()
