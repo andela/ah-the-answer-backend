@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'django_inlinecss',
     'cloudinary',
     'django_filters',
+    'django_social_share',
 
     'authors.apps.authentication',
     'authors.apps.core',

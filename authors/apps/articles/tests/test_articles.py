@@ -1,8 +1,11 @@
+import tempfile
+
 from django.test import TestCase
 from authors.apps.authentication.models import User
 from django.urls import reverse
+from PIL import Image
 from rest_framework import test, status
-from authors.apps.articles.models import Article
+from authors.apps.articles.models import Article, ArticleImage
 from authors.apps.articles.filters import ArticleFilter
 
 
@@ -432,10 +435,8 @@ class TestArticle(TestCase):
         Creates a dummy, temporary image for testing purposes
         Returns a new temporary image file
         """
-        import tempfile
-        from PIL import Image
 
-        image = Image.new('RGB', (100, 100))
+        image = Image.new('RGB', (1, 1))
         tmp_file = tempfile.NamedTemporaryFile(suffix='.jpg')
         image.save(tmp_file, 'jpeg')
         # important because after save(),
@@ -468,6 +469,16 @@ class TestArticle(TestCase):
                 "file": self.temporary_image
             },
             format='multipart'
+        )
+        self.client.delete(
+            reverse(
+                'articles:image-details',
+                kwargs={
+                    "slug": Article.objects.get().slug,
+                    "id": ArticleImage.objects.get().id,
+                }
+            ),
+            format="json"
         )
         self.assertEquals(res.status_code, status.HTTP_200_OK)
 
@@ -531,7 +542,7 @@ class TestArticle(TestCase):
                 }
             },
             format="json"
-        )        
+        )
         response = self.client.get("/api/articles/?author=Test", format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(response.data['articles'])
