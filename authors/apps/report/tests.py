@@ -125,10 +125,12 @@ class TestReportViews(TestCase):
         """
         Post a test article and create a report for it
         """
-        self.client_1.post(reverse('articles:create-list'),
-                           self.user_article_1, format="json")
+        article_response = self.client_1.post(reverse('articles:create-list'),
+                                              self.user_article_1,
+                                              format="json")
+        id = article_response.data['article']['id']
         response = self.client_1.post(reverse('report:report-create',
-                                      args=[1]), self.user_report,
+                                      args=[id]), self.user_report,
                                       format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['success'], "Logged Graphic Content "
