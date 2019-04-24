@@ -15,11 +15,20 @@ class CommentHistoryField(serializers.ListField):
 class CommentSerializer(serializers.ModelSerializer):
     body = serializers.CharField()
     author = UserSerializer(read_only=True)
-    comment_history = CommentHistoryField(read_only=True)
 
     class Meta:
         model = Comment
         fields = ['id', 'createdAt', 'updatedAt', 'body', 'author',
-                  'comment_history']
+                  ]
         read_only = ['id', 'createdAt', 'updatedAt',
-                     'author', 'comment_history']
+                     'author', ]
+
+
+class CommentHistorySerializer(serializers.ModelSerializer):
+    # body = serializers.CharField()
+    comment_history = CommentHistoryField(read_only=True)
+
+    class Meta:
+        model = Comment
+        fields = ['comment_history']
+        read_only = ['comment_history']

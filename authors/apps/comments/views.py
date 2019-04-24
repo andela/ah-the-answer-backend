@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import views, permissions, status, response, exceptions
-from .serializers import CommentSerializer
+from .serializers import CommentSerializer, CommentHistorySerializer
 from authors.apps.comments.models import Comment
 from authors.apps.articles.models import Article
 from authors.apps.articles.permissions import ReadOnly
@@ -126,3 +126,28 @@ class CommentsDetail(views.APIView):
             raise exceptions.ValidationError()
         else:
             return True
+
+
+class CommentHistoryView(views.APIView):
+
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request, slug, pk):
+        try:
+            comment = Comment.objects.get(id=pk)
+            if comment and comment.author == self.request.user:
+                serializer = CommentHistorySerializer(comment)
+                return response.Response(
+                    serializer.data,
+                )
+            exceptions.APIException.status_code = status.HTTP_403_FORBIDDEN
+            raise exceptions.APIException({
+                "errors": "You are not authorized to view this history"
+            })
+        except ObjectDoesNotExist:
+            return response.Response(
+                {
+                    "errors": "There is no edit history for that comment"
+                },
+                status.HTTP_404_NOT_FOUND
+            )
