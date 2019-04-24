@@ -32,7 +32,8 @@ class RegistrationAPIView(APIView):
     serializer_class = RegistrationSerializer
 
     @swagger_auto_schema(request_body=RegistrationSerializer,
-                         responses={201: UserSerializer()})
+                         responses={201: UserSerializer(),
+                                    400: "Bad request"})
     def post(self, request):
         user = request.data.get('user', {})
 
@@ -74,7 +75,10 @@ class LoginAPIView(APIView):
     renderer_classes = (UserJSONRenderer,)
     serializer_class = LoginSerializer
     @swagger_auto_schema(request_body=LoginSerializer,
-                         responses={200: LoginSerializer()})
+                         responses={200: LoginSerializer(),
+                                    400: "Bad Request",
+                                    403: "Forbidden",
+                                    404: "Not Found"})
     def post(self, request):
         user = request.data.get('user', {})
 
@@ -162,7 +166,10 @@ class PasswordResetAPIView(APIView):
     permission_classes = (AllowAny,)
 
     @swagger_auto_schema(request_body=PasswordResetSerializer,
-                         responses={202: PasswordResetSerializer()})
+                         responses={202: PasswordResetSerializer(),
+                                    400: "Bad Request",
+                                    403: "Forbidden",
+                                    404: "Not Found"})
     def post(self, request):
         """POST request for the password reset functionality"""
         serializer = PasswordResetSerializer(data=request.data)
@@ -178,7 +185,10 @@ class SetUpdatedPasswordAPIView(APIView):
     """
     permission_classes = (AllowAny,)
     @swagger_auto_schema(request_body=SetUpdatedPasswordSerializer,
-                         responses={202: SetUpdatedPasswordSerializer()})
+                         responses={202: SetUpdatedPasswordSerializer(),
+                                    400: "Bad Request",
+                                    403: "Forbidden",
+                                    404: "Not Found"})
     def put(self, request, reset_token):
         serializer = SetUpdatedPasswordSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
@@ -201,7 +211,10 @@ class GoogleAuthView(GenericAPIView):
     serializer_class = GoogleAuthSerializer
 
     @swagger_auto_schema(request_body=GoogleAuthSerializer,
-                         responses={200: GoogleAuthSerializer()})
+                         responses={200: GoogleAuthSerializer(),
+                                    400: "Bad Request",
+                                    403: "Forbidden",
+                                    404: "Not Found"})
     def post(self, request):
         serializer = GoogleAuthSerializer(data={
             'access_token': request.data.get('access_token', {})
@@ -222,7 +235,10 @@ class FacebookAuthAPIView(GenericAPIView):
     renderer_classes = (UserJSONRenderer,)
     serializer_class = FacebookAuthSerializer
     @swagger_auto_schema(request_body=FacebookAuthSerializer,
-                         responses={200: FacebookAuthSerializer()})
+                         responses={200: FacebookAuthSerializer(),
+                                    400: "Bad Request",
+                                    403: "Forbidden",
+                                    404: "Not Found"})
     def post(self, request):
         serializer = self.serializer_class(data={
             'access_token': request.data.get('access_token', {})})
@@ -242,7 +258,10 @@ class TwitterAuthAPIView(GenericAPIView):
     renderer_classes = (UserJSONRenderer,)
     serializer_class = TwitterAuthSerializer
     @swagger_auto_schema(request_body=TwitterAuthSerializer,
-                         responses={200: TwitterAuthSerializer()})
+                         responses={200: TwitterAuthSerializer(),
+                                    400: "Bad Request",
+                                    403: "Forbidden",
+                                    404: "Not Found"})
     def post(self, request):
         token = request.data.get('access_token', {})
         serializer = self.serializer_class(data={'access_token': token})

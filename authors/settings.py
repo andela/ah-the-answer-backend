@@ -176,7 +176,8 @@ SWAGGER_SETTINGS = {
         'get',
         'post',
         'put',
-        'patch'
+        'patch',
+        'delete'
     ],
 
     'SECURITY_DEFINITIONS': {

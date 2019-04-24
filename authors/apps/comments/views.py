@@ -23,7 +23,10 @@ class CommentsCreateList(views.APIView):
         )
 
     @swagger_auto_schema(request_body=CommentSerializer,
-                         responses={201: CommentSerializer()})
+                         responses={201: CommentSerializer(),
+                                    400: "Bad Request",
+                                    403: "Forbidden",
+                                    404: "Not Found"})
     def post(self, request, slug):
 
         serializer = CommentSerializer(data=request.data.get('comment'))
@@ -67,7 +70,10 @@ class CommentsDetail(views.APIView):
             )
 
     @swagger_auto_schema(request_body=CommentSerializer,
-                         responses={201: CommentSerializer()})
+                         responses={201: CommentSerializer(),
+                                    400: "Bad Request",
+                                    403: "Forbidden",
+                                    404: "Not Found"})
     def put(self, request, slug, pk):
         try:
             comment = Comment.objects.get(id=pk)
