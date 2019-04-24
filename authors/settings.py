@@ -49,6 +49,8 @@ INSTALLED_APPS = [
     'cloudinary',
     'django_filters',
     'simple_history',
+    'django_social_share',
+
 
     'authors.apps.authentication',
     'authors.apps.core',
