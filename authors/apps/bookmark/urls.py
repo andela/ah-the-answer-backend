@@ -4,7 +4,7 @@ from .views import (CreateBookmark, RetrieveBookmarks)
 app_name = 'bookmark'
 
 urlpatterns = [
-    path('bookmark/<str:article_title>/', CreateBookmark.as_view(),
+    path('bookmark/<int:article_id>/', CreateBookmark.as_view(),
          name='bookmark-create'),
     path('bookmarks/', RetrieveBookmarks.as_view(), name='bookmark-list'),
 
