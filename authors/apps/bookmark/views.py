@@ -12,15 +12,15 @@ from ..authentication.models import User
 class CreateBookmark(APIView):
     """
     Contains views that allow a user to
-    create and fetch a single bookmark.
+    create a single bookmark and fetch an article.
     """
     permission_classes = (IsAuthenticated,)
 
     def post(self, request, article_id):
-        """The method accepts an article title argument as a string
-        from the URL. Method creates a bookmark object for an
-        existing article. It then creates a relationship between the current
-        user object and the article bookmark."""
+        """Accepts an article id argument as an int from the URL. Creates a
+        bookmark object for an existing article. It then creates a
+        relationship between the current user object and the article bookmark.
+        """
         user = self.request.user
         username = user.username
         try:
