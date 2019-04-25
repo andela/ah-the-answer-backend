@@ -17,7 +17,8 @@ class CreateBookmark(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request, article_id):
-        """Accepts an article id argument as an int from the URL. Creates a
+        """
+        Accepts an article id argument as an int from the URL. Creates a
         bookmark object for an existing article. It then creates a
         relationship between the current user object and the article bookmark.
         """
