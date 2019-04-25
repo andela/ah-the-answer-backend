@@ -150,7 +150,7 @@ class LikeCommentView(views.APIView):
     """
     permission_classes = (permissions.IsAuthenticated,)
 
-    def post(self, request, slug, pk):
+    def post(self, request, pk):
         """
         POST endpoint allows authenticated users to like a comment
         :param request:
@@ -187,7 +187,7 @@ class DislikeCommentView(views.APIView):
     """
     permission_classes = (permissions.IsAuthenticated,)
 
-    def post(self, request, slug, pk):
+    def post(self, request, pk):
         """
         POST endpoint allows authenticated users to dislike a comment
         :param request:
