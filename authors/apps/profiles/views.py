@@ -46,11 +46,7 @@ class CreateRetrieveProfileView(APIView):
         """Creates and saves a single user profile to the database. Checks if
         a profile already exits for the current user."""
         user_check = self.request.user
-        try:
-            profile_check = Profile.objects.get(user=user_check).id
-        except ObjectDoesNotExist:
-            profile_check = None
-        if user_check.id == profile_check:
+        if Profile.objects.filter(user=user_check).exists():
             return Response('A profile for this user already exists. Please '
                             'choose a new user to create a profile.',
                             status=status.HTTP_400_BAD_REQUEST)
