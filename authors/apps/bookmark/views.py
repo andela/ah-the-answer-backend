@@ -10,8 +10,10 @@ from ..authentication.models import User
 
 
 class CreateBookmark(APIView):
-    """This class allows contains views that allow a user to
-    create a bookmark."""
+    """
+    Contains views that allow a user to
+    create and fetch a single bookmark.
+    """
     permission_classes = (IsAuthenticated,)
 
     def post(self, request, article_id):
@@ -43,6 +45,9 @@ class CreateBookmark(APIView):
                             status=status.HTTP_201_CREATED)
 
     def get(self, request, article_id):
+        """
+        Fetches the related article object from a bookmark.
+        """
         try:
             fetch_id = Bookmark.objects.get(article_id=article_id).article_id
         except:
@@ -52,8 +57,10 @@ class CreateBookmark(APIView):
 
 
 class RetrieveBookmarks(APIView):
-    """The method returns a list of article titles
-    associated with the logged-in user."""
+    """
+    Returns a list of article titles
+    that the user has bookmarked.
+    """
     permission_classes = (IsAuthenticated,)
 
     def get(self, request):
