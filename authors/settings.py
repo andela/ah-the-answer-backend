@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'django_inlinecss',
     'cloudinary',
     'django_filters',
+    'django_social_share',
 
     'authors.apps.authentication',
     'authors.apps.core',
@@ -165,6 +166,8 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'authors.apps.authentication.backends.JWTAuthentication',
     ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 10
 }
 # Email configurations
 DOMAIN = os.getenv('DOMAIN')
