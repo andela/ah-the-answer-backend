@@ -59,7 +59,6 @@ class TestLikeComment(TestCase):
         response = self.client.post(
             reverse('comments:like',
                     kwargs={
-                        'slug': self.slug,
                         'pk': self.comment.id
                     }),
             format='json'
@@ -77,7 +76,6 @@ class TestLikeComment(TestCase):
         self.client.post(
             reverse('comments:like',
                     kwargs={
-                        'slug': self.slug,
                         'pk': self.comment.id
                     }),
             format='json'
@@ -85,7 +83,6 @@ class TestLikeComment(TestCase):
         response = self.client.post(
             reverse('comments:like',
                     kwargs={
-                        'slug': self.slug,
                         'pk': self.comment.id
                     }),
             format='json'
@@ -102,7 +99,6 @@ class TestLikeComment(TestCase):
         response = self.client.post(
             reverse('comments:dislike',
                     kwargs={
-                        'slug': self.slug,
                         'pk': self.comment.id
                     }),
             format='json'
@@ -120,7 +116,6 @@ class TestLikeComment(TestCase):
         self.client.post(
             reverse('comments:dislike',
                     kwargs={
-                        'slug': self.slug,
                         'pk': self.comment.id
                     }),
             format='json'
@@ -128,7 +123,6 @@ class TestLikeComment(TestCase):
         response = self.client.post(
             reverse('comments:dislike',
                     kwargs={
-                        'slug': self.slug,
                         'pk': self.comment.id
                     }),
             format='json'
@@ -146,7 +140,6 @@ class TestLikeComment(TestCase):
         response = self.client.post(
             reverse('comments:dislike',
                     kwargs={
-                        'slug': self.slug,
                         'pk': 32434323342423423
                     }),
             format='json'
@@ -164,7 +157,6 @@ class TestLikeComment(TestCase):
         response1 = self.client.post(
             reverse('comments:like',
                     kwargs={
-                        'slug': self.slug,
                         'pk': self.comment.id
                     }),
             format='json'
@@ -177,7 +169,6 @@ class TestLikeComment(TestCase):
         response2 = self.client.post(
             reverse('comments:dislike',
                     kwargs={
-                        'slug': self.slug,
                         'pk': self.comment.id
                     }),
             format='json'
