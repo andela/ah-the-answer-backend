@@ -212,3 +212,40 @@ class TestAPI(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertTrue(res_notif1.data['is_read'])
         self.assertTrue(res_notif2.data['is_read'])
+
+    def test_deletes_all_notifications_as_read(self):
+        """
+        Test that a user can delete all notifications that have been read
+        """
+        notif1 = Notification.objects.create(
+            body="Notification",
+            recepient=self.user
+        )
+        notif2 = Notification.objects.create(
+            body="Notification",
+            recepient=self.user,
+            is_read=True
+        )
+
+        res = self.client.delete(
+            reverse(
+                'notifications:read-all-notifications'
+            )
+        )
+
+        res_notif1 = self.client.get(
+            reverse(
+                'notifications:state-notification',
+                kwargs={'id': notif1.id}
+            )
+        )
+        res_notif2 = self.client.get(
+            reverse(
+                'notifications:state-notification',
+                kwargs={'id': notif2.id}
+            )
+        )
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res_notif1.status_code, status.HTTP_200_OK)
+        self.assertEqual(res_notif2.status_code, status.HTTP_404_NOT_FOUND)
