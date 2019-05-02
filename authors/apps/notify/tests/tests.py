@@ -158,7 +158,7 @@ class TestAPI(TestCase):
         res = self.client2.get(
             reverse('notifications:all-notifications'),
         )
-        notification = Notification.objects.get()
+        notification = Notification.objects.first()
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(
