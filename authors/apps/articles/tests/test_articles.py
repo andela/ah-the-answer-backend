@@ -25,9 +25,9 @@ class TestArticle(TestCase):
         )
 
         # verify email
-        test_user = User.objects.get(username='Test')
-        test_user.is_verified = True
-        test_user.save()
+        self.test_user = User.objects.get(username='Test')
+        self.test_user.is_verified = True
+        self.test_user.save()
         self.login = self.client.post(
             reverse('authentication:user-login'),
             data={
@@ -41,6 +41,18 @@ class TestArticle(TestCase):
 
         self.client.credentials(
             HTTP_AUTHORIZATION='Bearer ' + self.login.data['token'])
+
+    def test_article_model(self):
+        """Test that the article model is created successfully"""
+        article = Article.objects.create(
+            title="Test Title Here",
+            body="A nice article",
+            description="Description is also good",
+            author=self.test_user
+        )
+        self.assertTrue(article)
+        self.assertEqual(article.body, 'A nice article')
+        self.assertEqual(article.__str__(), 'Test Title Here')
 
     # CREATE TESTS
 

@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'django_filters',
     'taggit',
     'taggit_serializer',
+    'simple_history',
     'django_social_share',
 
 
@@ -69,7 +70,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'social_django.middleware.SocialAuthExceptionMiddleware'
+    'social_django.middleware.SocialAuthExceptionMiddleware',
+    'simple_history.middleware.HistoryRequestMiddleware'
 ]
 
 ROOT_URLCONF = 'authors.urls'
