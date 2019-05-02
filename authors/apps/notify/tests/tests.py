@@ -150,6 +150,7 @@ class TestAPI(TestCase):
                     "title": "Test title",
                     "body": "This is a very awesome article on testing tests",
                     "description": "Written by testing tester",
+                    "tags": []
                 }
             },
             format="json"
@@ -180,6 +181,7 @@ class TestAPI(TestCase):
             title="Test title",
             body="This is a very awesome article on testing tests",
             description="Written by testing tester",
+            tags=[],
             author=user
         )
         favourite_article = FavoriteModel.objects.create(
