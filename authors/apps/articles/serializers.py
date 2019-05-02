@@ -117,6 +117,13 @@ class FavoriteSerializer(serializers.ModelSerializer):
         read_only_fields = ['date_modified', 'date_created']
 
 
+class CommentInlineSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Article
+        fields = ('slug', )
+
+
 class HighlightSerializer(serializers.ModelSerializer):
     """Serializer to map the Highlight Model instance into JSON format."""
     article = serializers.ReadOnlyField(source='article.id')
@@ -127,3 +134,4 @@ class HighlightSerializer(serializers.ModelSerializer):
         fields = ('id', 'user', 'article', 'start', 'end',
                   'section', 'date_created', 'comment')
         read_only_fields = ['date_created', 'section']
+
