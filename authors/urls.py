@@ -57,6 +57,13 @@ urlpatterns = [
     path(
         'api/',
         include(
+            ('authors.apps.stats.urls', 'authors.apps.stats'),
+            namespace="stats"
+        )
+    ),
+    path(
+        'api/',
+        include(
             ('authors.apps.notify.urls', 'authors.apps.notify'),
             namespace="notifications"
         )
@@ -68,6 +75,18 @@ urlpatterns = [
     path('api/swagger/', schema_view.with_ui('swagger',
                                              cache_timeout=0),
          name='schema-swagger-ui'),
-    path('api/', include(('authors.apps.bookmark.urls',
-                         'authors.apps.bookmark'), namespace='bookmark')),
+    path(
+        'api/',
+        include(
+            ('authors.apps.bookmark.urls', 'authors.apps.bookmark'),
+            namespace='bookmark'
+        )
+    ),
+    path(
+        'api/',
+        include(
+            ('authors.apps.stats.urls', 'authors.apps.stats'),
+            namespace="stats"
+        )
+    )
 ]
