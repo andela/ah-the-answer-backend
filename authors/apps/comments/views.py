@@ -1,11 +1,12 @@
 from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import views, permissions, status, response, exceptions
-from .serializers import CommentSerializer
+from .serializers import CommentSerializer, CommentHistorySerializer
 from authors.apps.comments.models import Comment, LikeDislikeComment
 from authors.apps.articles.models import Article
 from authors.apps.articles.permissions import ReadOnly
 from rest_framework.exceptions import APIException
+from ..articles.views import find_article
 
 
 def find_comment(comment_id):
@@ -21,6 +22,7 @@ def find_comment(comment_id):
         raise APIException({
             "message": "The comment does not exist"
         })
+
 
 
 class CommentsCreateList(views.APIView):
@@ -216,3 +218,29 @@ class DislikeCommentView(views.APIView):
                 target_comment)
         },
             status=status.HTTP_201_CREATED)
+
+
+class CommentHistoryView(views.APIView):
+
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request, slug, pk):
+        try:
+            find_article(slug)
+            comment = Comment.objects.get(id=pk)
+            if comment and comment.author == self.request.user:
+                serializer = CommentHistorySerializer(comment)
+                return response.Response(
+                    serializer.data,
+                )
+            exceptions.APIException.status_code = status.HTTP_403_FORBIDDEN
+            raise exceptions.APIException({
+                "errors": "You are not authorized to view this history"
+            })
+        except ObjectDoesNotExist:
+            return response.Response(
+                {
+                    "errors": "There is no edit history for that comment"
+                },
+                status.HTTP_404_NOT_FOUND
+            )
