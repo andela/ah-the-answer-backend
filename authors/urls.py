@@ -33,5 +33,8 @@ urlpatterns = [
             ('authors.apps.comments.urls', 'authors.apps.comments'),
             namespace="comments"
         )
-    )
+    ),
+    path('api/', include(('authors.apps.bookmark.urls',
+                         'authors.apps.bookmark'), namespace='bookmark')),
+
 ]

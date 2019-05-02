@@ -1,5 +1,5 @@
 [run]
-    include = *authors/apps/*
+    include = *authors/apps/bookmark*
 
 omit =
     */migrations/*
