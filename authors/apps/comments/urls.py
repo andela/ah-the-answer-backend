@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import CommentsCreateList, CommentsDetail
+from .views import CommentsCreateList, CommentsDetail, CommentHistoryView
 
 
 urlpatterns = [
@@ -13,4 +13,9 @@ urlpatterns = [
         CommentsDetail.as_view(),
         name="details"
     ),
+    path(
+        'articles/<slug:slug>/comments/<int:pk>/history/',
+        CommentHistoryView.as_view(),
+        name="comment-history"
+    )
 ]

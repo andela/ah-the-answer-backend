@@ -10,7 +10,8 @@ from .views import (
     SocialShareArticleView,
     ReviewView,
     FavoriteView,
-    FavoriteListView
+    FavoriteListView,
+    HighlightView,
 )
 
 app_name = "articles"
@@ -30,6 +31,8 @@ urlpatterns = [
     path('articles/<slug>/favorite/', FavoriteView.as_view(), name="favorite"),
     path('articles/<slug>/like/', LikeArticleView.as_view(), name="like-article"),
     path('articles/<slug>/dislike/', DislikeArticleView.as_view(), name="dislike-article"),
+    path('articles/<slug>/highlight/', HighlightView.as_view(),
+         name="highlight-article"),
     path("articles/<slug>/share/<provider>/",
          SocialShareArticleView.as_view(), name="share-article"),
 ]

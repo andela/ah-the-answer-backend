@@ -1,29 +1,51 @@
 from rest_framework import serializers
-from .models import Article, ArticleImage, FavoriteModel, ReviewsModel
+from .models import (Article, ArticleImage, FavoriteModel,
+                     ReviewsModel, Highlight)
 from ..authentication.serializers import UserSerializer
 from django.core.validators import MaxValueValidator, MinValueValidator
+from taggit_serializer.serializers import (
+    TagListSerializerField,
+    TaggitSerializer
+    )
 
+class TagSerializer(TagListSerializerField):
+    """
+    Class defines error messages for tags list
+    """
+    default_error_messages = {
+        'not_a_list': '"{input_type}" provided in the '
+            'tags field is not a list.',
+        'not_a_str': 'items in the tags list must be of string type',
+        'invalid_json': 'tags field must be a list containing tags'
+    }
 
-class ArticleSerializer(serializers.ModelSerializer):
+class ArticleSerializer(TaggitSerializer, serializers.ModelSerializer):
     """Serializer to map the Article Model instance into JSON format."""
 
     author = UserSerializer(read_only=True)
     title = serializers.CharField(max_length=100)
     description = serializers.CharField(max_length=128)
     body = serializers.CharField()
+    tags = TagSerializer()
     like_count = serializers.SerializerMethodField()
     dislike_count = serializers.SerializerMethodField()
 
     def create(self, validated_data):
-        return Article.objects.create(**validated_data)
-
+        article = Article.objects.create(**validated_data)
+        tagged_article = Article.objects.get(pk=article.pk)
+        for tag in article.tags:
+            tagged_article.tags.add(tag)
+        return article
+        
     def update(self, instance, validated_data):
+        tag_list = validated_data.pop('tags', instance.tags.all())
         instance.title = validated_data.get('title', instance.title)
         instance.description = validated_data.get(
             'description', instance.description)
         instance.body = validated_data.get('body', instance.body)
         instance.is_published = validated_data.get(
             'is_published', instance.is_published)
+        instance.tags.set(*tag_list)
         instance.save()
         return instance
 
@@ -39,7 +61,7 @@ class ArticleSerializer(serializers.ModelSerializer):
         model = Article
         fields = ('id', 'title', 'body', 'description', 'is_published',
                   'date_created', 'date_modified', 'slug', 'read_time', 'author',
-                  'like_count', 'dislike_count')
+                  'like_count', 'dislike_count', 'tags')
         read_only_fields = ('date_created', 'date_modified', 'slug', 'read_time', 'author')
 
 
@@ -84,6 +106,7 @@ class ReviewsSerializer(serializers.ModelSerializer):
 
         return instance
 
+
 class FavoriteSerializer(serializers.ModelSerializer):
     article = ArticleSerializer()
     user = UserSerializer()
@@ -93,3 +116,14 @@ class FavoriteSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['date_modified', 'date_created']
 
+
+class HighlightSerializer(serializers.ModelSerializer):
+    """Serializer to map the Highlight Model instance into JSON format."""
+    article = serializers.ReadOnlyField(source='article.id')
+    user = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Highlight
+        fields = ('id', 'user', 'article', 'start', 'end',
+                  'section', 'date_created', 'comment')
+        read_only_fields = ['date_created', 'section']
