@@ -96,7 +96,8 @@ class TestReportViews(TestCase):
              "title": "Inappropriate Title",
              "body": "Explicit Material",
              "description": "Illegal Information.",
-             "is_published": True
+             "is_published": True,
+             "tags": ["religion", "nature", "film"]
             }
         }
 
@@ -106,7 +107,8 @@ class TestReportViews(TestCase):
              "title": "Explicit Title",
              "body": "Obscene Material",
              "description": "Private Information",
-             "is_published": True
+             "is_published": True,
+             "tags": ["religion", "nature", "film"]
             }
         }
 
@@ -128,6 +130,7 @@ class TestReportViews(TestCase):
         article_response = self.client_1.post(reverse('articles:create-list'),
                                               self.user_article_1,
                                               format="json")
+        print(article_response)
         id = article_response.data['article']['id']
         response = self.client_1.post(reverse('report:report-create',
                                       args=[id]), self.user_report,
