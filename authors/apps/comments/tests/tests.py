@@ -242,5 +242,67 @@ class TestCommentsAPI(TestCase):
         self.assertEqual(del_res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
 
+    def test_user_can_get_comment_history(self):
+        self.test_create_comment()
+        self.test_update_comment()
+        res = self.client.get(
+            reverse(
+                'comments:comment-history',
+                kwargs={
+                    "slug": self.article.slug,
+                    'pk': self.comment_id
+                }
+            ),
+            format="json"
+        )
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+    def test_unauthenticated_user_cant_view_comment_history(self):
+        self.test_create_comment()
+        self.test_update_comment()
+        self.client.logout()
+        res = self.client.get(
+            reverse(
+                'comments:comment-history',
+                kwargs={
+                    "slug": self.article.slug,
+                    'pk': self.comment_id
+                }
+            ),
+            format="json"
+        )
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_non_owners_cant_view_others_history(self):
+        user = User.objects.create(username="johndoe")
+        self.client2 = test.APIClient()
+        self.client2.force_authenticate(user=user)
+        self.test_create_comment()
+        self.test_update_comment()
+        res = self.client2.get(
+            reverse(
+                'comments:comment-history',
+                kwargs={
+                    "slug": self.article.slug,
+                    'pk': self.comment_id
+                }
+            ),
+            format="json"
+        )
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_user_cant_get_inexistent_comment_history(self):
+        res = self.client.get(
+            reverse(
+                'comments:comment-history',
+                kwargs={
+                    "slug": self.article.slug,
+                    'pk': 100
+                }
+            ),
+            format="json"
+        )
+        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
+
     def tearDown(self):
         self.comment = None
