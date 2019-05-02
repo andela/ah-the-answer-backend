@@ -54,6 +54,13 @@ urlpatterns = [
             namespace="comments"
         )
     ),
+    path(
+        'api/',
+        include(
+            ('authors.apps.notify.urls', 'authors.apps.notify'),
+            namespace="notifications"
+        )
+    ),
 
     path('api/redoc/', schema_view.with_ui('redoc',
                                            cache_timeout=0),
@@ -61,8 +68,6 @@ urlpatterns = [
     path('api/swagger/', schema_view.with_ui('swagger',
                                              cache_timeout=0),
          name='schema-swagger-ui'),
-
     path('api/', include(('authors.apps.bookmark.urls',
                          'authors.apps.bookmark'), namespace='bookmark')),
-
 ]

@@ -1,3 +1,4 @@
+import os
 from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import views, permissions, status, response, exceptions
@@ -5,8 +6,8 @@ from .serializers import CommentSerializer, CommentHistorySerializer
 from authors.apps.comments.models import Comment
 from authors.apps.articles.models import Article
 from authors.apps.articles.permissions import ReadOnly
+from authors.apps.notify.views import NotificationsView
 from drf_yasg.utils import swagger_auto_schema
-
 
 from ..articles.views import find_article
 
@@ -37,6 +38,16 @@ class CommentsCreateList(views.APIView):
             save_comment = serializer.save(
                 author=self.request.user,
                 article=article
+            )
+            NotificationsView.send_notification(
+                "@{0} commented on article {1}".format(
+                    self.request.user.username,
+                    os.getenv('DOMAIN') +
+                    '/api/articles/' +
+                    serializer.data.get('article').get('slug') + '/'
+                ),
+                serializer.data,
+                'new-comment'
             )
             return response.Response(
                 {
