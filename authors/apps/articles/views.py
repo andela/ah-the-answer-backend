@@ -10,6 +10,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 
 import cloudinary
+from drf_yasg.utils import swagger_auto_schema
+
 
 from .serializers import (ArticleSerializer, ArticleImageSerializer,
                           ReviewsSerializer, HighlightSerializer,
@@ -111,7 +113,6 @@ class ArticleView(APIView):
 
     def get(self, request):
         """Method to get all articles"""
-
         # Functionality to search articles by description, author and title
         if request.GET.get('search'):
             search_parameter = request.GET.get('search')
@@ -120,6 +121,14 @@ class ArticleView(APIView):
                 title__icontains=search_parameter) | Q(
                 description__icontains=search_parameter) | Q(
                 author__username__icontains=search_parameter))
+            # filter the model for tags by converting query parameters into a list and 
+            # comparing that query list with list of tags in every instance of the object
+            if not searched_articles:
+                tag_list = search_parameter.split(",")
+                searched_articles = Article.objects.filter(
+                    tags__name__in=tag_list
+                )
+                searched_articles.distinct()
             search_serializer = ArticleSerializer(
                 searched_articles, many=True)
             return Response({"articles": search_serializer.data})
@@ -129,6 +138,10 @@ class ArticleView(APIView):
         article_filter = ArticleFilter()
         filtered_articles = article_filter.filter_queryset(
             request, articles, self)
+        # loop through articles and generate a tags list using the values from the model
+        if filtered_articles.exists():
+            for article in filtered_articles:
+                article.tags = list(article.tags.names())
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(filtered_articles, request)
         if filtered_articles:
@@ -143,6 +156,11 @@ class ArticleView(APIView):
             return Response({"message": "No article found", "articles": []},
                             status=200)
 
+    @swagger_auto_schema(request_body=ArticleSerializer,
+                         responses={201: ArticleSerializer(),
+                                    400: "Bad Request",
+                                    403: "Forbidden",
+                                    404: "Not Found"})
     def post(self, request):
         """Method to create an article"""
         article = request.data.get('article')
@@ -178,12 +196,19 @@ class RetrieveArticleView(APIView):
     def get(self, request, slug):
         """Method to get a specific article"""
         article = find_article(slug)
+        article.tags = list(article.tags.names())
         serializer = ArticleSerializer(article, many=False)
         return Response({"article": serializer.data})
 
+    @swagger_auto_schema(request_body=ArticleSerializer,
+                         responses={200: ArticleSerializer(),
+                                    400: "Bad Request",
+                                    404: "Not Found",
+                                    403: "Forbidden"})
     def put(self, request, slug):
         """Method to update a specific article"""
         saved_article = find_article(slug)
+
         highlights = get_highlights(slug)
 
         data = request.data.get('article')
@@ -226,6 +251,12 @@ class ArticleImageView(APIView):
     article"""
     permission_classes = (IsAuthenticated | ReadOnly,)
 
+    @swagger_auto_schema(request_body=ArticleImageSerializer,
+                         responses={200: ArticleImageSerializer(),
+                                    400: "Bad Request",
+                                    403: "Forbidden",
+                                    404: "Not Found"},
+                         )
     def post(self, request, slug):
         """Method to upload an image"""
         article = find_article(slug)
@@ -325,6 +356,11 @@ class ArticleImageDetailView(APIView):
 class ReviewView(APIView):
     permission_classes = (IsAuthenticated | ReadOnly,)
 
+    @swagger_auto_schema(request_body=ReviewsSerializer,
+                         responses={200: ReviewsSerializer(),
+                                    400: "Bad Request",
+                                    403: "Forbidden",
+                                    404: "Not Found"},)
     def post(self, request, slug):
         saved_article = find_article(slug)
         if saved_article.author.pk == self.request.user.pk:
@@ -367,6 +403,11 @@ class ReviewView(APIView):
             raise APIException(
                 {"errors": "There are no reviews for that article"})
 
+    @swagger_auto_schema(request_body=ReviewsSerializer,
+                         responses={200: ReviewsSerializer(),
+                                    400: "Bad Request",
+                                    403: "Forbidden",
+                                    404: "Not Found"})
     def put(self, request, slug, username=None):
         try:
             if username is None:
@@ -422,12 +463,18 @@ class ReviewView(APIView):
             APIException.status_code = status.HTTP_400_BAD_REQUEST
             raise APIException({"errors": e.detail})
 
+
 class LikeArticleView(APIView):
     """
     Class for POST view allowing authenticated users to like articles
     """
     permission_classes = (IsAuthenticated,)
 
+    @swagger_auto_schema(request_body=ArticleSerializer,
+                         responses={201: ArticleSerializer(),
+                                    400: "Bad Request",
+                                    403: "Forbidden",
+                                    404: "Not Found"})
     def post(self, request, slug):
         """
         method for generating a like for a particular article
@@ -436,7 +483,7 @@ class LikeArticleView(APIView):
         liked = LikeArticles.react_to_article(request.user, article, 1)
         if not liked:
             return Response({
-                'message': 'you have reverted your' \
+                'message': 'you have reverted your'
                            ' like for the article: {}'.format(article.title),
                 'article': ArticleSerializer(article).data
             }, status=status.HTTP_202_ACCEPTED)
@@ -453,6 +500,11 @@ class DislikeArticleView(APIView):
     """
     permission_classes = (IsAuthenticated,)
 
+    @swagger_auto_schema(request_body=ArticleSerializer,
+                         responses={201: ArticleSerializer(),
+                                    400: "Bad Request",
+                                    403: "Forbidden",
+                                    404: "Not Found"},)
     def post(self, request, slug):
         """
         method for generating a dislike for a particular article
@@ -461,16 +513,16 @@ class DislikeArticleView(APIView):
         disliked = LikeArticles.react_to_article(request.user, article, 0)
         if not disliked:
             return Response({
-                'message': 'you have reverted your' \
+                'message': 'you have reverted your'
                            ' dislike for the article: {}'.format(
-                    article.title),
+                               article.title),
                 'article': ArticleSerializer(article).data
             }, status=status.HTTP_202_ACCEPTED)
         return Response({
             'message': 'you disliked the article: {}'.format(article.title),
             'article': ArticleSerializer(article).data
         },
-        status=status.HTTP_201_CREATED)
+            status=status.HTTP_201_CREATED)
 
 
 class SocialShareArticleView(APIView):
@@ -508,6 +560,11 @@ class FavoriteView(APIView):
     """
     permission_classes = (IsAuthenticated,)
 
+    @swagger_auto_schema(request_body=FavoriteSerializer,
+                         responses={201: FavoriteSerializer(),
+                                    400: "Bad Request",
+                                    403: "Forbidden",
+                                    404: "Not Found"})
     def post(self, request, slug):
         """
         To favorite an article users only need to hit this endpoint

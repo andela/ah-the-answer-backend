@@ -7,6 +7,7 @@ from authors.apps.comments.models import Comment
 from authors.apps.articles.models import Article
 from authors.apps.articles.permissions import ReadOnly
 from authors.apps.notify.views import NotificationsView
+from drf_yasg.utils import swagger_auto_schema
 
 from ..articles.views import find_article
 
@@ -23,6 +24,11 @@ class CommentsCreateList(views.APIView):
             }
         )
 
+    @swagger_auto_schema(request_body=CommentSerializer,
+                         responses={201: CommentSerializer(),
+                                    400: "Bad Request",
+                                    403: "Forbidden",
+                                    404: "Not Found"})
     def post(self, request, slug):
 
         serializer = CommentSerializer(data=request.data.get('comment'))
@@ -75,6 +81,11 @@ class CommentsDetail(views.APIView):
                 status.HTTP_404_NOT_FOUND
             )
 
+    @swagger_auto_schema(request_body=CommentSerializer,
+                         responses={201: CommentSerializer(),
+                                    400: "Bad Request",
+                                    403: "Forbidden",
+                                    404: "Not Found"})
     def put(self, request, slug, pk):
         try:
             comment = Comment.objects.get(id=pk)

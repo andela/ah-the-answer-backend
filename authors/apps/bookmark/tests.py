@@ -75,6 +75,7 @@ class TestCreateBookmark(TestCase):
              "title": "Titles Are For Turtles",
              "body": "Turtle shells galore.",
              "description": "Describes Turtles.",
+             "tags": [],
              "is_published": True
             }
         }
@@ -159,6 +160,7 @@ class TestRetrieveBookmarks(TestCase):
              "title": "Titles Are For Turtles",
              "body": "Turtle shells galore.",
              "description": "Describes Turtles.",
+             "tags": [],
              "is_published": True
             }
         }
@@ -168,6 +170,7 @@ class TestRetrieveBookmarks(TestCase):
              "title": "Babies And Bananas",
              "body": "Baby Tings.",
              "description": "Describes Babies.",
+             "tags": [],
              "is_published": True
             }
         }
@@ -177,6 +180,7 @@ class TestRetrieveBookmarks(TestCase):
              "title": "Tigers And Tamarinds.",
              "body": "Fancy Tigers Are Fancy.",
              "description": "Tiger Stuff.",
+             "tags": [],
              "is_published": True
             }
         }
@@ -258,6 +262,7 @@ class TestRetrieveArticle(TestCase):
              "title": "Titles Are For Turtles",
              "body": "Turtle shells galore.",
              "description": "Describes Turtles.",
+             "tags": [],
              "is_published": True
             }
         }
@@ -267,6 +272,7 @@ class TestRetrieveArticle(TestCase):
              "title": "Edit Title",
              "body": "Edited Body.",
              "description": "Edited Description",
+             "tags": [],
              "is_published": True
             }
         }
