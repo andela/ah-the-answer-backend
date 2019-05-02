@@ -40,5 +40,7 @@ urlpatterns = [
             ('authors.apps.notify.urls', 'authors.apps.notify'),
             namespace="notifications"
         )
-    )
+    ),
+    path('api/', include(('authors.apps.bookmark.urls',
+                         'authors.apps.bookmark'), namespace='bookmark')),
 ]
