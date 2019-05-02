@@ -7,22 +7,22 @@ from rest_framework.exceptions import APIException
 from rest_framework.pagination import LimitOffsetPagination
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
+
 import cloudinary
 from drf_yasg.utils import swagger_auto_schema
 
 
 from .serializers import (ArticleSerializer, ArticleImageSerializer,
-                          ReviewsSerializer)
-from rest_framework import status
-from .models import (Article, ArticleImage, LikeArticles,
-                     FavoriteModel, ReviewsModel)
-from .serializers import (ArticleSerializer, ArticleImageSerializer,
+                          ReviewsSerializer, HighlightSerializer,
                           FavoriteSerializer)
+from rest_framework import status
+from .models import (Article, ArticleImage, LikeArticles, FavoriteModel,
+                     ReviewsModel, Highlight)
 from .permissions import ReadOnly
 from authors.apps.authentication.models import User
-from .utils import is_article_owner, has_reviewed, round_average
+from .utils import (is_article_owner, has_reviewed, round_average,
+                    generate_share_url)
 from .filters import ArticleFilter
-from .utils import generate_share_url
 
 def find_article(slug):
     """Method to check if an article exists"""
@@ -45,6 +45,48 @@ def find_favorite(slug):
             "message": "The article requested does not exist in your favorites"
         })
 
+
+def get_highlights(slug):
+    """Method to get all highlights of an article by slug"""
+    return Highlight.objects.select_related(
+            'article').filter(article__slug=slug)
+
+
+def format_highlight(highlights, saved_article):
+    """Method to update start and end index of highlight if article
+    body is updated or to delete the highlight if it does not exist"""
+    for highlight_count in range(len(highlights)):
+        highlight = Highlight.objects.get(
+            pk=highlights[highlight_count].pk
+        )
+        section = highlights[highlight_count].section
+        start = highlights[highlight_count].start
+        end = highlights[highlight_count].end
+        body_segment = saved_article.body[
+            start:end + 1]
+        # Find if highlighted section still exists
+        highlight_result = saved_article.body.find(section)
+        updated_end = highlight_result + len(section) - 1
+
+        # Find if there are multiple occurences of section
+        section_count = saved_article.body.count(section)
+
+        highlight_data = {
+                "start": highlight_result,
+                "end": updated_end
+        }
+        # update the new start and end positions
+        highlight_serializer = HighlightSerializer(
+            instance=highlight, data=highlight_data, partial=True
+        )
+        # Compare highlighted section with article body
+        if section != body_segment and (
+                highlight_result == -1 or section_count > 1):
+            Highlight.objects.get(
+                pk=highlights[highlight_count].pk).delete()
+        if section_count == 1:
+            highlight_serializer.is_valid(raise_exception=True)
+            highlight_serializer.save()
 
 def find_image(id, slug):
     """Method to find an image by id"""
@@ -142,6 +184,7 @@ class RetrieveArticleView(APIView):
     def put(self, request, slug):
         """Method to update a specific article"""
         saved_article = find_article(slug)
+        highlights = get_highlights(slug)
 
         data = request.data.get('article')
         serializer = ArticleSerializer(
@@ -149,6 +192,10 @@ class RetrieveArticleView(APIView):
         if serializer.is_valid(raise_exception=True):
             if self.is_owner(saved_article.author.id, request.user.id) is True:
                 article_saved = serializer.save()
+
+                # Delete/Update highlights affected by updates on article body
+                format_highlight(highlights, saved_article)
+
                 return Response({
                     "success": "Article '{}' updated successfully".format(
                         article_saved.title),
@@ -539,3 +586,74 @@ class FavoriteListView(APIView):
         favs = FavoriteModel.objects.filter(user=request.user)
         return Response({"articles": FavoriteSerializer(favs, many=True).data,
                          "count": favs.count()}, status=200)
+
+
+class HighlightView(APIView):
+    """Class with methods to highlight and retrieve all highlights"""
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request, slug):
+        """Method for highlighting an article"""
+        article = find_article(slug)
+        body_length = len(article.body)
+        article_id = article.id
+        user = self.request.user
+        highlight = request.data.get('highlight')
+
+        # Create a highlight from the above data
+        serializer = HighlightSerializer(data=highlight)
+        if serializer.is_valid(raise_exception=True):
+            start = highlight['start']
+            end = highlight['end']
+            section = article.body[start:end+1]
+            try:
+                comment = highlight['comment']
+            except KeyError:
+                comment = ''
+
+            if start >= end:
+                return Response({
+                    "message": "Start position cannot be equal to"
+                    " or greater than end position"
+                }, status=400)
+            if end > body_length - 1:
+                return Response({
+                    "message": "End position is greater"
+                    " than the article size of {}".format(body_length - 1)
+                }, status=400)
+
+            # check if highlight exists
+            highlight = Highlight.objects.filter(article=article_id,
+                                                 user=user, start=start,
+                                                 end=end,
+                                                 comment=comment)
+            # If highlight or comment exists unhighlight or uncomment
+            if highlight.exists():
+                if comment == '':
+                    message = "Highlight has been removed"
+                else:
+                    message = "Comment has been removed"
+
+                highlight.delete()
+                return Response({"message": message})
+
+            if comment == '':
+                message = "Highlight has been added"
+            else:
+                message = "Comment has been added"
+            serializer.save(article=article, user=self.request.user,
+                            section=section)
+            return Response({
+                "message": message,
+                "highlight": serializer.data
+            }, status=201)
+
+    def get(self, request, slug):
+        """Method to retrieve all higlights for an article by slug"""
+        find_article(slug)
+
+        serializer = HighlightSerializer(get_highlights(slug), many=True)
+        return Response({
+            "highlights": serializer.data,
+            "highlightsCount": get_highlights(slug).count()
+        }, status=200)

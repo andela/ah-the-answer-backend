@@ -48,8 +48,10 @@ INSTALLED_APPS = [
     'django_inlinecss',
     'cloudinary',
     'django_filters',
+    'simple_history',
     'django_social_share',
     'drf_yasg',
+
 
 
     'authors.apps.authentication',
@@ -70,6 +72,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'social_django.middleware.SocialAuthExceptionMiddleware',
+    'simple_history.middleware.HistoryRequestMiddleware'
+
 ]
 
 ROOT_URLCONF = 'authors.urls'
