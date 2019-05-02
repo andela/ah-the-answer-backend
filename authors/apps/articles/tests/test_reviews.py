@@ -8,6 +8,7 @@ class TestReviewModel(BaseSetup):
             title="Test title",
             body="This is a very awesome article on testing tests",
             description="Written by testing tester",
+            tags=[],
             author=user
         )
         self.review_body = "John Doe"

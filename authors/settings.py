@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     'django_inlinecss',
     'cloudinary',
     'django_filters',
+    'taggit',
+    'taggit_serializer',
     'simple_history',
     'django_social_share',
     'drf_yasg',

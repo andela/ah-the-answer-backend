@@ -50,6 +50,7 @@ class TestLikeArticles(TestCase):
                     "title": "War of the roses",
                     "body": "Over a period of conflict between kin",
                     "description": "Written by yours truly",
+                    "tags": ["religion", "nature", "film"]
                 }
             },
             format="json"

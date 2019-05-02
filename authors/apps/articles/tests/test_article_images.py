@@ -49,6 +49,7 @@ class TestArticle(TestCase):
                     "title": "Test title",
                     "body": "This is a very awesome article on testing tests",
                     "description": "Written by testing tester",
+                    "tags": []
                 }
             },
             format="json"
