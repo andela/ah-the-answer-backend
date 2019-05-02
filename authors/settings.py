@@ -62,7 +62,9 @@ INSTALLED_APPS = [
     'authors.apps.follow',
     'authors.apps.articles.apps.ArticlesConfig',
     'authors.apps.comments',
+    'authors.apps.notify',
     'authors.apps.bookmark',
+    'authors.apps.stats'
 ]
 
 MIDDLEWARE = [
@@ -98,7 +100,6 @@ TEMPLATES = [
     },
 ]
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 WSGI_APPLICATION = 'authors.wsgi.application'
 
@@ -205,6 +206,12 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', default='')
 EMAIL_PORT = os.getenv('EMAIL_PORT', default=587)
 EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', default=True)
+
+EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
+CELERY_EMAIL_TASK_CONFIG = {
+    'queue': 'email',
+    'rate_limit': '50/m',
+}
 
 cloudinary.config(
     cloud_name=os.getenv("CLOUDINARY_NAME"),

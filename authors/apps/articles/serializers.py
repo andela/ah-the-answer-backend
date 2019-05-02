@@ -1,6 +1,6 @@
 from rest_framework import serializers
-from .models import (Article, ArticleImage, FavoriteModel,
-                     ReviewsModel, Highlight)
+from .models import (Article, ArticleImage, FavoriteModel, ReviewsModel,
+                     LikeArticles, Highlight)
 from ..authentication.serializers import UserSerializer
 from django.core.validators import MaxValueValidator, MinValueValidator
 from taggit_serializer.serializers import (
@@ -117,6 +117,13 @@ class FavoriteSerializer(serializers.ModelSerializer):
         read_only_fields = ['date_modified', 'date_created']
 
 
+class CommentInlineSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Article
+        fields = ('slug', )
+
+
 class HighlightSerializer(serializers.ModelSerializer):
     """Serializer to map the Highlight Model instance into JSON format."""
     article = serializers.ReadOnlyField(source='article.id')
@@ -127,3 +134,20 @@ class HighlightSerializer(serializers.ModelSerializer):
         fields = ('id', 'user', 'article', 'start', 'end',
                   'section', 'date_created', 'comment')
         read_only_fields = ['date_created', 'section']
+
+class ArticleField(serializers.RelatedField):
+    queryset = Article.objects.all()
+
+    def to_representation(self, pk):
+        return ArticleSerializer(self.queryset.get(pk=pk)).data
+
+
+class LikeArticleSerializer(serializers.ModelSerializer):
+    """Serializer the LikeArticlesModel"""
+    total_likes = serializers.CharField()
+    article = ArticleField()
+
+    class Meta:
+        model = LikeArticles
+        fields = ['article', 'total_likes']
+        depth = 1
