@@ -26,9 +26,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", True)
 
-ALLOWED_HOSTS = [
-    '*'
-]
+ALLOWED_HOSTS = "*"
 # Enable Site manager
 SITE_ID = 1
 # Application definition
@@ -61,12 +59,16 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+
+    'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'social_django.middleware.SocialAuthExceptionMiddleware'
 ]
+CORS_ORIGIN_ALLOW_ALL = True
 
 ROOT_URLCONF = 'authors.urls'
 
@@ -149,8 +151,9 @@ STATICFILES_DIRS = [
 ]
 
 CORS_ORIGIN_WHITELIST = (
-    '0.0.0.0:8000',
-    'localhost:8000',
+    '0.0.0.0:4000',
+    'localhost:4000'
+
 )
 
 # Tell Django about the custom `User` model we created. The string
