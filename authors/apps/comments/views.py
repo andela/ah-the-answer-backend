@@ -1,11 +1,15 @@
+import os
 from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import views, permissions, status, response, exceptions
-from .serializers import CommentSerializer
+from .serializers import CommentSerializer, CommentHistorySerializer
 from authors.apps.comments.models import Comment
 from authors.apps.articles.models import Article
 from authors.apps.articles.permissions import ReadOnly
+from authors.apps.notify.views import NotificationsView
+from drf_yasg.utils import swagger_auto_schema
 
+from ..articles.views import find_article
 
 class CommentsCreateList(views.APIView):
     permission_classes = (permissions.IsAuthenticated | ReadOnly,)
@@ -20,6 +24,11 @@ class CommentsCreateList(views.APIView):
             }
         )
 
+    @swagger_auto_schema(request_body=CommentSerializer,
+                         responses={201: CommentSerializer(),
+                                    400: "Bad Request",
+                                    403: "Forbidden",
+                                    404: "Not Found"})
     def post(self, request, slug):
 
         serializer = CommentSerializer(data=request.data.get('comment'))
@@ -29,6 +38,16 @@ class CommentsCreateList(views.APIView):
             save_comment = serializer.save(
                 author=self.request.user,
                 article=article
+            )
+            NotificationsView.send_notification(
+                "@{0} commented on article {1}".format(
+                    self.request.user.username,
+                    os.getenv('DOMAIN') +
+                    '/api/articles/' +
+                    serializer.data.get('article').get('slug') + '/'
+                ),
+                serializer.data,
+                'new-comment'
             )
             return response.Response(
                 {
@@ -62,6 +81,11 @@ class CommentsDetail(views.APIView):
                 status.HTTP_404_NOT_FOUND
             )
 
+    @swagger_auto_schema(request_body=CommentSerializer,
+                         responses={201: CommentSerializer(),
+                                    400: "Bad Request",
+                                    403: "Forbidden",
+                                    404: "Not Found"})
     def put(self, request, slug, pk):
         try:
             comment = Comment.objects.get(id=pk)
@@ -126,3 +150,29 @@ class CommentsDetail(views.APIView):
             raise exceptions.ValidationError()
         else:
             return True
+
+
+class CommentHistoryView(views.APIView):
+
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request, slug, pk):
+        try:
+            find_article(slug)
+            comment = Comment.objects.get(id=pk)
+            if comment and comment.author == self.request.user:
+                serializer = CommentHistorySerializer(comment)
+                return response.Response(
+                    serializer.data,
+                )
+            exceptions.APIException.status_code = status.HTTP_403_FORBIDDEN
+            raise exceptions.APIException({
+                "errors": "You are not authorized to view this history"
+            })
+        except ObjectDoesNotExist:
+            return response.Response(
+                {
+                    "errors": "There is no edit history for that comment"
+                },
+                status.HTTP_404_NOT_FOUND
+            )

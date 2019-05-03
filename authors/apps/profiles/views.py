@@ -5,6 +5,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.exceptions import APIException
 from rest_framework.views import APIView
+from drf_yasg.utils import swagger_auto_schema
+
 
 import cloudinary
 
@@ -42,6 +44,11 @@ class CreateRetrieveProfileView(APIView):
         serializer = ProfileSerializer(profile, many=False)
         return Response({"profile": serializer.data})
 
+    @swagger_auto_schema(request_body=ProfileSerializer,
+                         responses={201: ProfileSerializer(),
+                                    400: "Bad Request",
+                                    403: "Forbidden",
+                                    404: "Not Found"})
     def post(self, request):
         """Creates and saves a single user profile to the database. Checks if
         a profile already exits for the current user."""
@@ -74,6 +81,11 @@ class EditProfileView(APIView):
 
     permission_classes = (IsAuthenticated,)
 
+    @swagger_auto_schema(request_body=ProfileSerializer,
+                         responses={201: ProfileSerializer(),
+                                    400: "Bad Request",
+                                    403: "Forbidden",
+                                    404: "Not Found"})
     def put(self, request, username):
         try:
             saved_profile = Profile.objects.select_related('user').get(
@@ -113,6 +125,11 @@ class AvatarView(APIView):
     """
     permission_classes = (IsAuthenticated, ) # only authenticated users can access this route
 
+    @swagger_auto_schema(request_body=ProfileSerializer,
+                         responses={201: ProfileSerializer(),
+                                    400: "Bad Request",
+                                    403: "Forbidden",
+                                    404: "Not Found"})
     def patch(self, request, username):
         try:
             # retrieves user object throws error if profile is in-existent
