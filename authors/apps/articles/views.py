@@ -1,4 +1,5 @@
 from collections import OrderedDict
+import os
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
@@ -7,20 +8,25 @@ from rest_framework.exceptions import APIException
 from rest_framework.pagination import LimitOffsetPagination
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
+
 import cloudinary
+from drf_yasg.utils import swagger_auto_schema
+
 
 from .serializers import (ArticleSerializer, ArticleImageSerializer,
-                          ReviewsSerializer)
-from rest_framework import status
-from .models import (Article, ArticleImage, LikeArticles,
-                     FavoriteModel, ReviewsModel)
-from .serializers import (ArticleSerializer, ArticleImageSerializer,
+                          ReviewsSerializer, HighlightSerializer,
                           FavoriteSerializer)
+from rest_framework import status
+from .models import (Article, ArticleImage, LikeArticles, FavoriteModel,
+                     ReviewsModel, Highlight)
 from .permissions import ReadOnly
 from authors.apps.authentication.models import User
-from .utils import is_article_owner, has_reviewed, round_average
+from .utils import (is_article_owner, has_reviewed, round_average,
+                    generate_share_url)
 from .filters import ArticleFilter
 from .utils import generate_share_url
+from authors.apps.notify.views import NotificationsView
+
 
 def find_article(slug):
     """Method to check if an article exists"""
@@ -44,6 +50,48 @@ def find_favorite(slug):
         })
 
 
+def get_highlights(slug):
+    """Method to get all highlights of an article by slug"""
+    return Highlight.objects.select_related(
+            'article').filter(article__slug=slug)
+
+
+def format_highlight(highlights, saved_article):
+    """Method to update start and end index of highlight if article
+    body is updated or to delete the highlight if it does not exist"""
+    for highlight_count in range(len(highlights)):
+        highlight = Highlight.objects.get(
+            pk=highlights[highlight_count].pk
+        )
+        section = highlights[highlight_count].section
+        start = highlights[highlight_count].start
+        end = highlights[highlight_count].end
+        body_segment = saved_article.body[
+            start:end + 1]
+        # Find if highlighted section still exists
+        highlight_result = saved_article.body.find(section)
+        updated_end = highlight_result + len(section) - 1
+
+        # Find if there are multiple occurences of section
+        section_count = saved_article.body.count(section)
+
+        highlight_data = {
+                "start": highlight_result,
+                "end": updated_end
+        }
+        # update the new start and end positions
+        highlight_serializer = HighlightSerializer(
+            instance=highlight, data=highlight_data, partial=True
+        )
+        # Compare highlighted section with article body
+        if section != body_segment and (
+                highlight_result == -1 or section_count > 1):
+            Highlight.objects.get(
+                pk=highlights[highlight_count].pk).delete()
+        if section_count == 1:
+            highlight_serializer.is_valid(raise_exception=True)
+            highlight_serializer.save()
+
 def find_image(id, slug):
     """Method to find an image by id"""
     return ArticleImage.objects.filter(pk=id).select_related(
@@ -65,7 +113,6 @@ class ArticleView(APIView):
 
     def get(self, request):
         """Method to get all articles"""
-
         # Functionality to search articles by description, author and title
         if request.GET.get('search'):
             search_parameter = request.GET.get('search')
@@ -74,6 +121,14 @@ class ArticleView(APIView):
                 title__icontains=search_parameter) | Q(
                 description__icontains=search_parameter) | Q(
                 author__username__icontains=search_parameter))
+            # filter the model for tags by converting query parameters into a list and 
+            # comparing that query list with list of tags in every instance of the object
+            if not searched_articles:
+                tag_list = search_parameter.split(",")
+                searched_articles = Article.objects.filter(
+                    tags__name__in=tag_list
+                )
+                searched_articles.distinct()
             search_serializer = ArticleSerializer(
                 searched_articles, many=True)
             return Response({"articles": search_serializer.data})
@@ -83,6 +138,10 @@ class ArticleView(APIView):
         article_filter = ArticleFilter()
         filtered_articles = article_filter.filter_queryset(
             request, articles, self)
+        # loop through articles and generate a tags list using the values from the model
+        if filtered_articles.exists():
+            for article in filtered_articles:
+                article.tags = list(article.tags.names())
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(filtered_articles, request)
         if filtered_articles:
@@ -97,6 +156,11 @@ class ArticleView(APIView):
             return Response({"message": "No article found", "articles": []},
                             status=200)
 
+    @swagger_auto_schema(request_body=ArticleSerializer,
+                         responses={201: ArticleSerializer(),
+                                    400: "Bad Request",
+                                    403: "Forbidden",
+                                    404: "Not Found"})
     def post(self, request):
         """Method to create an article"""
         article = request.data.get('article')
@@ -105,6 +169,14 @@ class ArticleView(APIView):
         serializer = ArticleSerializer(data=article)
         if serializer.is_valid(raise_exception=True):
             article_saved = serializer.save(author=self.request.user)
+            NotificationsView.send_notification(
+                "@{0} has posted a new article at {1}".format(
+                    self.request.user.username,
+                    os.getenv('DOMAIN') + '/api/articles/' + serializer.data.get('slug') + '/'
+                ),
+                serializer.data,
+                'new-article'
+            )
 
         return Response({
             "success": "Article '{}' created successfully".format(
@@ -124,12 +196,20 @@ class RetrieveArticleView(APIView):
     def get(self, request, slug):
         """Method to get a specific article"""
         article = find_article(slug)
+        article.tags = list(article.tags.names())
         serializer = ArticleSerializer(article, many=False)
         return Response({"article": serializer.data})
 
+    @swagger_auto_schema(request_body=ArticleSerializer,
+                         responses={200: ArticleSerializer(),
+                                    400: "Bad Request",
+                                    404: "Not Found",
+                                    403: "Forbidden"})
     def put(self, request, slug):
         """Method to update a specific article"""
         saved_article = find_article(slug)
+
+        highlights = get_highlights(slug)
 
         data = request.data.get('article')
         serializer = ArticleSerializer(
@@ -137,6 +217,10 @@ class RetrieveArticleView(APIView):
         if serializer.is_valid(raise_exception=True):
             if self.is_owner(saved_article.author.id, request.user.id) is True:
                 article_saved = serializer.save()
+
+                # Delete/Update highlights affected by updates on article body
+                format_highlight(highlights, saved_article)
+
                 return Response({
                     "success": "Article '{}' updated successfully".format(
                         article_saved.title),
@@ -167,6 +251,12 @@ class ArticleImageView(APIView):
     article"""
     permission_classes = (IsAuthenticated | ReadOnly,)
 
+    @swagger_auto_schema(request_body=ArticleImageSerializer,
+                         responses={200: ArticleImageSerializer(),
+                                    400: "Bad Request",
+                                    403: "Forbidden",
+                                    404: "Not Found"},
+                         )
     def post(self, request, slug):
         """Method to upload an image"""
         article = find_article(slug)
@@ -266,6 +356,11 @@ class ArticleImageDetailView(APIView):
 class ReviewView(APIView):
     permission_classes = (IsAuthenticated | ReadOnly,)
 
+    @swagger_auto_schema(request_body=ReviewsSerializer,
+                         responses={200: ReviewsSerializer(),
+                                    400: "Bad Request",
+                                    403: "Forbidden",
+                                    404: "Not Found"},)
     def post(self, request, slug):
         saved_article = find_article(slug)
         if saved_article.author.pk == self.request.user.pk:
@@ -308,6 +403,11 @@ class ReviewView(APIView):
             raise APIException(
                 {"errors": "There are no reviews for that article"})
 
+    @swagger_auto_schema(request_body=ReviewsSerializer,
+                         responses={200: ReviewsSerializer(),
+                                    400: "Bad Request",
+                                    403: "Forbidden",
+                                    404: "Not Found"})
     def put(self, request, slug, username=None):
         try:
             if username is None:
@@ -363,12 +463,18 @@ class ReviewView(APIView):
             APIException.status_code = status.HTTP_400_BAD_REQUEST
             raise APIException({"errors": e.detail})
 
+
 class LikeArticleView(APIView):
     """
     Class for POST view allowing authenticated users to like articles
     """
     permission_classes = (IsAuthenticated,)
 
+    @swagger_auto_schema(request_body=ArticleSerializer,
+                         responses={201: ArticleSerializer(),
+                                    400: "Bad Request",
+                                    403: "Forbidden",
+                                    404: "Not Found"})
     def post(self, request, slug):
         """
         method for generating a like for a particular article
@@ -377,7 +483,7 @@ class LikeArticleView(APIView):
         liked = LikeArticles.react_to_article(request.user, article, 1)
         if not liked:
             return Response({
-                'message': 'you have reverted your' \
+                'message': 'you have reverted your'
                            ' like for the article: {}'.format(article.title),
                 'article': ArticleSerializer(article).data
             }, status=status.HTTP_202_ACCEPTED)
@@ -394,6 +500,11 @@ class DislikeArticleView(APIView):
     """
     permission_classes = (IsAuthenticated,)
 
+    @swagger_auto_schema(request_body=ArticleSerializer,
+                         responses={201: ArticleSerializer(),
+                                    400: "Bad Request",
+                                    403: "Forbidden",
+                                    404: "Not Found"},)
     def post(self, request, slug):
         """
         method for generating a dislike for a particular article
@@ -402,16 +513,16 @@ class DislikeArticleView(APIView):
         disliked = LikeArticles.react_to_article(request.user, article, 0)
         if not disliked:
             return Response({
-                'message': 'you have reverted your' \
+                'message': 'you have reverted your'
                            ' dislike for the article: {}'.format(
-                    article.title),
+                               article.title),
                 'article': ArticleSerializer(article).data
             }, status=status.HTTP_202_ACCEPTED)
         return Response({
             'message': 'you disliked the article: {}'.format(article.title),
             'article': ArticleSerializer(article).data
         },
-        status=status.HTTP_201_CREATED)
+            status=status.HTTP_201_CREATED)
 
 
 class SocialShareArticleView(APIView):
@@ -449,6 +560,11 @@ class FavoriteView(APIView):
     """
     permission_classes = (IsAuthenticated,)
 
+    @swagger_auto_schema(request_body=FavoriteSerializer,
+                         responses={201: FavoriteSerializer(),
+                                    400: "Bad Request",
+                                    403: "Forbidden",
+                                    404: "Not Found"})
     def post(self, request, slug):
         """
         To favorite an article users only need to hit this endpoint
@@ -495,3 +611,74 @@ class FavoriteListView(APIView):
         favs = FavoriteModel.objects.filter(user=request.user)
         return Response({"articles": FavoriteSerializer(favs, many=True).data,
                          "count": favs.count()}, status=200)
+
+
+class HighlightView(APIView):
+    """Class with methods to highlight and retrieve all highlights"""
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request, slug):
+        """Method for highlighting an article"""
+        article = find_article(slug)
+        body_length = len(article.body)
+        article_id = article.id
+        user = self.request.user
+        highlight = request.data.get('highlight')
+
+        # Create a highlight from the above data
+        serializer = HighlightSerializer(data=highlight)
+        if serializer.is_valid(raise_exception=True):
+            start = highlight['start']
+            end = highlight['end']
+            section = article.body[start:end+1]
+            try:
+                comment = highlight['comment']
+            except KeyError:
+                comment = ''
+
+            if start >= end:
+                return Response({
+                    "message": "Start position cannot be equal to"
+                    " or greater than end position"
+                }, status=400)
+            if end > body_length - 1:
+                return Response({
+                    "message": "End position is greater"
+                    " than the article size of {}".format(body_length - 1)
+                }, status=400)
+
+            # check if highlight exists
+            highlight = Highlight.objects.filter(article=article_id,
+                                                 user=user, start=start,
+                                                 end=end,
+                                                 comment=comment)
+            # If highlight or comment exists unhighlight or uncomment
+            if highlight.exists():
+                if comment == '':
+                    message = "Highlight has been removed"
+                else:
+                    message = "Comment has been removed"
+
+                highlight.delete()
+                return Response({"message": message})
+
+            if comment == '':
+                message = "Highlight has been added"
+            else:
+                message = "Comment has been added"
+            serializer.save(article=article, user=self.request.user,
+                            section=section)
+            return Response({
+                "message": message,
+                "highlight": serializer.data
+            }, status=201)
+
+    def get(self, request, slug):
+        """Method to retrieve all higlights for an article by slug"""
+        find_article(slug)
+
+        serializer = HighlightSerializer(get_highlights(slug), many=True)
+        return Response({
+            "highlights": serializer.data,
+            "highlightsCount": get_highlights(slug).count()
+        }, status=200)
