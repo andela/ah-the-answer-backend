@@ -3,13 +3,29 @@ from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import views, permissions, status, response, exceptions
 from .serializers import CommentSerializer, CommentHistorySerializer
-from authors.apps.comments.models import Comment
+from authors.apps.comments.models import Comment, LikeDislikeComment
 from authors.apps.articles.models import Article
 from authors.apps.articles.permissions import ReadOnly
+from rest_framework.exceptions import APIException
 from authors.apps.notify.views import NotificationsView
 from drf_yasg.utils import swagger_auto_schema
-
 from ..articles.views import find_article
+
+
+def find_comment(comment_id):
+    """
+    Confirms that a comment exists
+    :param comment_id: the comment id
+    :return:
+    """
+    try:
+        return Comment.objects.get(pk=comment_id)
+    except Comment.DoesNotExist:
+        APIException.status_code = 404
+        raise APIException({
+            "message": "The comment does not exist"
+        })
+
 
 class CommentsCreateList(views.APIView):
     permission_classes = (permissions.IsAuthenticated | ReadOnly,)
@@ -30,7 +46,6 @@ class CommentsCreateList(views.APIView):
                                     403: "Forbidden",
                                     404: "Not Found"})
     def post(self, request, slug):
-
         serializer = CommentSerializer(data=request.data.get('comment'))
         article = Article.objects.get(slug=slug)
 
@@ -150,6 +165,81 @@ class CommentsDetail(views.APIView):
             raise exceptions.ValidationError()
         else:
             return True
+
+
+class LikeCommentView(views.APIView):
+    """
+    Thu endpoint is used for liking a comment, it implements only the POST
+    method
+    """
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request, pk):
+        """
+        POST endpoint allows authenticated users to like a comment
+        :param request:
+        :param slug
+        :param pk: the comment id
+        :return: response with liked comment
+        """
+        target_comment = find_comment(pk)
+        liked = LikeDislikeComment.react_to_comment(
+            request.user, target_comment, 1)
+        if not liked:
+            return response.Response({
+                'message':
+                    'Your like has been reverted for comment: {}'.format(
+                        target_comment.id),
+                'comment': CommentSerializer(target_comment).data,
+                'likes': LikeDislikeComment.get_count_like(target_comment),
+                'dislikes': LikeDislikeComment.get_count_dislike(
+                    target_comment)
+            }, status=status.HTTP_202_ACCEPTED)
+        return response.Response({
+            'message': 'You liked comment: {}'.format(target_comment.id),
+            'comment': CommentSerializer(target_comment).data,
+            'likes': LikeDislikeComment.get_count_like(target_comment),
+            'dislikes': LikeDislikeComment.get_count_dislike(
+                target_comment)
+        },
+            status=status.HTTP_201_CREATED)
+
+
+class DislikeCommentView(views.APIView):
+    """
+    Class for POST view allowing authenticated users to dislike articles
+    """
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request, pk):
+        """
+        POST endpoint allows authenticated users to dislike a comment
+        :param request:
+        :param slug:
+        :param pk: primary key of the comment
+        :return:
+        """
+        target_comment = find_comment(pk)
+        disliked = LikeDislikeComment.react_to_comment(
+            request.user, target_comment, 0)
+        if not disliked:
+            return response.Response({
+                'message':
+                    'Your dislike has been reverted for comment: {}'.format(
+                        target_comment.id),
+                'comment': CommentSerializer(target_comment).data,
+                'likes': LikeDislikeComment.get_count_like(target_comment),
+                'dislikes': LikeDislikeComment.get_count_dislike(
+                    target_comment)
+            }, status=status.HTTP_202_ACCEPTED)
+        return response.Response({
+            'message': 'You disliked comment: {}'.format(target_comment.id),
+            'comment': CommentSerializer(target_comment).data,
+            'likes': LikeDislikeComment.get_count_like(target_comment),
+            'dislikes': LikeDislikeComment.get_count_dislike(
+                target_comment)
+        },
+            status=status.HTTP_201_CREATED)
 
 
 class CommentHistoryView(views.APIView):
