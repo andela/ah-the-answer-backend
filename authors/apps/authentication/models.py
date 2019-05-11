@@ -92,6 +92,10 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     # More fields required for User social login.
     social_id = models.CharField(db_index=True, null=True, max_length=255)
+    # Is true if user is subscribed to receive email notifications
+    is_subscribed = models.BooleanField(default=True)
+
+    # More fields required by Django when specifying a custom user model.
 
     # The `USERNAME_FIELD` property tells us which field we will use to log in.
     # In this case, we want that to be the email field.

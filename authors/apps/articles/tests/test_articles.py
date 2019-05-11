@@ -25,9 +25,9 @@ class TestArticle(TestCase):
         )
 
         # verify email
-        test_user = User.objects.get(username='Test')
-        test_user.is_verified = True
-        test_user.save()
+        self.test_user = User.objects.get(username='Test')
+        self.test_user.is_verified = True
+        self.test_user.save()
         self.login = self.client.post(
             reverse('authentication:user-login'),
             data={
@@ -42,6 +42,18 @@ class TestArticle(TestCase):
         self.client.credentials(
             HTTP_AUTHORIZATION='Bearer ' + self.login.data['token'])
 
+    def test_article_model(self):
+        """Test that the article model is created successfully"""
+        article = Article.objects.create(
+            title="Test Title Here",
+            body="A nice article",
+            description="Description is also good",
+            author=self.test_user
+        )
+        self.assertTrue(article)
+        self.assertEqual(article.body, 'A nice article')
+        self.assertEqual(article.__str__(), 'Test Title Here')
+
     # CREATE TESTS
 
     def test_article_create(self):
@@ -52,6 +64,7 @@ class TestArticle(TestCase):
                     "title": "Test title",
                     "body": "This is a very awesome article on testing tests",
                     "description": "Written by testing tester",
+                    "tags": ["religion", "nature", "film"]
                 }
             },
             format="json"
@@ -93,6 +106,23 @@ class TestArticle(TestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertTrue(response.data['errors']['title'])
 
+    def test_create_with_invalid_tags_field(self):
+        response = self.client.post(
+            reverse('articles:create-list'),
+            data={
+                "article": {
+                    "title": "the house in the hill",
+                    "body": "the hill was grassy with a single house at the apex",
+                    "description": "a hill story",
+                    "tags": "0"
+                }
+            },
+            format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertTrue(response.data['errors']['tags'])
+
     # END OF CREATE TESTS
 
     # RETRIEVE TESTS
@@ -127,6 +157,7 @@ class TestArticle(TestCase):
                     "title": "Test title",
                     "body": "This is a very awesome article on testing tests",
                     "description": "Written by testing tester",
+                    "tags": ["religion", "nature", "film"]
                 }
             },
             format="json"
@@ -170,6 +201,7 @@ class TestArticle(TestCase):
                     "title": "Test title",
                     "body": "This is a very awesome article on testing tests",
                     "description": "Written by testing tester",
+                    "tags": ["religion", "nature", "film"]
                 }
             },
             format="json"
@@ -185,6 +217,7 @@ class TestArticle(TestCase):
                 "article": {
                     "title": "Test title updated",
                     "description": "Written by updater",
+                    "tags": ["study", "cosmos", "physics"]
                 }
             },
             format="json"
@@ -222,6 +255,7 @@ class TestArticle(TestCase):
                     "title": "Test title",
                     "body": "This is a very awesome article on testing tests",
                     "description": "Written by testing tester",
+                    "tags": ["religion", "nature", "film"]
                 }
             },
             format="json"
@@ -253,6 +287,7 @@ class TestArticle(TestCase):
                     "title": "Test title",
                     "body": "This is a very awesome article on testing tests",
                     "description": "Written by testing tester",
+                    "tags": ["religion", "nature", "film"]
                 }
             },
             format="json"
@@ -298,6 +333,7 @@ class TestArticle(TestCase):
                 "article": {
                     "title": "Test title updated",
                     "description": "Written by updater",
+                    "tags": ["religion", "nature", "film"]
                 }
             },
             format="json"
@@ -317,6 +353,7 @@ class TestArticle(TestCase):
                     "title": "Test title",
                     "body": "This is a very awesome article on testing tests",
                     "description": "Written by testing tester",
+                    "tags": ["religion", "nature", "film"]
                 }
             },
             format="json"
@@ -354,6 +391,7 @@ class TestArticle(TestCase):
                     "title": "Test title",
                     "body": "This is a very awesome article on testing tests",
                     "description": "Written by testing tester",
+                    "tags": ["religion", "nature", "film"]
                 }
             },
             format="json"
@@ -380,6 +418,7 @@ class TestArticle(TestCase):
                     "title": "Test title",
                     "body": "This is a very awesome article on testing tests",
                     "description": "Written by testing tester",
+                    "tags": ["religion", "nature", "film"]
                 }
             },
             format="json"
@@ -456,6 +495,7 @@ class TestArticle(TestCase):
                     "title": "Test title",
                     "body": "This is a very awesome article on testing tests",
                     "description": "Written by testing tester",
+                    "tags": ["religion", "nature", "film"]
                 }
             },
             format="json"
@@ -494,6 +534,7 @@ class TestArticle(TestCase):
                     "title": "Test title",
                     "body": "This is a very awesome article on testing tests",
                     "description": "Written by testing tester",
+                    "tags": ["religion", "nature", "film"]
                 }
             },
             format="json"
@@ -515,6 +556,10 @@ class TestArticle(TestCase):
         response = self.client.get("/api/articles/?search=raywire", format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_user_can_search_articles_by_tags(self):
+        response = self.client.get("/api/articles/?search=religion,nature", format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
     def test_user_can_filter_articles_by_title(self):
         self.client.post(
             reverse('articles:create-list'),
@@ -523,6 +568,7 @@ class TestArticle(TestCase):
                     "title": "Test title",
                     "body": "This is a very awesome article on testing tests",
                     "description": "Written by testing tester",
+                    "tags": ["religion", "nature", "film"]
                 }
             },
             format="json"
@@ -539,6 +585,7 @@ class TestArticle(TestCase):
                     "title": "Test title",
                     "body": "This is a very awesome article on testing tests",
                     "description": "Written by testing tester",
+                    "tags": ["religion", "nature", "film"]
                 }
             },
             format="json"
