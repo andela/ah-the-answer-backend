@@ -166,7 +166,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         """
         uses the token to create a link to be sent to user's email
         """
-        link = "{}api/users/reset_password/{}/".format(os.getenv('URL'), token_variable)
+        link = "{}/passwordreset/{}/".format(os.getenv('URL'), token_variable)
 
         req_message = "This email has requested for a password reset \
             click the link {} to reset your password for author's haven".format(link)
