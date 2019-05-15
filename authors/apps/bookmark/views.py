@@ -34,9 +34,10 @@ class CreateBookmark(APIView):
             bookmark[0].user.add(user)
             return Response({"success": "Bookmark for article '{}'created.".format(article.title)}, status=status.HTTP_201_CREATED)
         elif bookmark.exists() and bookmark[0].user.filter(username=username).exists():
-            return Response({"error": "Article bookmark for this "
-                            "user already exists."},
-                            status=status.HTTP_400_BAD_REQUEST)
+            bookmark.delete()
+            return Response({"message": "Article bookmark for this "
+                            "user has been deleted."},
+                            status=status.HTTP_200_OK)
         else:
             new_bookmark = Bookmark(article_title=article.title,
                                     article_id=article_id)

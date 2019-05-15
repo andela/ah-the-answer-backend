@@ -111,8 +111,8 @@ class TestCreateBookmark(TestCase):
                            args=[self.id_1]), format='json')
         response = self.client_1.post(reverse('bookmark:bookmark-create',
                                       args=[self.id_1]), format='json')
-        self.assertEqual(response.data['error'],
-                         "Article bookmark for this user already exists.")
+        self.assertEqual(response.data['message'],
+                         "Article bookmark for this user has been deleted.")
 
     def test_user_attempts_to_bookmark_nonexistent_article(self):
         """Test if a user can create a bookmark for a nonexistent article."""
