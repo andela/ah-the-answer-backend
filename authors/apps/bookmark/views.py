@@ -68,5 +68,12 @@ class RetrieveBookmarks(APIView):
     def get(self, request):
         user = self.request.user
         bookmark_list = user.bookmark_set.all()
-        bookmarks = [i.article_title for i in bookmark_list]
+        bookmarks = []
+        for i in bookmark_list:
+            entry = {
+                "id": i.id,
+                "article_id": i.article_id,
+                "title": i.article_title
+            }
+            bookmarks.append(entry)
         return Response({"success": bookmarks}, status=status.HTTP_200_OK)
