@@ -111,8 +111,8 @@ class TestCreateBookmark(TestCase):
                            args=[self.id_1]), format='json')
         response = self.client_1.post(reverse('bookmark:bookmark-create',
                                       args=[self.id_1]), format='json')
-        self.assertEqual(response.data['error'],
-                         "Article bookmark for this user already exists.")
+        self.assertEqual(response.data['message'],
+                         "Article bookmark for this user has been deleted.")
 
     def test_user_attempts_to_bookmark_nonexistent_article(self):
         """Test if a user can create a bookmark for a nonexistent article."""
@@ -209,16 +209,16 @@ class TestRetrieveBookmarks(TestCase):
         response = self.client_1.get(reverse('bookmark:bookmark-list'),
                                      format="json")
         self.assertEqual(len(response.data['success']), 3)
-        self.assertEqual(response.data['success'][0], title_1)
-        self.assertEqual(response.data['success'][1], title_2)
-        self.assertEqual(response.data['success'][2], title_3)
+        self.assertEqual(response.data['success'][0]['title'], title_1)
+        self.assertEqual(response.data['success'][1]['title'], title_2)
+        self.assertEqual(response.data['success'][2]['title'], title_3)
 
     def test_attempt_to_fetch_empty_bookmarks(self):
         """Test if a user can fetch their empty bookmark list."""
         response = self.client_1.get(reverse('bookmark:bookmark-list'),
                                      format="json")
         self.assertEqual(len(response.data['success']), 0)
-    
+
     def test_bookmark_object_readable_name(self):
         self.client_1.post(reverse('bookmark:bookmark-create',
                                    args=[self.id_1]), format='json')
