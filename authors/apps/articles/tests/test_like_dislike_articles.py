@@ -14,6 +14,7 @@ class TestLikeArticles(TestCase):
         this set ups the test class 
         """
         self.client = test.APIClient()
+        self.client2 = test.APIClient()
         self.user = self.client.post(
             reverse('authentication:user-signup'),
             data={
@@ -29,6 +30,20 @@ class TestLikeArticles(TestCase):
         verified_user = User.objects.get(username='disliker')
         verified_user.is_verified = True
         verified_user.save()
+        self.user2 = self.client.post(
+            reverse('authentication:user-signup'),
+            data={
+                "user": {
+                    "email": "tworivers2@gmail.com",
+                    "username": "disliker2",
+                    "password": "usergeneration0"
+                }
+            },
+            format="json"
+        )
+        verified_user2 = User.objects.get(username='disliker2')
+        verified_user2.is_verified = True
+        verified_user2.save()
         self.login = self.client.post(
             reverse('authentication:user-login'),
             data={
@@ -39,10 +54,22 @@ class TestLikeArticles(TestCase):
             },
             format="json"
         )
+        self.login2 = self.client.post(
+            reverse('authentication:user-login'),
+            data={
+                "user": {
+                    "email": "tworivers2@gmail.com",
+                    "password": "usergeneration0"
+                }
+            },
+            format="json"
+        )
 
         self.client.credentials(
             HTTP_AUTHORIZATION='Bearer ' + self.login.data['token'])
-        
+        self.client2.credentials(
+            HTTP_AUTHORIZATION='Bearer ' + self.login2.data['token'])
+
         new_article = self.client.post(
             reverse('articles:create-list'),
             data={
@@ -55,8 +82,22 @@ class TestLikeArticles(TestCase):
             },
             format="json"
         )
+        new_article2 = self.client.post(
+            reverse('articles:create-list'),
+            data={
+                "article": {
+                    "title": "War of the roses",
+                    "body": "Over a period of conflict between kin",
+                    "description": "Written by yours truly",
+                    "tags": ["religion", "nature", "film"]
+                }
+            },
+            format="json"
+        )
         article_result = json.loads(new_article.content)
+        article_result2 = json.loads(new_article2.content)
         self.slug = article_result['article']['slug']
+        self.slug2 = article_result2['article']['slug']
 
     def test_like_article(self):
         """Test whether authenticated user can like article"""
@@ -193,6 +234,11 @@ class TestLikeArticles(TestCase):
                     kwargs={'slug': 'the_people_eater'}),
             format='json'
         )
+        response3 = self.client.get(
+            reverse('articles:liked-me',
+                    kwargs={'slug': self.slug2}),
+            format='json'
+        )
         output = json.loads(response2.content)
         self.assertIn(
             'The article requested does not exist',
@@ -200,6 +246,8 @@ class TestLikeArticles(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['message'],
                          'You have reacted to this article before')
+        self.assertEqual(response3.data['message'],
+                         'You have not reacted to this article')
 
     def test_user_know_what_articles_they_have_liked_article(self):
             self.client.post(
@@ -214,3 +262,10 @@ class TestLikeArticles(TestCase):
             self.assertEqual(response.status_code, status.HTTP_200_OK)
             self.assertEqual(response.data['message'],
                              'You have reacted to these articles')
+
+            response2 = self.client2.get(
+                reverse('articles:liked-all'),
+                format='json'
+            )
+            self.assertEqual(response2.data['message'],
+                             'You have not reacted to any article')
