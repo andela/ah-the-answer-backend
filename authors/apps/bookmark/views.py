@@ -40,10 +40,10 @@ class CreateBookmark(APIView):
                             status=status.HTTP_200_OK)
         else:
             new_bookmark = Bookmark(article_title=article.title,
-                                    article=article)
+                                    article=article, article_slug=article.slug)
             new_bookmark.save()
             new_bookmark.user.add(user)
-            return Response({"success": "Bookmark for article '{}'created.".format(article.title)}, 
+            return Response({"success": "Bookmark for article '{}'created.".format(article.title)},
                             status=status.HTTP_201_CREATED)
 
     def get(self, request, article_id):
@@ -73,6 +73,7 @@ class RetrieveBookmarks(APIView):
             entry = {
                 "id": i.id,
                 "article_id": i.article_id,
+                "article_slug": i.article_slug,
                 "title": i.article_title
             }
             bookmarks.append(entry)
