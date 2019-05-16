@@ -188,14 +188,6 @@ class TestLikeArticles(TestCase):
                     kwargs={'slug': self.slug}),
             format='json'
         )
-        expected = {
-            "message": "You have reacted to this article before",
-            "liked": [
-                {
-                    "likes": 1
-                }
-            ]
-        }
         response2 = self.client.get(
             reverse('articles:liked-me',
                     kwargs={'slug': 'the_people_eater'}),
@@ -219,14 +211,6 @@ class TestLikeArticles(TestCase):
                 reverse('articles:liked-all'),
                 format='json'
             )
-            expected = {
-                "message": "You have reacted to these articles",
-                "liked": [
-                    {
-                        "likes": 1
-                    }
-                ]
-            }
             self.assertEqual(response.status_code, status.HTTP_200_OK)
             self.assertEqual(response.data['message'],
-                             'You have not reacted to any article')
+                             'You have reacted to these articles')
