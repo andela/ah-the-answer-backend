@@ -15,7 +15,7 @@ from drf_yasg.utils import swagger_auto_schema
 
 from .serializers import (ArticleSerializer, ArticleImageSerializer,
                           ReviewsSerializer, HighlightSerializer,
-                          FavoriteSerializer)
+                          FavoriteSerializer, UserLikesArticleSerialzer)
 from rest_framework import status
 from .models import (Article, ArticleImage, LikeArticles, FavoriteModel,
                      ReviewsModel, Highlight)
@@ -674,7 +674,7 @@ class HighlightView(APIView):
             }, status=201)
 
     def get(self, request, slug):
-        """Method to retrieve all higlights for an article by slug"""
+        """Method to retrieve all highlights for an article by slug"""
         find_article(slug)
 
         serializer = HighlightSerializer(get_highlights(slug), many=True)
@@ -682,3 +682,34 @@ class HighlightView(APIView):
             "highlights": serializer.data,
             "highlightsCount": get_highlights(slug).count()
         }, status=200)
+
+
+class UserLikesArticleView(APIView):
+    """Fetches a boolean for whether a user already liked an article or
+    not"""
+    def get(self, request, slug):
+        article = find_article(slug)
+        liked = LikeArticles.objects.filter(article=article, user=request.user)
+        # import pdb;pdb.set_trace()
+        if len(liked) > 0:
+            return Response({
+                'message': 'You have reacted to this article before',
+                'liked': UserLikesArticleSerialzer(liked, many=True).data
+            }, 200)
+        return Response({
+            'message': 'You have not reacted to this article'
+        })
+
+
+class AllUserLikesArticleView(APIView):
+    """Fetches all articles that a user has liked not"""
+    def get(self, request):
+        liked = LikeArticles.objects.filter(user=request.user)
+        if len(liked) > 0:
+            return Response({
+                'message': 'You have reacted to these articles',
+                'liked': UserLikesArticleSerialzer(liked, many=True).data
+            }, 200)
+        return Response({
+            'message': 'You have not reacted to any article'
+        })
