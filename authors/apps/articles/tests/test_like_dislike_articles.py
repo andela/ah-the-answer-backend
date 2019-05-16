@@ -196,18 +196,17 @@ class TestLikeArticles(TestCase):
                 }
             ]
         }
-        response2 = self.client.post(
+        response2 = self.client.get(
             reverse('articles:liked-me',
                     kwargs={'slug': 'the_people_eater'}),
             format='json'
         )
-        output = json.loads(response.content)
+        output = json.loads(response2.content)
         self.assertIn(
             'The article requested does not exist',
             str(output))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, expected)
-        self.assertEqual(response2.data)
 
     def test_user_know_what_articles_they_have_liked_article(self):
             self.client.post(
