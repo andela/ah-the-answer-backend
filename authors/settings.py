@@ -80,6 +80,7 @@ MIDDLEWARE = [
     'simple_history.middleware.HistoryRequestMiddleware'
 
 ]
+CORS_ORIGIN_ALLOW_ALL = True
 
 ROOT_URLCONF = 'authors.urls'
 

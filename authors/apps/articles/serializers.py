@@ -151,3 +151,11 @@ class LikeArticleSerializer(serializers.ModelSerializer):
         model = LikeArticles
         fields = ['article', 'total_likes']
         depth = 1
+
+
+class UserLikesArticleSerialzer(serializers.ModelSerializer):
+    """This serializer is used to determine whether a user has already liked
+    an articles"""
+    class Meta:
+        model = LikeArticles
+        fields = ['article','likes']

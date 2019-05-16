@@ -19,7 +19,7 @@ class Profile(models.Model):
     number_of_followings = models.IntegerField(default=0)
     total_articles = models.IntegerField(default=0)
     avatar = CloudinaryField(
-        "image", default='image/upload/v1554548354/21.jpg')
+        "image", default='smiling_penguin.png')
 
     def get_cloudinary_url(self):
         """
