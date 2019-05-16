@@ -220,7 +220,7 @@ class TestLikeArticles(TestCase):
                 format='json'
             )
             expected = {
-                "message": "You have reacted to this article before",
+                "message": "You have reacted to these articles",
                 "liked": [
                     {
                         "likes": 1
