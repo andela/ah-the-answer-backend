@@ -8,11 +8,12 @@ class Bookmark(models.Model):
     user = models.ManyToManyField(
            settings.AUTH_USER_MODEL
     )
-    article = models.ForeignKey(
+    bookmarked_article = models.ForeignKey(
         Article,
         related_name="bookmarks",
         on_delete=models.CASCADE,
     )
+    article_id = models.IntegerField(default=0)
     article_slug = models.TextField(blank=True, null=False)
 
     def __str__(self):
