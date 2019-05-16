@@ -206,7 +206,8 @@ class TestLikeArticles(TestCase):
             'The article requested does not exist',
             str(output))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, expected)
+        self.assertEqual(response.data['message'],
+                         'You have reacted to this article before')
 
     def test_user_know_what_articles_they_have_liked_article(self):
             self.client.post(
@@ -227,6 +228,5 @@ class TestLikeArticles(TestCase):
                 ]
             }
             self.assertEqual(response.status_code, status.HTTP_200_OK)
-            self.assertEqual(response.data.message,
+            self.assertEqual(response.data['message'],
                              'You have not reacted to any article')
-
