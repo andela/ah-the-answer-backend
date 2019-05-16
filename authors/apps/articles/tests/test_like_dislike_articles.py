@@ -172,3 +172,62 @@ class TestLikeArticles(TestCase):
             'you disliked the article:',
             str(output))
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_user_know_if_they_have_liked_article(self):
+        """
+        It tests that a user can know if they have already liked an article
+        :return:
+        """
+        self.client.post(
+            reverse('articles:like-article',
+                    kwargs={'slug': self.slug}),
+            format='json'
+        )
+        response = self.client.get(
+            reverse('articles:liked-me',
+                    kwargs={'slug': self.slug}),
+            format='json'
+        )
+        expected = {
+            "message": "You have reacted to this article before",
+            "liked": [
+                {
+                    "likes": 1
+                }
+            ]
+        }
+        response2 = self.client.post(
+            reverse('articles:liked-me',
+                    kwargs={'slug': 'the_people_eater'}),
+            format='json'
+        )
+        output = json.loads(response.content)
+        self.assertIn(
+            'The article requested does not exist',
+            str(output))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected)
+        self.assertEqual(response2.data)
+
+    def test_user_know_what_articles_they_have_liked_article(self):
+            self.client.post(
+                reverse('articles:like-article',
+                        kwargs={'slug': self.slug}),
+                format='json'
+            )
+            response = self.client.get(
+                reverse('articles:liked-all'),
+                format='json'
+            )
+            expected = {
+                "message": "You have reacted to this article before",
+                "liked": [
+                    {
+                        "likes": 1
+                    }
+                ]
+            }
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            self.assertEqual(response.data.message,
+                             'You have not reacted to any article')
+
