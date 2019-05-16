@@ -110,7 +110,7 @@ class ManageFollowings(APIView):
         followed_users_list = Follows.objects.filter(follower_id=current_user.pk)
         serializer = FollowingSerializer(followed_users_list, many=True)
         return Response({"followed_users": serializer.data},
-                        status=status.HTTP_400_BAD_REQUEST)
+                        status=status.HTTP_200_OK)
 
 
 class UserStats(APIView):
