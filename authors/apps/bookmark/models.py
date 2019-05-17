@@ -12,6 +12,7 @@ class Bookmark(models.Model):
         Article,
         related_name="bookmarks",
         on_delete=models.CASCADE,
+        default=1,
     )
     article_id = models.IntegerField(default=0)
     article_slug = models.TextField(blank=True, null=False)
