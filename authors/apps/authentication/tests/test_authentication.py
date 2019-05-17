@@ -279,3 +279,21 @@ class TestJWTGenerator(TestCase):
             'Please ensure your password contains at least one letter and one numeral', str(output)
                  )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+    
+    def test_signup_special_character_password(self):
+        """
+        test for request with a  non alphanumeric password
+        """
+        response = self.client.post(
+            reverse('authentication:user-signup'),
+            data={
+                "user": {
+                    "email": "tester3@mail.com",
+                    "username": "tester3",
+                    "password": "Tester1234#&&*±§"
+                }
+            },
+            format="json"
+        )
+        output = json.loads(response.content)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
