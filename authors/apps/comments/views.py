@@ -250,7 +250,7 @@ class CommentHistoryView(views.APIView):
         try:
             find_article(slug)
             comment = Comment.objects.get(id=pk)
-            if comment and comment.author == self.request.user:
+            if comment:
                 serializer = CommentHistorySerializer(comment)
                 return response.Response(
                     serializer.data,
