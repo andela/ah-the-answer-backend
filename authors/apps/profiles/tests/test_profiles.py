@@ -304,7 +304,7 @@ class TestModelCase(TestCase):
     def test_avatar_authorization_is_enforced(self):
         new_client = APIClient()
         res = new_client.patch('/api/profile/username/avatar/', format="json")
-        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_authenticated_user_can_get_all_profiles(self):
         response = self.client.get(

@@ -273,7 +273,7 @@ class TestCommentsAPI(TestCase):
         )
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_non_owners_cant_view_others_history(self):
+    def test_all_users_can_view_others_history(self):
         user = User.objects.create(username="johndoe")
         self.client2 = test.APIClient()
         self.client2.force_authenticate(user=user)
@@ -289,7 +289,7 @@ class TestCommentsAPI(TestCase):
             ),
             format="json"
         )
-        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_user_cant_get_inexistent_comment_history(self):
         res = self.client.get(
