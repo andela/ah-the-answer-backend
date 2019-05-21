@@ -34,15 +34,18 @@ class CreateBookmark(APIView):
             bookmark[0].user.add(user)
             return Response({"success": "Bookmark for article '{}'created.".format(article.title)}, status=status.HTTP_201_CREATED)
         elif bookmark.exists() and bookmark[0].user.filter(username=username).exists():
-            return Response({"error": "Article bookmark for this "
-                            "user already exists."},
-                            status=status.HTTP_400_BAD_REQUEST)
+            bookmark.delete()
+            return Response({"message": "Article bookmark for this "
+                            "user has been deleted."},
+                            status=status.HTTP_200_OK)
         else:
             new_bookmark = Bookmark(article_title=article.title,
-                                    article_id=article_id)
+                                    bookmarked_article=article,
+                                    article_id=article.id,
+                                    article_slug=article.slug)
             new_bookmark.save()
             new_bookmark.user.add(user)
-            return Response({"success": "Bookmark for article '{}'created.".format(article.title)}, 
+            return Response({"success": "Bookmark for article '{}'created.".format(article.title)},
                             status=status.HTTP_201_CREATED)
 
     def get(self, request, article_id):
@@ -67,5 +70,13 @@ class RetrieveBookmarks(APIView):
     def get(self, request):
         user = self.request.user
         bookmark_list = user.bookmark_set.all()
-        bookmarks = [i.article_title for i in bookmark_list]
+        bookmarks = []
+        for i in bookmark_list:
+            entry = {
+                "id": i.id,
+                "article_id": i.article_id,
+                "article_slug": i.article_slug,
+                "title": i.article_title
+            }
+            bookmarks.append(entry)
         return Response({"success": bookmarks}, status=status.HTTP_200_OK)

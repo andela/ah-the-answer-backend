@@ -110,6 +110,20 @@ class TestFollowViews(TestCase):
         self.assertEqual(response.data['success'], "Now following Mary.")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+    def test_check_to_verify_whether_user_has_followed_another_user(self):
+        initial_follow = self.client_1.post(reverse('follow:follow-user',
+                                      args=['Mary']), format="json")
+        response = self.client_1.post(reverse('follow:check-follow',
+                                      args=['Mary']), format="json")
+        self.assertEqual(response.data['success'], True)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+    
+    def test_check_to_verify_whether_user_has_not_followed_another_user(self):
+        response = self.client_1.post(reverse('follow:check-follow',
+                                      args=['Mary']), format="json")
+        self.assertEqual(response.data['error'], False)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
     def test_user_attempts_to_follow_same_user_twice(self):
         response = self.client_1.post(reverse('follow:follow-user',
                                       args=['Mary']), format="json")
