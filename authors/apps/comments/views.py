@@ -7,6 +7,7 @@ from authors.apps.comments.models import Comment, LikeDislikeComment
 from authors.apps.articles.models import Article
 from authors.apps.articles.permissions import ReadOnly
 from rest_framework.exceptions import APIException
+from rest_framework.response import Response
 from authors.apps.notify.views import NotificationsView
 from drf_yasg.utils import swagger_auto_schema
 from ..articles.views import find_article
@@ -240,6 +241,48 @@ class DislikeCommentView(views.APIView):
                 target_comment)
         },
             status=status.HTTP_201_CREATED)
+
+
+class CommentRatings(views.APIView):
+    """
+    Class for GET view allowing any user to view the ratings of a comment
+    """
+    def get(self, request, pk):
+        """
+        GET endpoint allows any users to view a comment's likes/dislikes
+        :param pk: primary key of the comment
+        :return:
+        """
+        target_comment = find_comment(pk)
+        return response.Response({
+            'comment': CommentSerializer(target_comment).data,
+            'likes': LikeDislikeComment.get_count_like(target_comment),
+            'dislikes': LikeDislikeComment.get_count_dislike(
+                target_comment)
+        },
+            status=status.HTTP_200_OK)
+
+
+class CommentRatingCheck(views.APIView):
+    """
+    Class for GET view which checks if a user has previosuly rated a comment
+    """
+    def get(self, request, username, pk):
+        """
+        GET endpoint checks if a given user has like/disliked a given comment
+        :param username: user's username
+        :param pk: primary key of the comment
+        :return: boolean
+        """
+        if LikeDislikeComment.objects.filter(user__username=username, comment__pk=pk).exists():
+            return Response({
+                'response': 'User has already liked/disliked this comment.',
+                'hasRated': True
+                }, status=status.HTTP_200_OK)
+        return Response({
+            'response': 'User has not liked/disliked this comment, or this comment does not exist.',
+            'hasRated': False
+        }, status=status.HTTP_200_OK)
 
 
 class CommentHistoryView(views.APIView):

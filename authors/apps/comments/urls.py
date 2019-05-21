@@ -2,7 +2,8 @@ from django.urls import path
 from .views import (
     CommentsCreateList, CommentsDetail,
     LikeCommentView, DislikeCommentView,
-    CommentHistoryView
+    CommentHistoryView, CommentRatings,
+    CommentRatingCheck
 )
 urlpatterns = [
     path('articles/comments/<int:pk>/like/',
@@ -11,6 +12,12 @@ urlpatterns = [
     path('articles/comments/<int:pk>/dislike/',
          DislikeCommentView.as_view(),
          name="dislike"),
+    path('articles/comments/<int:pk>/rating/',
+         CommentRatings.as_view(),
+         name="rating"),
+    path('articles/comments/check/<str:username>/<int:pk>/',
+         CommentRatingCheck.as_view(),
+         name="check-rating"),
     path(
         'articles/<slug:slug>/comments/',
         CommentsCreateList.as_view(),
