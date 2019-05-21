@@ -253,10 +253,6 @@ class CommentHistoryView(views.APIView):
                 return response.Response(
                     serializer.data,
                 )
-            exceptions.APIException.status_code = status.HTTP_403_FORBIDDEN
-            raise exceptions.APIException({
-                "errors": "You are not authorized to view this history"
-            })
         except ObjectDoesNotExist:
             return response.Response(
                 {
