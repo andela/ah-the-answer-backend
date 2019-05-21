@@ -287,21 +287,15 @@ class CommentRatingCheck(views.APIView):
 
 class CommentHistoryView(views.APIView):
 
-    permission_classes = (permissions.IsAuthenticated,)
-
     def get(self, request, slug, pk):
         try:
             find_article(slug)
             comment = Comment.objects.get(id=pk)
-            if comment and comment.author == self.request.user:
+            if comment:
                 serializer = CommentHistorySerializer(comment)
                 return response.Response(
                     serializer.data,
                 )
-            exceptions.APIException.status_code = status.HTTP_403_FORBIDDEN
-            raise exceptions.APIException({
-                "errors": "You are not authorized to view this history"
-            })
         except ObjectDoesNotExist:
             return response.Response(
                 {

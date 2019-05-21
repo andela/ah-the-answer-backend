@@ -89,10 +89,10 @@ class EditProfileView(APIView):
             )
             if saved_profile.user != self.request.user:
                 # validates ownership of the profile
-                APIException.status_code = status.HTTP_401_UNAUTHORIZED
+                APIException.status_code = status.HTTP_403_FORBIDDEN
                 raise APIException({
                     "errors": {
-                        "Unauthorized": "You are not allowed to edit this Profile"
+                        "Forbidden": "You are not allowed to edit this Profile"
                     }
                 })
         except ObjectDoesNotExist:
@@ -119,7 +119,7 @@ class AvatarView(APIView):
     Throws an Authorization error if the user who did not create the profile,
     attempts edits
     """
-    permission_classes = (IsAuthenticated, ) # only authenticated users can access this route
+    # permission_classes = (IsAuthenticated, ) # only authenticated users can access this route
 
     @swagger_auto_schema(request_body=ProfileSerializer,
                          responses={201: ProfileSerializer(),
@@ -137,7 +137,6 @@ class AvatarView(APIView):
             APIException.status_code = status.HTTP_404_NOT_FOUND
             raise APIException(
                 {"message": "User with that profile does not exist"})
-
         if saved_profile.user != self.request.user:
             APIException.status_code = status.HTTP_401_UNAUTHORIZED
             raise APIException({
