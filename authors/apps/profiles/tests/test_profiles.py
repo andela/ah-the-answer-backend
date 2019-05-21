@@ -247,6 +247,16 @@ class TestModelCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['success'],
                          "Profile for 'Bob' created successfully")
+    
+    def test_create_duplicate_profile(self):
+        """Test if a user attempts to create a duplicate profile"""
+        self.client.post(reverse('profile:profile-create'), 
+                         self.user_profile_1, format="json")
+        response = self.client.post(reverse('profile:profile-create'),
+                                    self.user_profile_1, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data, "A profile for this user already "
+                         "exists. Please choose a new user to create a profile.")
 
     def test_fetch_user_profile(self):
         """Creates a user profile and then tests if the 'get profile' view is

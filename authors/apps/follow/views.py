@@ -110,7 +110,7 @@ class ManageFollowings(APIView):
         followed_users_list = Follows.objects.filter(follower_id=current_user.pk)
         serializer = FollowingSerializer(followed_users_list, many=True)
         return Response({"followed_users": serializer.data},
-                        status=status.HTTP_400_BAD_REQUEST)
+                        status=status.HTTP_200_OK)
 
 
 class UserStats(APIView):
@@ -136,3 +136,18 @@ class UserStats(APIView):
         return Response({"success": [{"follows": number_users_followed},
                         {"followers": number_of_followers}]},
                         status=status.HTTP_200_OK)
+
+class CheckFollow(APIView):
+    """Contains view related to a user follow action. this checks whether a user has
+    already followed another user or not"""
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request, user_to_follow):
+        """The method checks if a user has followed is an existing user, it returns a
+        true or a false."""
+        current_user = self.request.user
+        if Follows.objects.filter(followed_user=user_to_follow).filter(
+                                 follower_id=current_user.pk).exists():
+                return Response({"success": True },
+                                status=status.HTTP_200_OK)
+        return Response({"error": False }, status=status.HTTP_200_OK)
