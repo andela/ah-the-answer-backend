@@ -137,8 +137,7 @@ class AvatarView(APIView):
             APIException.status_code = status.HTTP_404_NOT_FOUND
             raise APIException(
                 {"message": "User with that profile does not exist"})
-        user = User.objects.get(username="mgk")
-        if saved_profile.user != user:
+        if saved_profile.user != self.request.user:
             APIException.status_code = status.HTTP_401_UNAUTHORIZED
             raise APIException({
                 "errors": {

@@ -244,8 +244,6 @@ class DislikeCommentView(views.APIView):
 
 class CommentHistoryView(views.APIView):
 
-    permission_classes = (permissions.IsAuthenticated,)
-
     def get(self, request, slug, pk):
         try:
             find_article(slug)
