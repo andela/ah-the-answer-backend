@@ -126,7 +126,7 @@ class AvatarView(APIView):
                                     400: "Bad Request",
                                     403: "Forbidden",
                                     404: "Not Found"})
-    def patch(self, request, username='mgk'):
+    def patch(self, request, username):
         try:
             # retrieves user object throws error if profile is in-existent
             saved_profile = Profile.objects.select_related('user').get(
