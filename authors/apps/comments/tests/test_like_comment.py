@@ -251,8 +251,7 @@ class TestLikeComment(TestCase):
             format='json'
         )
         output = json.loads(response.content)
-        self.assertEqual(output['response'], "User has already liked/disliked \
-                                             this comment.")
+        self.assertEqual(output['response'], "User has already liked/disliked this comment.")
         self.assertEqual(output['hasRated'], True)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -278,8 +277,6 @@ class TestLikeComment(TestCase):
             format='json'
         )
         output = json.loads(response.content)
-        self.assertEqual(output['response'], "User has not liked/disliked this \
-                                              comment, or this comment does \
-                                              not exist.")
+        self.assertEqual(output['response'], "User has not liked/disliked this comment, or this comment does not exist.")
         self.assertEqual(output['hasRated'], False)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
