@@ -179,3 +179,107 @@ class TestLikeComment(TestCase):
         self.assertEqual(output['likes'], 0)
         self.assertEqual(output['dislikes'], 1)
         self.assertEqual(response2.status_code, status.HTTP_201_CREATED)
+
+    def test_get_likes_for_a_comment(self):
+        """
+        Test that the likes for a comment can be fetched
+        :return:
+        """
+        self.client.post(
+            reverse('comments:like',
+                    kwargs={
+                        'pk': self.comment.id
+                    }),
+            format='json'
+        )
+
+        response = self.client.get(
+            reverse('comments:rating',
+                    kwargs={
+                        'pk': self.comment.id
+                    }),
+            format='json'
+        )
+        output = json.loads(response.content)
+        self.assertEqual(output['likes'], 1)
+        self.assertEqual(output['dislikes'], 0)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_likes_for_a_nonexistent_comment(self):
+        """
+        Test that the likes for a non-existent comment will not be fetched
+        :return:
+        """
+        self.client.post(
+            reverse('comments:like',
+                    kwargs={
+                        'pk': self.comment.id
+                    }),
+            format='json'
+        )
+
+        response = self.client.get(
+            reverse('comments:rating',
+                    kwargs={
+                        'pk': 999
+                    }),
+            format='json'
+        )
+        output = json.loads(response.content)
+        self.assertEqual(output['message'], "The comment does not exist")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_if_user_has_liked_a_specific_comment(self):
+        """
+        Tests if a user has already liked/disliked a particular comment
+        :return:
+        """
+        self.client.post(
+            reverse('comments:like',
+                    kwargs={
+                        'pk': self.comment.id
+                    }),
+            format='json'
+        )
+
+        response = self.client.get(
+            reverse('comments:check-rating',
+                    kwargs={
+                        'pk': self.comment.id,
+                        'username': self.user.username
+                    }),
+            format='json'
+        )
+        output = json.loads(response.content)
+        self.assertEqual(output['response'], "User has already liked/disliked \
+                                             this comment.")
+        self.assertEqual(output['hasRated'], True)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_if_user_has_not_liked_a_specific_comment(self):
+        """
+        Tests if a user has already liked/disliked a particular comment
+        :return:
+        """
+        self.client.post(
+            reverse('comments:like',
+                    kwargs={
+                        'pk': self.comment.id
+                    }),
+            format='json'
+        )
+
+        response = self.client.get(
+            reverse('comments:check-rating',
+                    kwargs={
+                        'pk': 999,
+                        'username': self.user.username
+                    }),
+            format='json'
+        )
+        output = json.loads(response.content)
+        self.assertEqual(output['response'], "User has not liked/disliked this \
+                                              comment, or this comment does \
+                                              not exist.")
+        self.assertEqual(output['hasRated'], False)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
