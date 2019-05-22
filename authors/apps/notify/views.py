@@ -271,12 +271,13 @@ class NotificationsView():
         Sends notifications to users and updates the notifications table
         """
         recepients = cls.get_recepients(instance, _type)
-
         for user_email in recepients:
-            Notification.objects.create(
-                body=message,
-                recepient=User.objects.get(email=user_email)
-            )
+            user_recepient = User.objects.get(email=user_email)
+            if user_recepient.is_subscribed:
+                Notification.objects.create(
+                    body=message,
+                    recepient=User.objects.get(email=user_email)
+                )
 
             cls.send_email(user_email, message)
 
