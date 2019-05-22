@@ -247,10 +247,10 @@ class TestModelCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['success'],
                          "Profile for 'Bob' created successfully")
-    
+
     def test_create_duplicate_profile(self):
         """Test if a user attempts to create a duplicate profile"""
-        self.client.post(reverse('profile:profile-create'), 
+        self.client.post(reverse('profile:profile-create'),
                          self.user_profile_1, format="json")
         response = self.client.post(reverse('profile:profile-create'),
                                     self.user_profile_1, format="json")
@@ -302,8 +302,23 @@ class TestModelCase(TestCase):
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_avatar_authorization_is_enforced(self):
+        response = self.client.post(reverse('profile:profile-create'),
+                                    self.user_profile_1, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['success'],
+                         "Profile for 'Bob' created successfully")
         new_client = APIClient()
-        res = new_client.put('/api/profile/username/avatar/', format="json")
+        res = new_client.patch('/api/profile/Bob/avatar/', format="json")
+        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_profile_editing_authorization_is_enforced(self):
+        response = self.client.post(reverse('profile:profile-create'),
+                                    self.user_profile_1, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['success'],
+                         "Profile for 'Bob' created successfully")
+        new_client = APIClient()
+        res = new_client.put('/api/profile/Bob/edit/', format="json")
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_authenticated_user_can_get_all_profiles(self):
