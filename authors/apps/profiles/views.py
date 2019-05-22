@@ -176,7 +176,9 @@ class AvatarView(APIView):
                 serializer.save()
                 return Response(
                     {
-                        "success": "Your profile avatar has been updated successfully"
+                        "success": "Avatar updated successfully",
+                        "profile": serializer.data
+
                     }, status=200)
         except Exception as e:
             APIException.status_code = status.HTTP_400_BAD_REQUEST
