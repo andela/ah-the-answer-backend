@@ -84,11 +84,4 @@ urlpatterns = [
             namespace='bookmark'
         )
     ),
-    path(
-        'api/',
-        include(
-            ('authors.apps.stats.urls', 'authors.apps.stats'),
-            namespace="stats"
-        )
-    )
 ]
