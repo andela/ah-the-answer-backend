@@ -16,16 +16,10 @@ class TestCreateBookmark(TestCase):
     def setUp(self):
         """Create, authenticate and login a first user."""
         self.client_1 = APIClient()
-        self.user_1 = self.client_1.post(
-            reverse('authentication:user-signup'),
-            data={
-                "user": {
-                    "email": "demo@mail.com",
-                    "username": "Bob",
-                    "password": "Bob12345"
-                }
-            },
-            format="json"
+        self.user_1 = User.objects.create_user(
+            email="demo@mail.com",
+            username="Bob",
+            password="Bob12345"
         )
         test_user_1 = User.objects.get(username='Bob')
         test_user_1.is_verified = True
@@ -45,16 +39,10 @@ class TestCreateBookmark(TestCase):
 
         """Create, authenticate and login a second user."""
         self.client_2 = APIClient()
-        self.user_2 = self.client_2.post(
-            reverse('authentication:user-signup'),
-            data={
-                "user": {
-                    "email": "mail@demo.com",
-                    "username": "Mary",
-                    "password": "abc123ok"
-                }
-            },
-            format="json"
+        self.user_2 = User.objects.create_user(
+            email="mail@demo.com",
+            username="Mary",
+            password="abc123ok"
         )
         test_user_2 = User.objects.get(username='Mary')
         test_user_2.is_verified = True
@@ -128,16 +116,10 @@ class TestRetrieveBookmarks(TestCase):
     the view that retrieves user bookmarks."""
     def setUp(self):
         self.client_1 = APIClient()
-        self.user_1 = self.client_1.post(
-            reverse('authentication:user-signup'),
-            data={
-                "user": {
-                    "email": "demo@mail.com",
-                    "username": "Bob",
-                    "password": "Bob12345"
-                }
-            },
-            format="json"
+        self.user_1 = User.objects.create_user(
+            email="demo@mail.com",
+            username="Bob",
+            password="Bob12345"
         )
         test_user_1 = User.objects.get(username='Bob')
         test_user_1.is_verified = True
@@ -230,16 +212,10 @@ class TestRetrieveArticle(TestCase):
 
     def setUp(self):
         self.client_1 = APIClient()
-        self.user_1 = self.client_1.post(
-            reverse('authentication:user-signup'),
-            data={
-                "user": {
-                    "email": "demo@mail.com",
-                    "username": "Bob",
-                    "password": "Bob12345"
-                }
-            },
-            format="json"
+        self.user_1 = User.objects.create_user(
+            email="demo@mail.com",
+            username="Bob",
+            password="Bob12345"
         )
         test_user_1 = User.objects.get(username='Bob')
         test_user_1.is_verified = True

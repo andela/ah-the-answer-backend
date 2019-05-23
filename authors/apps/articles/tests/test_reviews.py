@@ -73,9 +73,12 @@ class ReviewTestCase(BaseSetup):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         response = self.post_review()
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        response = self.client2.delete(reverse('articles:alter-review', kwargs={
-            "slug": Article.objects.get().slug, 'username': "Pete"
-        }))
+        response = self.client2.delete(reverse(
+            'articles:alter-review',
+            kwargs={
+                "slug": Article.objects.get().slug, 'username': "Pete"
+            }
+        ))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response_delete = self.client2.get(
             reverse('articles:review', kwargs={
@@ -132,9 +135,15 @@ class ReviewTestCase(BaseSetup):
 
     def test_user_cant_edit_non_existent_review(self):
         self.test_user_can_delete_review()
-        response = self.client2.delete(reverse('articles:alter-review', kwargs={
-            "slug": Article.objects.get().slug, 'username': User.objects.filter(username="Pete").first()
-        }))
+        response = self.client2.delete(
+            reverse(
+                'articles:alter-review',
+                kwargs={
+                    "slug": Article.objects.get().slug,
+                    'username': User.objects.filter(username="Pete").first()
+                }
+            )
+        )
         self.assertEqual(response.status_code,
                          status.HTTP_404_NOT_FOUND)
         self.assertRaises(Exception)
@@ -179,7 +188,10 @@ class ReviewTestCase(BaseSetup):
         response = self.post_review()
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         response_duplicate = self.post_review()
-        self.assertEqual(response_duplicate.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(
+            response_duplicate.status_code,
+            status.HTTP_403_FORBIDDEN
+        )
 
     def test_user_cant_get_inexistent_review(self):
         response = self.post_article()
@@ -200,13 +212,17 @@ class ReviewTestCase(BaseSetup):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         response2 = self.post_review2()
         self.assertEqual(response2.status_code, status.HTTP_201_CREATED)
-        edit_response = self.client2.put(reverse('articles:alter-review', kwargs={
-            "slug": Article.objects.get().slug, 'username': "Jane"
-        }), data={
-            "review": {
-                "review_body": "I did not liked the article",
-                "rating_value": 3
-            }
-        },
+        edit_response = self.client2.put(
+            reverse(
+                'articles:alter-review',
+                kwargs={
+                    "slug": Article.objects.get().slug,
+                    'username': "Jane"
+                }), data={
+                "review": {
+                    "review_body": "I did not liked the article",
+                    "rating_value": 3
+                }
+            },
             format="json")
         self.assertEqual(edit_response.status_code, status.HTTP_403_FORBIDDEN)

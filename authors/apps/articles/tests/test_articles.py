@@ -12,16 +12,10 @@ from authors.apps.articles.filters import ArticleFilter
 class TestArticle(TestCase):
     def setUp(self):
         self.client = test.APIClient()
-        self.user = self.client.post(
-            reverse('authentication:user-signup'),
-            data={
-                "user": {
-                    "email": "test@mail.com",
-                    "username": "Test",
-                    "password": "test1234"
-                }
-            },
-            format="json"
+        self.user = User.objects.create_user(
+            email='test@mail.com',
+            username='Test',
+            password='test1234'
         )
 
         # verify email
@@ -112,7 +106,7 @@ class TestArticle(TestCase):
             data={
                 "article": {
                     "title": "the house in the hill",
-                    "body": "the hill was grassy with a single house at the apex",
+                    "body": "the hill was grassy with a single house apex",
                     "description": "a hill story",
                     "tags": "0"
                 }
@@ -294,16 +288,10 @@ class TestArticle(TestCase):
         )
 
         self.client_2 = test.APIClient()
-        self.user_2 = self.client_2.post(
-            reverse('authentication:user-signup'),
-            data={
-                "user": {
-                    "email": "test2@mail.com",
-                    "username": "Test2",
-                    "password": "test1234"
-                }
-            },
-            format="json"
+        self.user_2 = User.objects.create_user(
+            username='Test2',
+            email='test2@mail.com',
+            password='test1234',
         )
 
         test_user_2 = User.objects.get(username='Test2')
@@ -340,7 +328,10 @@ class TestArticle(TestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(response.data['message'], 'Only the owner can edit this article.')
+        self.assertEqual(
+            response.data['message'],
+            'Only the owner can edit this article.'
+        )
 
     # END OF UPDATE TESTS
 
@@ -425,16 +416,10 @@ class TestArticle(TestCase):
         )
 
         self.client_3 = test.APIClient()
-        self.user_3 = self.client_3.post(
-            reverse('authentication:user-signup'),
-            data={
-                "user": {
-                    "email": "test3@mail.com",
-                    "username": "Test3",
-                    "password": "test1234"
-                }
-            },
-            format="json"
+        self.user = User.objects.create_user(
+            email='test3@mail.com',
+            username='Test3',
+            password='test1234'
         )
 
         test_user_3 = User.objects.get(username='Test3')
@@ -465,7 +450,10 @@ class TestArticle(TestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(response.data['message'], 'Only the owner can delete this article.')
+        self.assertEqual(
+            response.data['message'],
+            'Only the owner can delete this article.'
+        )
 
     # END OF DELETE TESTS
     @property
@@ -553,11 +541,17 @@ class TestArticle(TestCase):
         self.assertRaises(Exception)
 
     def test_user_can_search_articles(self):
-        response = self.client.get("/api/articles/?search=raywire", format="json")
+        response = self.client.get(
+            "/api/articles/?search=raywire",
+            format="json"
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_user_can_search_articles_by_tags(self):
-        response = self.client.get("/api/articles/?search=religion,nature", format="json")
+        response = self.client.get(
+            "/api/articles/?search=religion,nature",
+            format="json"
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_user_can_filter_articles_by_title(self):
@@ -572,8 +566,11 @@ class TestArticle(TestCase):
                 }
             },
             format="json"
-        )        
-        response = self.client.get("/api/articles/?title=Test title", format="json")
+        )
+        response = self.client.get(
+            "/api/articles/?title=Test title",
+            format="json"
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(response.data['articles'])
 

@@ -20,38 +20,20 @@ class BaseSetup(TestCase):
         self.client = APIClient()
         self.client2 = APIClient()
         self.client3 = APIClient()
-        self.user = self.client.post(
-            reverse('authentication:user-signup'),
-            data={
-                "user": {
-                    "email": "demo@mail.com",
-                    "username": "Bob",
-                    "password": "Bob12345"
-                }
-            },
-            format="json"
+        self.user = User.objects.create_user(
+            email='demo@mail.com',
+            username='Bob',
+            password='Bob12345'
         )
-        self.user2 = self.client2.post(
-            reverse('authentication:user-signup'),
-            data={
-                "user": {
-                    "email": "pete@mail.com",
-                    "username": "Pete",
-                    "password": "Pete12345"
-                }
-            },
-            format="json"
+        self.user2 = User.objects.create_user(
+            email='pete@mail.com',
+            username='Pete',
+            password='Pete12345'
         )
-        self.user3 = self.client3.post(
-            reverse('authentication:user-signup'),
-            data={
-                "user": {
-                    "email": "jane@mail.com",
-                    "username": "Jane",
-                    "password": "Jane12345"
-                }
-            },
-            format="json"
+        self.user2 = User.objects.create_user(
+            email='jane@mail.com',
+            username='Jane',
+            password='Jane12345'
         )
         test_user = User.objects.get(username="Bob")
         test_user.is_verified = True

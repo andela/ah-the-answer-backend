@@ -7,18 +7,13 @@ from authors.apps.authentication.models import User
 class TestUser(TestCase):
     def setUp(self):
         self.client = test.APIClient()
-        self.user = self.client.post(
-            reverse('authentication:user-signup'),
-            data={
-                "user": {
-                    "email": "user@mail.com",
-                    "username": "user",
-                    "password": "user1234"
-                }
-            },
-            format="json"
+        self.user = User.objects.create_user(
+            email="user@mail.com",
+            username="user",
+            password="user1234"
         )
-        #verify the user
+
+        # verify the user
         test_user = User.objects.get(username='user')
         test_user.is_verified = True
         test_user.save()

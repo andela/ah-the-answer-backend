@@ -5,6 +5,7 @@ from rest_framework import test, status
 from ..models import User, ResetPasswordToken
 from ..jwt_generator import jwt_encode
 
+
 class TestPasswordResetRequest(TestCase):
     """
     tests password reset functionality
@@ -33,7 +34,7 @@ class TestPasswordResetRequest(TestCase):
 
     def test_non_existent_user(self):
         """
-        tests that an invalid user cannot send password reset request 
+        tests that an invalid user cannot send password reset request
         """
         non_existent_email = {"email": "test@gmail.com"}
         response = self.client.post(
@@ -42,12 +43,14 @@ class TestPasswordResetRequest(TestCase):
             format='json'
         )
         returned_data = json.loads(response.content)
-        self.assertIn('User with that email does not exist', str(returned_data))
+        self.assertIn(
+            'User with that email does not exist', str(returned_data)
+        )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_invalid_email(self):
         """
-        tests that an invalid email address pattern cannot send request 
+        tests that an invalid email address pattern cannot send request
         """
         invalid_email = {"email": "testgmail.com"}
         response = self.client.post(
@@ -61,7 +64,7 @@ class TestPasswordResetRequest(TestCase):
 
     def test_empty_email_string(self):
         """
-        tests that an empty string doesn't pass into the server 
+        tests that an empty string doesn't pass into the server
         """
         empty_email = {"email": ""}
         response = self.client.post(
@@ -95,8 +98,10 @@ class TestPasswordResetRequest(TestCase):
         user = User.objects.get(email=self.user.email)
         token = jwt_encode(user_id=user.pk, days=10)
         response = self.client.put(
-            reverse('authentication:set-updated-password',
-            kwargs={'reset_token': token}),
+            reverse(
+                'authentication:set-updated-password',
+                kwargs={'reset_token': token}
+            ),
             password,
             format='json'
         )

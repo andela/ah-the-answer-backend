@@ -2,44 +2,32 @@ import json
 from django.urls import reverse
 from django.test import TestCase
 from rest_framework import test, status
-
 from authors.apps.authentication.models import User
+
 
 class TestLikeArticles(TestCase):
     """
-    this class houses test instances for like/dislike functionality 
+    this class houses test instances for like/dislike functionality
     """
     def setUp(self):
         """
-        this set ups the test class 
+        this set ups the test class
         """
         self.client = test.APIClient()
         self.client2 = test.APIClient()
-        self.user = self.client.post(
-            reverse('authentication:user-signup'),
-            data={
-                "user": {
-                    "email": "tworivers@gmail.com",
-                    "username": "disliker",
-                    "password": "usergeneration0"
-                }
-            },
-            format="json"
+        self.user = User.objects.create_user(
+            email='tworivers@gmail.com',
+            username='disliker',
+            password='usergeneration0'
         )
 
         verified_user = User.objects.get(username='disliker')
         verified_user.is_verified = True
         verified_user.save()
-        self.user2 = self.client.post(
-            reverse('authentication:user-signup'),
-            data={
-                "user": {
-                    "email": "tworivers2@gmail.com",
-                    "username": "disliker2",
-                    "password": "usergeneration0"
-                }
-            },
-            format="json"
+        self.user2 = User.objects.create_user(
+            email='tworivers2@gmail.com',
+            username='disliker2',
+            password='usergeneration0'
         )
         verified_user2 = User.objects.get(username='disliker2')
         verified_user2.is_verified = True
@@ -102,8 +90,10 @@ class TestLikeArticles(TestCase):
     def test_like_article(self):
         """Test whether authenticated user can like article"""
         response = self.client.post(
-            reverse('articles:like-article',
-            kwargs={'slug': self.slug}),
+            reverse(
+                'articles:like-article',
+                kwargs={'slug': self.slug}
+            ),
             format='json'
         )
         output = json.loads(response.content)
@@ -111,17 +101,21 @@ class TestLikeArticles(TestCase):
             'you liked the article:',
             str(output))
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-    
+
     def test_revoking_like(self):
         """Test whether authenticated user can revoke an article like"""
         self.client.post(
-            reverse('articles:like-article',
-            kwargs={'slug': self.slug}),
+            reverse(
+                'articles:like-article',
+                kwargs={'slug': self.slug}
+            ),
             format='json'
         )
         response = self.client.post(
-            reverse('articles:like-article',
-            kwargs={'slug': self.slug}),
+            reverse(
+                'articles:like-article',
+                kwargs={'slug': self.slug}
+            ),
             format='json'
         )
         output = json.loads(response.content)
@@ -133,8 +127,10 @@ class TestLikeArticles(TestCase):
     def test_dislike_article(self):
         """Test whether authenticated user can dislike article"""
         response = self.client.post(
-            reverse('articles:dislike-article',
-            kwargs={'slug': self.slug}),
+            reverse(
+                'articles:dislike-article',
+                kwargs={'slug': self.slug}
+            ),
             format='json'
         )
         output = json.loads(response.content)
@@ -142,17 +138,21 @@ class TestLikeArticles(TestCase):
             'you disliked the article:',
             str(output))
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-    
+
     def test_revoking_dislike(self):
         """Test whether authenticated user can revoke an article dislike"""
         self.client.post(
-            reverse('articles:dislike-article',
-            kwargs={'slug': self.slug}),
+            reverse(
+                'articles:dislike-article',
+                kwargs={'slug': self.slug}
+            ),
             format='json'
         )
         response = self.client.post(
-            reverse('articles:dislike-article',
-            kwargs={'slug': self.slug}),
+            reverse(
+                'articles:dislike-article',
+                kwargs={'slug': self.slug}
+            ),
             format='json'
         )
         output = json.loads(response.content)
@@ -164,8 +164,10 @@ class TestLikeArticles(TestCase):
     def test_liking_non_existent_article(self):
         """Test whether user can like an article that doesn't exist"""
         response = self.client.post(
-            reverse('articles:like-article',
-            kwargs={'slug': 'the_people_eater'}),
+            reverse(
+                'articles:like-article',
+                kwargs={'slug': 'the_people_eater'}
+            ),
             format='json'
         )
         output = json.loads(response.content)
@@ -179,13 +181,17 @@ class TestLikeArticles(TestCase):
         Tests whether a user can change a dislike to a like
         """
         self.client.post(
-            reverse('articles:dislike-article',
-            kwargs={'slug': self.slug}),
+            reverse(
+                'articles:dislike-article',
+                kwargs={'slug': self.slug}
+            ),
             format='json'
         )
         response = self.client.post(
-            reverse('articles:like-article',
-            kwargs={'slug': self.slug}),
+            reverse(
+                'articles:like-article',
+                kwargs={'slug': self.slug}
+            ),
             format='json'
         )
         output = json.loads(response.content)
@@ -193,19 +199,23 @@ class TestLikeArticles(TestCase):
             'you liked the article:',
             str(output))
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-    
+
     def test_user_can_dislike_liked_article(self):
         """
         Tests whether a user can change a like to a dislike
         """
         self.client.post(
-            reverse('articles:like-article',
-            kwargs={'slug': self.slug}),
+            reverse(
+                'articles:like-article',
+                kwargs={'slug': self.slug}
+            ),
             format='json'
         )
         response = self.client.post(
-            reverse('articles:dislike-article',
-            kwargs={'slug': self.slug}),
+            reverse(
+                'articles:dislike-article',
+                kwargs={'slug': self.slug}
+            ),
             format='json'
         )
         output = json.loads(response.content)

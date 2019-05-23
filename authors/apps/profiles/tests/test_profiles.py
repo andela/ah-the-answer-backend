@@ -49,16 +49,10 @@ class TestModelCase(TestCase):
         the second being invalid."""
         self.test_client = APIClient()
         self.client = APIClient()
-        self.user = self.client.post(
-            reverse('authentication:user-signup'),
-            data={
-                "user": {
-                    "email": "demo@mail.com",
-                    "username": "Bob",
-                    "password": "Bob12345"
-                }
-            },
-            format="json"
+        self.user = User.objects.create_user(
+            email="demo@mail.com",
+            username="Bob",
+            password="Bob12345"
         )
         # Verify email
         test_user = User.objects.get(username='Bob')
