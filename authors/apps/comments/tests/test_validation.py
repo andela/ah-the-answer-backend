@@ -10,19 +10,13 @@ class TestValidation(TestCase):
     def setUp(self):
         # User 1
         self.client = test.APIClient()
-        self.user_signup = self.client.post(
-            reverse('authentication:user-signup'),
-            data={
-                "user": {
-                    "email": "test@mail.com",
-                    "username": "test",
-                    "password": "test1234"
-                }
-            },
-            format="json"
+        self.user_signup = User.objects.create_user(
+            email="test@mail.com",
+            username="test",
+            password="test1234"
         )
         self.user = User.objects.get(
-            email=self.user_signup.data.get('email')
+            email=self.user_signup.email
         )
         self.user.is_verified = True
         self.user.save()
@@ -47,19 +41,13 @@ class TestValidation(TestCase):
 
         # User 2
         self.client2 = test.APIClient()
-        self.user_signup2 = self.client2.post(
-            reverse('authentication:user-signup'),
-            data={
-                "user": {
-                    "email": "test2@mail.com",
-                    "username": "test2",
-                    "password": "test21234"
-                }
-            },
-            format="json"
+        self.user_signup2 = User.objects.create_user(
+            email="test2@mail.com",
+            username="test2",
+            password="test21234"
         )
         self.user2 = User.objects.get(
-            email=self.user_signup2.data.get('email')
+            email=self.user_signup2.email
         )
         self.user2.is_verified = True
         self.user2.save()

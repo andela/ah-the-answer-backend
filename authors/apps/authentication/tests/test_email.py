@@ -33,18 +33,24 @@ class EmailTest(TestCase):
         self.assertFalse(test_user.is_verified)
 
     def test_email_sent(self):
-        response = send_verification_email('authorshaven23@gmail.com',
-          'yt@yopmail.com',
-          'Please verify mail', '<p>hello sir<p>')
+        response = send_verification_email(
+            'authorshaven23@gmail.com',
+            'yt@yopmail.com',
+            'Please verify mail', '<p>hello sir<p>'
+        )
         self.assertTrue(response.status_code == 202)
 
     def test_error_email_not_sent(self):
-        response = send_verification_email('authorshaven23@gmail.com', 
-        'to', '', '<p>outhors</p>')
+        response = send_verification_email(
+            'authorshaven23@gmail.com',
+            'to', '', '<p>outhors</p>')
         self.assertFalse(response)
 
     def test_verification_success_if_user_passes_valid_token(self):
-        """Users should be able to verify their account if they pass a valid token"""
+        """
+        Users should be able to verify their account if they
+        pass a valid token
+        """
 
         self.client.post(
             reverse('authentication:user-signup'),

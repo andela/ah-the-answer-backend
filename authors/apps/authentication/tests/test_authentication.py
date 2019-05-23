@@ -11,6 +11,16 @@ class TestJWTGenerator(TestCase):
         self.id = 11
         self.token = jwt_encode(self.id)
         self.client = test.APIClient()
+        self.user = User.objects.create_user(
+            email='tester@mail.com',
+            username='tester',
+            password='tester1234'
+        )
+
+        # verify the user
+        test_user = User.objects.get(username='tester')
+        test_user.is_verified = True
+        test_user.save()
 
     def test_that_token_encoded_decoded(self):
         decoded_id = jwt_decode(self.token)
@@ -19,32 +29,12 @@ class TestJWTGenerator(TestCase):
         self.assertEqual(decoded_id['user_id'], self.id)
 
     def test_user_token_property(self):
-        user = User.objects.create(
-            username="test",
-            email="test@mail.com",
-            password="test123"
-        )
-        token = user.get_token
+        token = self.user.get_token
 
         self.assertTrue(token)
-        self.assertEqual(jwt_decode(token)['user_id'], user.id)
+        self.assertEqual(jwt_decode(token)['user_id'], self.user.id)
 
     def test_login_endpoint(self):
-        create_res = self.client.post(
-            reverse('authentication:user-signup'),
-            data={
-                "user": {
-                    "email": "tester@mail.com",
-                    "username": "tester",
-                    "password": "tester1234"
-                }
-            },
-            format="json"
-        )
-        #verify the user
-        test_user = User.objects.get(username='tester')
-        test_user.is_verified = True
-        test_user.save()
         login_res = self.client.post(
             reverse('authentication:user-login'),
             data={
@@ -56,67 +46,37 @@ class TestJWTGenerator(TestCase):
             format="json"
         )
 
-        self.assertEqual(create_res.status_code, status.HTTP_201_CREATED)
         self.assertEqual(login_res.status_code, status.HTTP_200_OK)
-        self.assertEqual(create_res.data['email'], login_res.data['email'])
-        self.assertEqual(
-            create_res.data['username'],
-            login_res.data['username']
-        )
+        self.assertEqual(login_res.data['email'], self.user.email)
+        self.assertEqual(login_res.data['username'], self.user.username)
         self.assertTrue(login_res.data['token'])
 
     def test_login_missing_fields(self):
-        create_res = self.client.post(
-            reverse('authentication:user-signup'),
-            data={
-                "user": {
-                    "email": "tester1@mail.com",
-                    "username": "tester1",
-                    "password": "tester1234"
-                }
-            },
-            format="json"
-        )
         response = self.client.post(
             reverse('authentication:user-login'),
             data={
                 "user": {
-                    "email": "tester1@mail.com"
+                    "email": "tester@mail.com"
                 }
             },
             format="json"
         )
 
-        self.assertEqual(create_res.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(create_res.data['email'], 'tester1@mail.com')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertTrue(response.data['errors'])
 
     def test_login_invalid_fields(self):
-        create_res = self.client.post(
-            reverse('authentication:user-signup'),
-            data={
-                "user": {
-                    "email": "tester11@mail.com",
-                    "username": "tester11",
-                    "password": "tester1234"
-                }
-            },
-            format="json"
-        )
         response = self.client.post(
             reverse('authentication:user-login'),
             data={
                 "user": {
-                    "email": "tester11@mail.com",
+                    "email": "tester@mail.com",
                     "password": "tester8978"
                 }
             },
             format="json"
         )
 
-        self.assertEqual(create_res.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(create_res.data['email'], 'tester11@mail.com')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertTrue(response.data['errors'])
 
@@ -136,22 +96,11 @@ class TestJWTGenerator(TestCase):
         self.assertTrue(response.data['errors'])
 
     def test_login_incorrect_password_email_combination(self):
-        create_res = self.client.post(
-            reverse('authentication:user-signup'),
-            data={
-                "user": {
-                    "email": "newuser@mail.com",
-                    "username": "newuser",
-                    "password": "newuser1234"
-                }
-            },
-            format="json"
-        )
         response = self.client.post(
             reverse('authentication:user-login'),
             data={
                 "user": {
-                    "email": "newuser@mail.com",
+                    "email": "tester@mail.com",
                     "password": "wrongpass123"
                 }
             },
@@ -276,6 +225,7 @@ class TestJWTGenerator(TestCase):
         )
         output = json.loads(response.content)
         self.assertIn(
-            'Please ensure your password contains at least one letter and one numeral', str(output)
-                 )
+            'Please ensure your password contains at least one letter and one numeral',
+            str(output)
+        )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

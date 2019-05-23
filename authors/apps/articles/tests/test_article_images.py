@@ -12,16 +12,10 @@ from authors.apps.authentication.models import User
 class TestArticle(TestCase):
     def setUp(self):
         self.client = test.APIClient()
-        self.user = self.client.post(
-            reverse('authentication:user-signup'),
-            data={
-                "user": {
-                    "email": "test@mail.com",
-                    "username": "Test",
-                    "password": "test1234"
-                }
-            },
-            format="json"
+        self.user = User.objects.create_user(
+            email='test@mail.com',
+            username='Test',
+            password='test1234'
         )
 
         # verify email
@@ -54,6 +48,29 @@ class TestArticle(TestCase):
             },
             format="json"
         )
+        self.client_3 = test.APIClient()
+        self.user_3 = User.objects.create_user(
+            email='test3@mail.com',
+            username='Test3',
+            password='test1234'
+        )
+
+        test_user_3 = User.objects.get(username='Test3')
+        test_user_3.is_verified = True
+        test_user_3.save()
+        self.login_3 = self.client_3.post(
+            reverse('authentication:user-login'),
+            data={
+                "user": {
+                    "email": "test3@mail.com",
+                    "password": "test1234"
+                }
+            },
+            format="json"
+        )
+
+        self.client_3.credentials(
+            HTTP_AUTHORIZATION='Bearer ' + self.login_3.data['token'])
 
     @property
     def temporary_image(self):
@@ -182,37 +199,6 @@ class TestArticle(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_upload_not_authorized(self):
-
-        self.client_3 = test.APIClient()
-        self.user_3 = self.client_3.post(
-            reverse('authentication:user-signup'),
-            data={
-                "user": {
-                    "email": "test3@mail.com",
-                    "username": "Test3",
-                    "password": "test1234"
-                }
-            },
-            format="json"
-        )
-
-        test_user_3 = User.objects.get(username='Test3')
-        test_user_3.is_verified = True
-        test_user_3.save()
-        self.login_3 = self.client_3.post(
-            reverse('authentication:user-login'),
-            data={
-                "user": {
-                    "email": "test3@mail.com",
-                    "password": "test1234"
-                }
-            },
-            format="json"
-        )
-
-        self.client_3.credentials(
-            HTTP_AUTHORIZATION='Bearer ' + self.login_3.data['token'])
-
         response = self.client_3.post(
             reverse(
                 'articles:add-image',
@@ -228,37 +214,6 @@ class TestArticle(TestCase):
                          'Only the owner of this article can upload images.')
 
     def test_delete_not_authorized(self):
-
-        self.client_3 = test.APIClient()
-        self.user_3 = self.client_3.post(
-            reverse('authentication:user-signup'),
-            data={
-                "user": {
-                    "email": "test3@mail.com",
-                    "username": "Test3",
-                    "password": "test1234"
-                }
-            },
-            format="json"
-        )
-
-        test_user_3 = User.objects.get(username='Test3')
-        test_user_3.is_verified = True
-        test_user_3.save()
-        self.login_3 = self.client_3.post(
-            reverse('authentication:user-login'),
-            data={
-                "user": {
-                    "email": "test3@mail.com",
-                    "password": "test1234"
-                }
-            },
-            format="json"
-        )
-
-        self.client_3.credentials(
-            HTTP_AUTHORIZATION='Bearer ' + self.login_3.data['token'])
-
         self.client.post(
             reverse('articles:add-image',
                     kwargs={

@@ -9,16 +9,10 @@ from authors.apps.articles.filters import ArticleFilter
 class TestArticle(TestCase):
     def setUp(self):
         self.client = test.APIClient()
-        self.user = self.client.post(
-            reverse('authentication:user-signup'),
-            data={
-                "user": {
-                    "email": "test@mail.com",
-                    "username": "Test",
-                    "password": "test1234"
-                }
-            },
-            format="json"
+        self.user = User.objects.create_user(
+            email='test@mail.com',
+            username='Test',
+            password='test1234'
         )
 
         # verify email

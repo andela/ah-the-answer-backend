@@ -21,16 +21,10 @@ class TestReportViews(TestCase):
         Create, authenticate and login first user.
         """
         self.client_1 = APIClient()
-        self.user_1 = self.client_1.post(
-            reverse('authentication:user-signup'),
-            data={
-                "user": {
-                    "email": "demo@mail.com",
-                    "username": "Bob",
-                    "password": "Bob12345"
-                }
-            },
-            format="json"
+        self.user_1 = User.objects.create_user(
+            email="demo@mail.com",
+            username="Bob",
+            password="Bob12345"
         )
         test_user_1 = User.objects.get(username='Bob')
         test_user_1.is_verified = True
@@ -50,16 +44,10 @@ class TestReportViews(TestCase):
         Create, authenticate and login a second user.
         """
         self.client_2 = APIClient()
-        self.user_2 = self.client_2.post(
-            reverse('authentication:user-signup'),
-            data={
-                "user": {
-                    "email": "mail@demo.com",
-                    "username": "Mary",
-                    "password": "Mary12345"
-                }
-            },
-            format="json"
+        self.user_2 = User.objects.create_user(
+            email="mail@demo.com",
+            username="Mary",
+            password="Mary12345"
         )
         test_user_2 = User.objects.get(username='Mary')
         test_user_2.is_verified = True
