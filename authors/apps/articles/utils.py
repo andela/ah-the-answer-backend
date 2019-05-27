@@ -13,7 +13,7 @@ def generate_slug(article_title):
 
 def get_readtime(article_body):
     """Method to calculate the read time of an article."""
-    result = readtime.of_text(article_body)
+    result = readtime.of_html(article_body)
     return result.text
 
 
