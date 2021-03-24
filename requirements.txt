@@ -72,7 +72,7 @@ pytz==2018.9
 readtime==1.1.1
 requests==2.21.0
 requests-oauthlib==1.2.0
-rsa==4.0
+rsa==4.1
 ruamel.yaml==0.15.93
 selenium==3.141.0
 sendgrid==5.6.0
